@@ -2,25 +2,7 @@
 .env
 *.env
 secrets/
-<<<<<<< HEAD
-=======
 google_ads.yaml
-
-# Python junk files
-__pycache__/
-*.pyc
-venv/
-.venv/
-
-# Node/React junk files
-node_modules/
-dist/
-build/
-
-# System files
-.DS_Store
-.idea/
->>>>>>> dev
 
 # Python junk files
 __pycache__/
