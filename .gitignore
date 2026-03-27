@@ -4,16 +4,16 @@
 secrets/
 google_ads.yaml
 
+# Node/React junk files
+node_modules/
+dist/
+build/
+
 # Python junk files
 __pycache__/
 *.pyc
 venv/
 .venv/
-
-# Node/React junk files
-node_modules/
-dist/
-build/
 
 # System files
 .DS_Store
