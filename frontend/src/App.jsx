@@ -25,7 +25,6 @@ const BuyerList = lazy(() => import("./pages/BuyerList"));
 const Intelligence = lazy(() => import("./pages/Intelligence"));
 const Help = lazy(() => import("./pages/Help"));
 const Error = lazy(() => import("./pages/Error"));
-
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
@@ -38,7 +37,6 @@ const Terms = lazy(() => import("./pages/Terms"));
 const DataPolicy = lazy(() => import("./pages/DataPolicy"));
 const GDPR = lazy(() => import("./pages/GDPR"));
 const PaymentRefund = lazy(() => import("./pages/PaymentRefund"));
-
 
 const App = () => {
   const [mainLoader, setMainLoader] = useState(true);
@@ -58,20 +56,15 @@ const App = () => {
           <div className="h-10 w-10 border-4 border-[#5FC4BE] border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
-
       <Toaster position="top-right" reverseOrder={false} />
-
       <BrowserRouter>
         <ScrollToTop />
-
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route element={<PrivateComponent />}>
               <Route path="/overview" element={<OverViewPage />} />
-
               <Route path="/discover" element={<DiscoverProducts />} />
               <Route path="/full-report/:id" element={<FullReport />} />
-
               <Route path="/product" element={<MyProduct />} />
               <Route path="/market" element={<MarketIntelligence />} />
               <Route path="/buyer" element={<BuyerList />} />
