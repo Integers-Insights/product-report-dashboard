@@ -4,6 +4,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:9,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -16,6 +17,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:8,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -28,6 +30,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:8,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -40,6 +43,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:9,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -52,6 +56,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:9,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -64,6 +69,7 @@ const cardData = [
     {
         id: 1,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
+        num:9,
         txt2: "✓ Your product",
         txt3: "Curcuminoids ≥95% · moisture 8% · heavy metals 5 ppm",
         txt4: "$8 - $16 / kg",
@@ -156,9 +162,15 @@ const Variants = () => {
                     return (
                         <div className="border border-l-4 border-[#2E7D32] p-4 rounded-lg card-hover" key={item.id}>
                             {/* 1 */}
-                            <div className="flex gap-6 items-center">
-                                <div className="text-sm text-[#000000] font-medium">{item.txt1}</div>
-                                <div className="text-sm text-[#2E7D32] font-medium bg-[#CCFFCF] px-3 py-0.5 rounded-2xl">{item.txt2}</div>
+                            <div className="flex justify-between">
+                                <div className="flex gap-6 items-center">
+                                    <div className="text-sm text-[#000000] font-medium">{item.txt1}</div>
+                                    <div className="text-sm text-[#2E7D32] font-medium bg-[#CCFFCF] px-3 py-0.5 rounded-2xl">{item.txt2}</div>
+                                </div>
+                                <div>
+                                    <p className="text-xl font-bold text-[#2E7D32] text-center">{item.num}</p>
+                                    <p className="text-xs font-medium text-[#5F6368]">OPP.</p>
+                                </div>
                             </div>
 
                             {/* 2 */}
