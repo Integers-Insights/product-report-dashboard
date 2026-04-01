@@ -15,7 +15,7 @@ const cardData = [
         txt9: "Your core product. Strongest match rate in your target markets. GMP + USDA Organic cert is the key differentiator — 40% of buyers require it as a hard filter."
     },
     {
-        id: 1,
+        id: 2,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
         num:8,
         txt2: "✓ Your product",
@@ -28,7 +28,7 @@ const cardData = [
         txt9: "Your core product. Strongest match rate in your target markets. GMP + USDA Organic cert is the key differentiator — 40% of buyers require it as a hard filter."
     },
     {
-        id: 1,
+        id: 3,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
         num:8,
         txt2: "✓ Your product",
@@ -41,7 +41,7 @@ const cardData = [
         txt9: "Your core product. Strongest match rate in your target markets. GMP + USDA Organic cert is the key differentiator — 40% of buyers require it as a hard filter."
     },
     {
-        id: 1,
+        id: 4,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
         num:9,
         txt2: "✓ Your product",
@@ -54,7 +54,7 @@ const cardData = [
         txt9: "Your core product. Strongest match rate in your target markets. GMP + USDA Organic cert is the key differentiator — 40% of buyers require it as a hard filter."
     },
     {
-        id: 1,
+        id: 5,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
         num:9,
         txt2: "✓ Your product",
@@ -67,7 +67,7 @@ const cardData = [
         txt9: "Your core product. Strongest match rate in your target markets. GMP + USDA Organic cert is the key differentiator — 40% of buyers require it as a hard filter."
     },
     {
-        id: 1,
+        id: 6,
         txt1: "Organic Turmeric Powder — Curcumin 95%",
         num:9,
         txt2: "✓ Your product",
