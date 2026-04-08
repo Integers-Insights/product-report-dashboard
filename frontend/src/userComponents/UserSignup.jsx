@@ -3,6 +3,9 @@ import Int_Logo from '../assets/Int_Logo_Main_Fav.png';
 import { useState } from "react";
 import { IoEyeOffOutline } from "react-icons/io5";
 import { IoEyeOutline } from "react-icons/io5";
+import { base_url1 } from "../URL";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const countries = [
     { name: "India", code: "+91", flag: "🇮🇳" },
@@ -29,6 +32,8 @@ const UserSignup = () => {
 
     const [error, setError] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
 
     const [formData, setFormData] = useState({
         name: "",
@@ -39,6 +44,9 @@ const UserSignup = () => {
         password: ""
     });
 
+
+    const navigate = useNavigate();
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -48,52 +56,139 @@ const UserSignup = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // const nameRegex = /^[A-Za-z ]{2,50}$/;
-        // Allow: uppercase letters (A-Z), lowercase letters (a-z), space
-        // Length: minimum 2 characters, maximum 50 characters
-        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        // Allow: any characters except space before @
-        // Structure: text + @ + domain + . + extension
-        // Example valid: "test@gmail.com", "user123@mail.co"
-        // const phoneRegex = /^[0-9]{7,15}$/;
-        // Allow: only digits (0-9)
-        // Length: minimum 7 digits, maximum 15 digits
-        // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-        // Allow: letters (A-Z, a-z) and numbers (0-9)
-        // Must contain: at least 1 letter and 1 number
-        // Length: minimum 6 characters
-        // Example valid: "pass123", "abc123"
-        // const companyRegex = /^[A-Za-z0-9 .&-]{2,100}$/;
-        // Allow: letters (A-Z, a-z), numbers (0-9), space
-        // Special characters allowed: .  &  -
-        // Length: minimum 2 characters, maximum 100 characters
-        // Example valid: "AI Integers", "Tata Ltd.", "Reliance Industries"
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
 
-        if (!formData.name || !formData.email || !formData.company || !formData.password) {
+    //     if (!formData.name || !formData.email || !formData.company || !formData.password) {
+    //         setError(true);
+    //         return;
+    //     }
+    //     else if (formData.password.length < 6) {
+    //         toast.error("Password must be at least 6 characters")
+    //     }
+    //     else if (formData.name.trim() && formData.email.trim() && formData.company.trim() && formData.password.trim()) {
+    //         setError(false);
+    //         const payload = {
+    //             full_name: formData.name,
+    //             email: formData.email,
+    //             company_name: formData.company,
+    //             password: formData.password,
+    //             phone: `${formData.country}${formData.phone}`
+    //         };
+
+    //         console.log("Form Data:", payload);
+
+    //         setLoading(true);
+
+    //         try {
+    //             const response = await fetch(`${base_url1}/signup`, {
+    //                 method: "POST",
+    //                 headers: {
+    //                     "Content-Type": "application/json"
+    //                 },
+    //                 body: JSON.stringify(payload)
+    //             });
+
+    //             const data = await response.json();
+
+    //             console.log(data);
+
+    //             if(data.success){
+    //                 toast.success(data.message || "Signup successful. Verify your email.");
+    //                 navigate("/user-login");
+    //             }
+    //             else{
+    //                 toast.error(data.detail || "Signup failed.");
+    //             }
+
+    //         } catch (error) {
+    //             console.error("Error:", error);
+    //             toast.error("Server error");
+    //         }finally{
+    //             setLoading(false);
+    //         }
+    //     }
+    //     else {
+    //         toast.error("white space is not allowed.");
+    //     }
+    // };
+
+
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const { name, email, company, password, country, phone } = formData;
+
+
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim();
+        const trimmedCompany = company.trim();
+        const trimmedPassword = password.trim();
+
+        if (!trimmedName || !trimmedEmail || !trimmedCompany || !trimmedPassword) {
             setError(true);
+            toast.error("All required fields must be filled");
             return;
         }
-        else if (formData.password.length < 6) {
-            alert("Please enter minimum 6 characters")
-        }
-        else if (formData.name.trim() && formData.email.trim() && formData.company.trim() && formData.password.trim()) {
-            setError(false);
-            const payload = {
-                name: formData.name,
-                email: formData.email,
-                company: formData.company,
-                password: formData.password,
-                phone: `${formData.country}${formData.phone}`
-            };
 
-            console.log("Form Data:", payload);
+        if (trimmedPassword.length < 6) {
+            toast.error("Password must be at least 6 characters");
+            return;
         }
-        else {
-            alert("white space is not allowed.");
+
+        setError(false);
+        setLoading(true);
+
+        const payload = {
+            full_name: trimmedName,
+            email: trimmedEmail,
+            company_name: trimmedCompany,
+            password: trimmedPassword,
+            phone: `${country}${phone || ""}`
+        };
+
+        try {
+            const response = await fetch(`${base_url1}/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast.error(data.detail || "Signup failed");
+                return;
+            }
+
+            if (data.success) {
+                toast.success(data.message || "Signup successful. Verify your email.");
+                setFormData({
+                    name: "",
+                    email: "",
+                    company: "",
+                    password: "",
+                    country: "+91",
+                    phone: ""
+                });
+
+                // navigate("/user-login");
+            } else {
+                toast.error(data.detail || "Signup failed.");
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("Server error. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
+
 
     return (
         <div className="h-screen">
@@ -239,9 +334,11 @@ const UserSignup = () => {
                                     <div>
                                         <button
                                             type="submit"
-                                            className="flex w-full justify-center rounded-md bg-brand1 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-[var(--color-brand-primary1-hover)] cursor-pointer"
+                                            className="flex w-full justify-center rounded-md bg-brand1 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-[var(--color-brand-primary1-hover)] cursor-pointer disabled:cursor-not-allowed"
+                                            disabled={loading}
                                         >
-                                            Sign Up
+                                            {loading ? "Signing up..." : "Sign Up"}
+
                                         </button>
                                     </div>
                                 </form>

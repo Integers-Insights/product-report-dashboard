@@ -867,13 +867,21 @@
 
 
 /* Hide scrollbar */
-.no-scrollbar::-webkit-scrollbar {
+/* .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+} */
+
+.mbd{overflow-y: auto;padding-right: 8px;}
+.mbd::-webkit-scrollbar{
+  width: 4px;
+}
+.mbd::-webkit-scrollbar-thumb{
+  background-color: rgb(151, 150, 150);border-radius: 2px;
 }
 
 .card-hover {

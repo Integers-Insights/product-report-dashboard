@@ -81,7 +81,6 @@
 //           <Route path="/login" element={<Login />} />
 //           <Route path="*" element={<Error />} />
 
-
 //           {/* user-dash */}
 //           <Route path="/overview" element={<OverView />} />
 //           <Route path="/signup" element={<UserSignup />} />
@@ -101,12 +100,11 @@
 
 // export default App;
 
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
+// import NeedHelp from "./userComponents/NeedHelp";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -118,16 +116,22 @@ const HomePage = lazy(() => import("./components/HomePage"));
 const AboutUs = lazy(() => import("./components/AboutUs"));
 const PrivacyPolicy = lazy(() => import("./components/PrivacyPolicy"));
 const Conditions = lazy(() => import("./components/Conditions"));
-const CancellationPolicy = lazy(() => import("./components/CancellationPolicy"));
+const CancellationPolicy = lazy(
+  () => import("./components/CancellationPolicy"),
+);
 const Disclaimer = lazy(() => import("./components/Disclaimer"));
-const ResearchMethodology = lazy(() => import("./components/ResearchMethodology"));
+const ResearchMethodology = lazy(
+  () => import("./components/ResearchMethodology"),
+);
 const OurResearchers = lazy(() => import("./components/OurResearchers"));
 const ContactUs = lazy(() => import("./components/ContactUs"));
 const ReportingList = lazy(() => import("./components/ReportingList"));
 const ReportName = lazy(() => import("./components/ReportName"));
 const Error = lazy(() => import("./components/Error"));
 const FilteredIndustry = lazy(() => import("./components/FilteredIndustry"));
-const FilteredReportType = lazy(() => import("./components/FilteredReportType"));
+const FilteredReportType = lazy(
+  () => import("./components/FilteredReportType"),
+);
 const FilteredUseCases = lazy(() => import("./components/FilteredUseCases"));
 
 const Login = lazy(() => import("./auth/Login"));
@@ -146,6 +150,17 @@ const UserLogin = lazy(() => import("./userComponents/UserLogin"));
 const OverViewPage = lazy(() => import("./userPages/OverviewPage"));
 const DiscoverProducts = lazy(() => import("./userPages/DiscoverProducts"));
 const FullReport = lazy(() => import("./userPages/FullReport"));
+const VerifyEmail = lazy(() => import("./userComponents/VerifyEmail"));
+const FailedVerification = lazy(
+  () => import("./userComponents/FailedVerification"),
+);
+const MyProduct = lazy(() => import("./userPages/MyProject"));
+const MarketIntelligence = lazy(() => import("./userPages/MarketIntelligence"));
+const BuyerList = lazy(() => import("./userPages/BuyerList"));
+const IntelligenceReports = lazy(
+  () => import("./userPages/IntelligenceReports"),
+);
+const Help = lazy(() => import("./userPages/Help"));
 
 const App = () => {
   const [mainLoader, setMainLoader] = useState(true);
@@ -177,9 +192,15 @@ const App = () => {
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/term-conditions" element={<Conditions />} />
-            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+            <Route
+              path="/cancellation-policy"
+              element={<CancellationPolicy />}
+            />
             <Route path="/disclaimer" element={<Disclaimer />} />
-            <Route path="/research-methodology" element={<ResearchMethodology />} />
+            <Route
+              path="/research-methodology"
+              element={<ResearchMethodology />}
+            />
             <Route path="/our-researchers" element={<OurResearchers />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/report" element={<ReportingList />} />
@@ -207,6 +228,20 @@ const App = () => {
             {/* <Route path="/form" element={<PopForm />} /> */}
             <Route path="/discover" element={<DiscoverProducts />} />
             <Route path="/full-report" element={<FullReport />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route
+              path="/failed-verification"
+              element={<FailedVerification />}
+            />
+            {/* <Route path="/need" element={<NeedHelp />} /> */}
+            <Route path="/product" element={<MyProduct />} />
+            <Route path="/market" element={<MarketIntelligence />} />
+            <Route path="/buyer" element={<BuyerList />} />
+            <Route
+              path="/intelligence-reports"
+              element={<IntelligenceReports />}
+            />
+            <Route path="/help" element={<Help />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -1,5 +1,5 @@
 import Header from "../userComponents/Header";
-import ProductReoport from "../userComponents/ProductReport";
+import ProductReport from "../userComponents/ProductReport";
 import SideBar from "../userComponents/SideBar";
 
 const FullReport = () => {
@@ -21,7 +21,7 @@ const FullReport = () => {
 
                     {/* Scrollable content */}
                     <div className="flex-1 p-6">
-                        <ProductReoport />
+                        <ProductReport />
                     </div>
                 </div>
             </div>
