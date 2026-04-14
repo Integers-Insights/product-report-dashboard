@@ -647,7 +647,7 @@ const NeedHelp = ({ setPopup_Open }) => {
       <div className="my-1 mbd h-105 px-4 mb-4">
         {/* step1 */}
         <div
-          className="p-2 mt-4 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-4 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step1")}
         >
           <div>
@@ -697,7 +697,7 @@ const NeedHelp = ({ setPopup_Open }) => {
 
         {/* step2 */}
         <div
-          className="p-2 mt-6 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-6 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step2")}
         >
           <div>
@@ -805,7 +805,7 @@ const NeedHelp = ({ setPopup_Open }) => {
 
         {/* step3 */}
         <div
-          className="p-2 mt-6 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-6 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step3")}
         >
           <div>
@@ -914,7 +914,7 @@ const NeedHelp = ({ setPopup_Open }) => {
 
         {/* step4 */}
         <div
-          className="p-2 mt-6 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-6 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step4")}
         >
           <div>
@@ -1007,7 +1007,7 @@ const NeedHelp = ({ setPopup_Open }) => {
 
         {/* step5 */}
         <div
-          className="p-2 mt-6 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-6 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step5")}
         >
           <div>
@@ -1081,7 +1081,7 @@ const NeedHelp = ({ setPopup_Open }) => {
         {/* step6 */}
 
         <div
-          className="p-2 mt-6 rounded bg-[#E0F5FF] cursor-pointer flex justify-between items-center"
+          className="p-2 mt-6 rounded bg-[#E0F5FF] hover:bg-[#d4f1ff] cursor-pointer flex justify-between items-center"
           onClick={() => toggleStep("step6")}
         >
           <div>

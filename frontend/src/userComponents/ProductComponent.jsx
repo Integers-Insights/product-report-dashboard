@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
+import InitialText from "./InitialText";
 
 const product_data = [
   {
@@ -63,6 +64,7 @@ const product_data = [
 ];
 
 const ProductComponent = () => {
+
   const [view_com, setView_com] = useState("List");
 
   return (
@@ -72,24 +74,24 @@ const ProductComponent = () => {
         <div className="flex gap-4">
           <div className="border border-gray-300 flex gap-2 p-1 rounded">
             <button
-              className={`flex items-center gap-2 py-0.5 px-1 rounded font-medium transition-all duration-300 cursor-pointer ${view_com === "List" ? "bg-white" : ""}`}
+              className={`flex items-center gap-2 py-0.5 px-2 rounded font-medium text-sm transition-all duration-300 cursor-pointer hover:bg-white ${view_com === "List" ? "bg-white" : ""}`}
               onClick={() => setView_com("List")}
             >
               <Bars3Icon className="h-5 w-5" />
               List
             </button>
             <button
-              className={`flex items-center gap-2 py-0.5 px-1 rounded font-medium transition-all duration-300 cursor-pointer ${view_com === "Grid" ? "bg-white" : ""}`}
+              className={`flex items-center gap-2 py-0.5 px-2 rounded font-medium transition-all duration-300 cursor-pointer hover:bg-white ${view_com === "Grid" ? "bg-white" : ""}`}
               onClick={() => setView_com("Grid")}
             >
               <Squares2X2Icon className="h-5 w-5" />
               Grid
             </button>
           </div>
-          <button className="border border-gray-300 bg-white px-2 py-0.5 rounded font-medium">
+          <button className="border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer px-3 py-0.5 rounded font-medium">
             ↑ Import CSV
           </button>
-          <button className="border border-gray-300 bg-white px-2 py-0.5 rounded font-medium">
+          <button className="border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer px-3 py-0.5 rounded font-medium">
             + Add Products
           </button>
         </div>
@@ -142,14 +144,21 @@ const ProductComponent = () => {
       </div>
 
       {view_com === "List" && (
-        <div className="flex flex-col gap-3 mt-4">
+        <div className="flex flex-col gap-6 mt-6">
           {product_data?.map((item, i) => {
             return (
-              <div className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover">
+              <div
+                className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover"
+                key={i}
+              >
                 <div className="flex items-center gap-5">
-                  <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
+                  {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                     <Squares2X2Icon className="h-6 w-6" />
-                  </div>
+                  </div> */}
+                  {/* <div className="h-10 w-10 rounded-lg flex justify-center items-center font-bold text-[#0284C7] bg-[#E0F5FF]">
+                    {getInitials(item.txt1)}
+                  </div> */}
+                  <InitialText text={item.txt1} />
                   <div className="flex flex-col gap-1">
                     <p className="flex gap-3">
                       <span className="text-base font-medium text-[#000000]">
@@ -184,10 +193,10 @@ const ProductComponent = () => {
                     <p className="text-sm font-regular text-[#5F6368]">Score</p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                    <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
                       ↻ Re-run −0.5Q
                     </button>
-                    <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm">
+                    <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer">
                       View Report →
                     </button>
                   </div>
@@ -199,13 +208,17 @@ const ProductComponent = () => {
       )}
 
       {view_com === "Grid" && (
-        <div className="mt-4 grid grid-cols-4 gap-4">
+        <div className="mt-6 grid grid-cols-4 gap-6">
           {product_data?.map((item, index) => {
             return (
-              <div className="border border-t-4 border-[#009A3F] p-3 rounded-lg bg-white card-hover">
-                <div className="border border-gray-500 h-10 w-10 flex justify-center items-center rounded-lg">
+              <div className="border border-t-4 border-[#009A3F] p-3 rounded-lg bg-white card-hover" key={index}>
+                {/* <div className="border border-gray-500 h-10 w-10 flex justify-center items-center rounded-lg">
                   <Squares2X2Icon className="h-6 w-6" />
-                </div>
+                </div> */}
+                {/* <div className="h-10 w-10 flex justify-center items-center rounded-lg font-bold text-[#0284C7] bg-[#E0F5FF]">
+                  {getInitials(item.txt1)}
+                </div> */}
+                <InitialText text={item.txt1} />
                 <div className="mt-4 flex justify-between">
                   <div>
                     <p className="text-base text-[#000000] font-medium">
@@ -240,10 +253,10 @@ const ProductComponent = () => {
                   {item.txt10}
                 </p>
                 <div className="grid grid-cols-2 gap-5 mt-4">
-                  <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                  <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
                     ↻ Re-run
                   </button>
-                  <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm">
+                  <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer">
                     Report →
                   </button>
                 </div>

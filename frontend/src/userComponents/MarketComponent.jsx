@@ -3,11 +3,43 @@ import {
   Bars3Icon,
   ArrowUpIcon,
   MagnifyingGlassIcon,
+  BuildingStorefrontIcon,
+  LanguageIcon,
+  BriefcaseIcon,
+  ArrowsRightLeftIcon,
+  BanknotesIcon,
+  UserGroupIcon,
+  SwatchIcon,
+  PuzzlePieceIcon,
+  BoltIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import InitialText from "./InitialText";
+
+const icons = [
+  BuildingStorefrontIcon,
+  LanguageIcon,
+  BriefcaseIcon,
+  ArrowsRightLeftIcon,
+  BanknotesIcon,
+  UserGroupIcon,
+  SwatchIcon,
+  PuzzlePieceIcon,
+];
 
 const market_data = [
+  {
+    txt1: "Market Demand",
+    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
+    txt3: "Uses 0.5Q per run",
+  },
+  {
+    txt1: "Market Demand",
+    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
+    txt3: "Uses 0.5Q per run",
+  },
   {
     txt1: "Market Demand",
     txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
@@ -48,7 +80,7 @@ const product_data = [
     txt4: "91",
   },
   {
-    txt1: "Ashwagandha · Keyword Intel",
+    txt1: "Ashwagandha· Keyword Intel",
     txt2: "🇩🇪 Germany · Yesterday · Complete",
     txt3: "Done",
     txt4: "87",
@@ -64,7 +96,7 @@ const product_data = [
 const MarketComponent = () => {
   return (
     <>
-      <h1 className="text-2xl font-medium">My Products</h1>
+      <h1 className="text-2xl font-medium">Market Intelligence</h1>
       <p className="my-4 text-sm text-[#5F6368]">
         6 AI modules. Each runs a focused analysis for a product × country pair.
         Active modules are always available — locked modules need Venture or
@@ -73,8 +105,8 @@ const MarketComponent = () => {
 
       <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF]">
         <div className="flex gap-2 items-center">
-          <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-            <Squares2X2Icon className="h-6 w-6" />
+          <div className="h-10 w-10 rounded-lg flex justify-center items-center">
+            <BoltIcon className="h-6 w-6 text-[#0284C7]" />
           </div>
           <div>
             <p className="font-medium text-[#000000]">
@@ -94,7 +126,7 @@ const MarketComponent = () => {
               <button className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#FFE9C5] text-[#D48C15]">
                 🔒 4 modules locked
               </button>
-              <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+              <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
                 Unlock All →
               </button>
             </div>
@@ -106,16 +138,22 @@ const MarketComponent = () => {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-4 gap-6">
+      {/* <div className="bg-[#E0F5FF] h-10 w-10 rounded-lg flex justify-center items-center">
+            <ChatBubbleOvalLeftEllipsisIcon className="h-7 w-7 text-[#0284C7]" />
+          </div> */}
+
+      <div className="mt-6 grid grid-cols-4 gap-6">
         {market_data?.map((item, index) => {
+          const Icon = icons[index];
+
           return (
             <div
               className="border border-[#E6E6E6] p-3 rounded-lg bg-[#FFFFFF] card-hover"
               key={index}
             >
               <div className="flex justify-between">
-                <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-                  <Squares2X2Icon className="h-6 w-6" />
+                <div className="bg-[#E0F5FF] h-10 w-10 rounded-lg flex justify-center items-center">
+                  <Icon className="h-6 w-6 text-[#0284C7]" />
                 </div>
                 <button className="py-0.5 h-6 px-2 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
                   Active
@@ -127,7 +165,7 @@ const MarketComponent = () => {
                 <p className="text-xs font-regular text-[#5F6368]">
                   {item.txt3}
                 </p>
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
                   Run →
                 </button>
               </div>
@@ -140,8 +178,8 @@ const MarketComponent = () => {
         <span className="text-sm font-medium text-[#5F6368]">
           Recent Module Runs
         </span>
-        <span className="text-sm font-medium text-[#0284C7]">
-          View all reports →
+        <span className="text-sm font-medium text-[#0284C7] hover:text-[#0475ad]">
+          <Link to={"#"}>View all reports →</Link>
         </span>
       </p>
 
@@ -159,9 +197,10 @@ const MarketComponent = () => {
             <div key={i}>
               <div className="flex justify-between items-center pb-3 mt-3 card-hover">
                 <div className="flex gap-2 items-center">
-                  <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
+                  {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                     <Squares2X2Icon className="h-6 w-6" />
-                  </div>
+                  </div> */}
+                  <InitialText text={itm.txt1} />
                   <div>
                     <p className="text-sm font-medium text-[#000000]">
                       {itm.txt1}

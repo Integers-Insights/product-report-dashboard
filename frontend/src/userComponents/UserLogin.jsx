@@ -126,7 +126,7 @@ const UserLogin = () => {
 
                         <div className="mt-10">
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
+                                <div className="h-23">
                                     <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
                                         Email address <sup>*</sup>
                                     </label>
@@ -142,8 +142,7 @@ const UserLogin = () => {
                                     }
                                 </div>
 
-
-                                <div>
+                                <div className="h-23">
                                     <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
                                         Password <sup>*</sup>
                                     </label>

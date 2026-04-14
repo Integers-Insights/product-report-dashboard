@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
+import InitialText from "./InitialText";
 
 const product_data = [
   {
@@ -67,10 +68,10 @@ const BuyerListComponent = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Buyer List</h1>
         <div className="flex gap-4">
-          <button className="border border-gray-300 bg-white px-2 py-0.5 rounded font-medium">
+          <button className="border border-gray-300 bg-white hover:bg-gray-100 px-3 py-1 rounded-lg font-medium cursor-pointer">
             ↓ Export CSV 🔒
           </button>
-          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
             ⚡ Find More Buyers
           </button>
         </div>
@@ -158,16 +159,16 @@ const BuyerListComponent = () => {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-3 mt-4">
+      <div className="flex flex-col gap-6 mt-6">
         {product_data?.map((item, i) => {
           return (
-            <div className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover">
+            <div className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover" key={i}>
               <div className="flex items-center gap-5">
                 <div className="border border-[#ABECAE] bg-[#F3FFF3] font-medium text-[#2E7D32] h-10.5 w-10.5 rounded-full flex justify-center items-center">
                   {item.txt1}
                 </div>
                 <div className="h-10 w-10 rounded-lg font-medium flex justify-center items-center bg-[#E0F5FF] uppercase">
-                  {item.txt2}
+                  <InitialText text={item.txt3} />
                 </div>
                 <div className="flex flex-col gap-1">
                   <p className="flex gap-3">
@@ -193,10 +194,10 @@ const BuyerListComponent = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
                   View Profile
                 </button>
-                <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm">
+                <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
                   Contact 🔒
                 </button>
               </div>
@@ -204,12 +205,12 @@ const BuyerListComponent = () => {
           );
         })}
       </div>
-      <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF] mt-4">
+      <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF] mt-6">
         <p className="text-sm font-regular text-[#5F6368]">
           Showing 5 of 12 buyers · <span className="font-medium">7 more</span>{" "}
           available with Venture plan
         </p>
-        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
           ↑ Upgrade to Venture — $129/mo
         </button>
       </div>

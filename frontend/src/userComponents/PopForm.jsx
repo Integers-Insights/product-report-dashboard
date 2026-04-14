@@ -9,7 +9,7 @@ import {
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { IoChevronDown } from "react-icons/io5";
 import AccordionCheckBox from "./AccordianCheckBox";
-import { countries } from "../components/Data";
+import { countries } from "./Data";
 import { base_url1 } from "../URL";
 import {
   companyType,
@@ -29,6 +29,49 @@ function classNames(...classes) {
 
 export default function PopForm({ setPopupOpen }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showInput, setShowInput] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
+  const [otherValue, setOtherValue] = useState("");
+  const [loading, setLoading] = useState(false); // loading
+  const [error, setError] = useState(false);
+  const [popup_Open, setPopup_Open] = useState(false);
+  const [showInput1, setShowInput1] = useState(false);
+  const [otherValue1, setOtherValue1] = useState("");
+
+  // country
+  const dropdownRef = useRef(null);
+  const [search, setSearch] = useState("");
+
+  const [countryOpen, setCountryopen] = useState(false);
+
+  // step1 state
+  const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [industryData, setIndustryData] = useState("");
+  const companyTypeValue = showInput ? otherValue : selectedType;
+  const [selectedIndustry, setSelectedIndustry] = useState("");
+  const [webInput, setWebInput] = useState("");
+
+  // step2 state
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [salesIntent, setSalesIntent] = useState("");
+  const [buyerType, setBuyerType] = useState("");
+  const [pricePositioning, setPricePositioning] = useState([]);
+
+  // step 3 state
+  const [selectedGoals, setSelectedGoals] = useState([]);
+
+  // accordian state
+  const [certifications, setCertifications] = useState({
+    quality: [],
+    food: [],
+    pharma: [],
+    ethics: [],
+    tech: [],
+  });
+
+  const [platform, setPlatform] = useState("");
 
   const steps = [
     {
@@ -72,22 +115,22 @@ export default function PopForm({ setPopupOpen }) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const [showInput, setShowInput] = useState(false);
-  const [selectedType, setSelectedType] = useState(null);
-  const [otherValue, setOtherValue] = useState("");
-  const [loading, setLoading] = useState(false); // loading
-  const [error, setError] = useState(false);
+  // const [showInput, setShowInput] = useState(false);
+  // const [selectedType, setSelectedType] = useState(null);
+  // const [otherValue, setOtherValue] = useState("");
+  // const [loading, setLoading] = useState(false); // loading
+  // const [error, setError] = useState(false);
 
-  const [popup_Open,setPopup_Open] = useState(false);
+  // const [popup_Open,setPopup_Open] = useState(false);
 
-  const [showInput1, setShowInput1] = useState(false);
-  const [otherValue1, setOtherValue1] = useState("");
+  // const [showInput1, setShowInput1] = useState(false);
+  // const [otherValue1, setOtherValue1] = useState("");
 
-  // country
-  const dropdownRef = useRef(null);
-  const [search, setSearch] = useState("");
+  // // country
+  // const dropdownRef = useRef(null);
+  // const [search, setSearch] = useState("");
 
-  const [countryOpen, setCountryopen] = useState(false);
+  // const [countryOpen, setCountryopen] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -109,20 +152,20 @@ export default function PopForm({ setPopupOpen }) {
     setShowInput(false);
   };
 
-  // step1 state
-  const [fullName, setFullName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [industryData, setIndustryData] = useState("");
-  const companyTypeValue = showInput ? otherValue : selectedType;
-  const [selectedIndustry, setSelectedIndustry] = useState("");
-  const [webInput, setWebInput] = useState("");
+  // // step1 state
+  // const [fullName, setFullName] = useState("");
+  // const [companyName, setCompanyName] = useState("");
+  // const [selectedCountry, setSelectedCountry] = useState("");
+  // const [industryData, setIndustryData] = useState("");
+  // const companyTypeValue = showInput ? otherValue : selectedType;
+  // const [selectedIndustry, setSelectedIndustry] = useState("");
+  // const [webInput, setWebInput] = useState("");
 
-  // step2 state
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [salesIntent, setSalesIntent] = useState("");
-  const [buyerType, setBuyerType] = useState("");
-  const [pricePositioning, setPricePositioning] = useState([]);
+  // // step2 state
+  // const [selectedProducts, setSelectedProducts] = useState([]);
+  // const [salesIntent, setSalesIntent] = useState("");
+  // const [buyerType, setBuyerType] = useState("");
+  // const [pricePositioning, setPricePositioning] = useState([]);
 
   const handleProductToggle = (value) => {
     setSelectedProducts((prev) =>
@@ -143,8 +186,8 @@ export default function PopForm({ setPopupOpen }) {
     });
   };
 
-  // step 3 state
-  const [selectedGoals, setSelectedGoals] = useState([]);
+  // // step 3 state
+  // const [selectedGoals, setSelectedGoals] = useState([]);
   const handleGoalClick = (value) => {
     setSelectedGoals((prev) => {
       if (prev.includes(value)) {
@@ -155,14 +198,14 @@ export default function PopForm({ setPopupOpen }) {
     });
   };
 
-  // for accordian state
-  const [certifications, setCertifications] = useState({
-    quality: [],
-    food: [],
-    pharma: [],
-    ethics: [],
-    tech: [],
-  });
+  // // for accordian state
+  // const [certifications, setCertifications] = useState({
+  //   quality: [],
+  //   food: [],
+  //   pharma: [],
+  //   ethics: [],
+  //   tech: [],
+  // });
 
   const handleCertChange = (category, value) => {
     setCertifications((prev) => ({
@@ -173,7 +216,7 @@ export default function PopForm({ setPopupOpen }) {
     }));
   };
 
-  const [platform, setPlatform] = useState("");
+  // const [platform, setPlatform] = useState("");
 
   //  step1 submit
   const handleStep1Submit = async () => {
@@ -420,10 +463,11 @@ export default function PopForm({ setPopupOpen }) {
               experience. Takes 2 minutes.
             </p>
           </div>
-          <div className="border-2 border-[#0284C7] px-3 rounded-2xl">
-            <button className="h-full w-full font-medium text-15" onClick={()=>setPopup_Open(true)}>
-              Need Help?
-            </button>
+          <div
+            className="border-2 border-[#0284C7] px-3 rounded-2xl hover:bg-[#e8f2f7] font-medium text-15 cursor-pointer content-center"
+            onClick={() => setPopup_Open(true)}
+          >
+            Need Help?
           </div>
         </div>
 
@@ -707,11 +751,11 @@ export default function PopForm({ setPopupOpen }) {
                         type="button"
                         onClick={() => handleSelect(btn)}
                         disabled={showInput}
-                        className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs
+                        className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs cursor-pointer
                                             ${
                                               selectedType === btn.label
-                                                ? "bg-blue-100 border-blue-500 text-blue-600"
-                                                : "bg-[#FAFAFA] border-[#C8CED4] text-[#5F6368] hover:bg-[#F5F5F5]"
+                                                ? "bg-[#0284C7] text-white border-[#0284C7]"
+                                                : "bg-[#FAFAFA] text-[#5F6368] border-[#C8CED4] hover:bg-[#F5F5F5]"
                                             }`}
                       >
                         {btn.label}
@@ -719,16 +763,15 @@ export default function PopForm({ setPopupOpen }) {
                       </button>
                     );
                   })}
-
                   <button
                     onClick={() => {
                       setShowInput(!showInput);
                       setSelectedType(null);
                     }}
-                    className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs ${
+                    className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs cursor-pointer ${
                       showInput
-                        ? "bg-blue-100 border-blue-500 text-blue-600"
-                        : "bg-[#FAFAFA] border-[#C8CED4] text-[#5F6368] hover:bg-[#F5F5F5]"
+                        ? "bg-[#0284C7] text-white border-[#0284C7]"
+                        : "bg-[#FAFAFA] text-[#5F6368] border-[#C8CED4] hover:bg-[#F5F5F5]"
                     }
   `}
                   >
@@ -817,7 +860,7 @@ export default function PopForm({ setPopupOpen }) {
                         key={btn.id}
                         type="button"
                         onClick={() => handleProductToggle(btn.label)}
-                        className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-semibold shadow-xs cursor-pointer ${isSelected ? "bg-blue-100 border-blue-500 text-blue-600" : "bg-[#FAFAFA] border-[#C8CED4] text-[#5F6368] hover:bg-[#F5F5F5]"}`}
+                        className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-semibold shadow-xs cursor-pointer ${isSelected ? "bg-[#0284C7] text-white border-[#0284C7]" : "bg-[#FAFAFA] text-[#5F6368] border-[#C8CED4] hover:bg-[#F5F5F5]"}`}
                       >
                         {btn.label}
                         <btn.icon className="-mr-0.5 size-5" />
@@ -838,14 +881,14 @@ export default function PopForm({ setPopupOpen }) {
                         setOtherValue1("");
                       }
                     }}
-                    className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs ${showInput1 ? "bg-blue-100 border-blue-500 text-blue-600" : "bg-[#FAFAFA] border-[#C8CED4] text-[#5F6368] hover:bg-[#F5F5F5]"}`}
+                    className={`inline-flex items-center gap-x-2 rounded-md border px-3.5 py-2.5 text-sm font-medium shadow-xs cursor-pointer ${showInput1 ? "bg-[#0284C7] text-white border-[#0284C7]" : "bg-[#FAFAFA] text-[#5F6368] border-[#C8CED4] hover:bg-[#F5F5F5]"}`}
                   >
                     Others <PlusCircleIcon className="-mr-0.5 size-5" />
                   </button>
                 </div>
 
                 {showInput1 && (
-                  <div className="border border-[#C8CED4] h-10 w-50 rounded mt-2">
+                  <div className="border border-[#C8CED4] h-10 w-50 rounded mt-3">
                     <input
                       type="text"
                       placeholder="Enter Product Type"
@@ -1212,9 +1255,12 @@ export default function PopForm({ setPopupOpen }) {
 
       {popup_Open && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-30 rounded-lg" onClick={()=>setPopup_Open(false)}></div>
+          <div
+            className="fixed inset-0 bg-black/40 z-30 rounded-lg"
+            onClick={() => setPopup_Open(false)}
+          ></div>
           <div className="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6">
-            <NeedHelp setPopup_Open={setPopup_Open}/>
+            <NeedHelp setPopup_Open={setPopup_Open} />
           </div>
         </>
       )}

@@ -4,7 +4,9 @@ import {
   Bars3Icon,
   ArrowUpIcon,
   MagnifyingGlassIcon,
+  BoltIcon
 } from "@heroicons/react/24/outline";
+import InitialText from "./InitialText";
 
 const intelligenceReports_data = [
   {
@@ -60,16 +62,16 @@ const IntelligenceReportsComponent = () => {
               className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
             />
           </div>
-          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
             ⚡ New Run
           </button>
         </div>
       </div>
-      <p className="my-4 text-sm text-[#5F6368]">
+      <p className="mt-4 text-sm text-[#5F6368]">
         2 completed reports · Viewing reports is always free
       </p>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-6 mt-6">
         {intelligenceReports_data?.map((item, index) => {
           return (
             <div
@@ -77,9 +79,10 @@ const IntelligenceReportsComponent = () => {
               key={index}
             >
               <div className="flex gap-3 items-center">
-                <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
+                {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                   <Squares2X2Icon className="h-6 w-6" />
-                </div>
+                </div> */}
+                <InitialText text={item.txt1} />
                 <div>
                   <p className="text-base font-medium text-[#000000]">
                     {item.txt1}
@@ -116,13 +119,13 @@ const IntelligenceReportsComponent = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
                   Open Report
                 </button>
-                <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm">
+                <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
                   ↓ PDF 🔒
                 </button>
-                <button className="hover:bg-gray-100 py-1 px-3 rounded-lg font-medium text-sm">
+                <button className="hover:bg-gray-100 py-1 px-3 rounded-lg cursor-pointer font-medium text-sm">
                   ↗ Share
                 </button>
               </div>
@@ -133,15 +136,15 @@ const IntelligenceReportsComponent = () => {
 
       <div className="border border-dashed border-gray-300 bg-white rounded-lg mt-6 flex justify-center items-center py-8">
         <div className="flex flex-col gap-2 items-center">
-          <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-            <Squares2X2Icon className="h-6 w-6" />
+          <div className="bg-[#E0F5FF] h-10 w-10 rounded-lg flex justify-center items-center">
+            <BoltIcon className="h-6 w-6 text-[#0284C7]" />
           </div>
           <p className="text-base text-[#000000] font-medium">Run more intelligence analyses</p>
           <p className="text-sm text-[#5F6368] font-regular">
             Each run generates a full report saved here. You have 73 queries
             remaining.
           </p>
-          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white cursor-pointer">
+          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
             Start New Run →
           </button>
         </div>
