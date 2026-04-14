@@ -1,9 +1,8 @@
-import BuyerListComponent from "../userComponents/BuyerListComponent";
-import Header from "../userComponents/Header";
-import HelpComponent from "../userComponents/HelpComponent";
-import SideBar from "../userComponents/SideBar";
+import Header from "../Components/Header";
+import MarketComponent from "../Components/MarketComponent";
+import SideBar from "../Components/SideBar";
 
-const Help = () => {
+const MarketIntelligence = () => {
   return (
     <>
       <div className="flex bg-[#EFF4F8]">
@@ -22,7 +21,7 @@ const Help = () => {
           {/* Scrollable content */}
           <div className="flex-1 p-6">
             {/* Example long content */}
-            <HelpComponent/>
+            <MarketComponent />
           </div>
         </div>
       </div>
@@ -30,4 +29,4 @@ const Help = () => {
   );
 };
 
-export default Help;
+export default MarketIntelligence;

@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
-import ScrollToTop from "./userComponents/ScrollToTop";
-import UserSignup from "./userComponents/UserSignup";
-import UserLogin from "./userComponents/UserLogin";
-import Profile from "./userComponents/Profile";
+import ScrollToTop from "./Components/ScrollToTop";
+
+
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -12,20 +11,22 @@ const Loader = () => (
   </div>
 );
 
-const OverViewPage = lazy(() => import("./userPages/OverviewPage"));
-const DiscoverProducts = lazy(() => import("./userPages/DiscoverProducts"));
-const FullReport = lazy(() => import("./userPages/FullReport"));
-const VerifyEmail = lazy(() => import("./userComponents/VerifyEmail"));
+const Signup = lazy(() => import("./Components/Signup"));
+const Login = lazy(() => import("./Components/Login"));
+const OverViewPage = lazy(() => import("./pages/OverviewPage"));
+const DiscoverProducts = lazy(() => import("./pages/DiscoverProducts"));
+const FullReport = lazy(() => import("./pages/FullReport"));
+const VerifyEmail = lazy(() => import("./Components/VerifyEmail"));
 const FailedVerification = lazy(
-  () => import("./userComponents/FailedVerification"),
+  () => import("./Components/FailedVerification"),
 );
-const MyProduct = lazy(() => import("./userPages/MyProject"));
-const MarketIntelligence = lazy(() => import("./userPages/MarketIntelligence"));
-const BuyerList = lazy(() => import("./userPages/BuyerList"));
+const MyProduct = lazy(() => import("./pages/MyProject"));
+const MarketIntelligence = lazy(() => import("./pages/MarketIntelligence"));
+const BuyerList = lazy(() => import("./pages/BuyerList"));
 const IntelligenceReports = lazy(
-  () => import("./userPages/IntelligenceReports"),
+  () => import("./pages/IntelligenceReports"),
 );
-const Help = lazy(() => import("./userPages/Help"));
+const Help = lazy(() => import("./pages/Help"));
 
 const App = () => {
 
@@ -56,8 +57,8 @@ const App = () => {
           <Routes>
             {/* user */}
             <Route path="/" element={<OverViewPage />} />
-            <Route path="/signup" element={<UserSignup />} />
-            <Route path="/user-login" element={<UserLogin />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
             {/* <Route path="/sideBar" element={<SideBar />} /> */}
             {/* <Route path="/form" element={<PopForm />} /> */}
             <Route path="/discover" element={<DiscoverProducts />} />
@@ -76,7 +77,6 @@ const App = () => {
               element={<IntelligenceReports />}
             />
             <Route path="/help" element={<Help />} />
-            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

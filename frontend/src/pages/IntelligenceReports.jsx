@@ -1,6 +1,6 @@
-import Header from "../userComponents/Header";
-import IntelligenceReportsComponent from "../userComponents/IntelligenceReportsComponent";
-import SideBar from "../userComponents/SideBar";
+import Header from "../Components/Header";
+import IntelligenceReportsComponent from "../Components/IntelligenceReportsComponent";
+import SideBar from "../Components/SideBar";
 
 const IntelligenceReports = () => {
   return (

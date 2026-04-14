@@ -95,7 +95,7 @@ const SideBar = () => {
     try {
       localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
       localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
-      navigate("/user-login");
+      navigate("/login");
     } catch (err) {
       console.log("Something went wrong");
     }

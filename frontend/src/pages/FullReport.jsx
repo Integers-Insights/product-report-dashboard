@@ -1,8 +1,8 @@
-import Header from "../userComponents/Header";
-import ProductComponent from "../userComponents/ProductComponent";
-import SideBar from "../userComponents/SideBar";
+import Header from "../Components/Header";
+import ProductReport from "../Components/ProductReport";
+import SideBar from "../Components/SideBar";
 
-const MyProduct = () => {
+const FullReport = () => {
 
     return (
         <>
@@ -21,8 +21,7 @@ const MyProduct = () => {
 
                     {/* Scrollable content */}
                     <div className="flex-1 p-6">
-                        {/* Example long content */}
-                        <ProductComponent/>
+                        <ProductReport />
                     </div>
                 </div>
             </div>
@@ -30,4 +29,4 @@ const MyProduct = () => {
     );
 };
 
-export default MyProduct;
+export default FullReport;

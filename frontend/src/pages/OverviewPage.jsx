@@ -60,12 +60,12 @@
 // export default OverViewPage;
 
 import { useEffect, useState } from "react";
-import AiGenerated from "../userComponents/AiGenerated";
-import Header from "../userComponents/Header";
-import KpiCards from "../userComponents/KpiCards";
-import SideBar from "../userComponents/SideBar";
-import Opportunity from "../userComponents/Opportunity";
-import PopForm from "../userComponents/PopForm";
+import AiGenerated from "../Components/AiGenerated";
+import Header from "../Components/Header";
+import KpiCards from "../Components/KpiCards";
+import SideBar from "../Components/SideBar";
+import Opportunity from "../Components/Opportunity";
+import PopForm from "../Components/PopForm";
 import { base_url1 } from "../URL";
 
 const OverViewPage = () => {

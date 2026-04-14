@@ -1,8 +1,8 @@
-import Header from "../userComponents/Header";
-import MarketComponent from "../userComponents/MarketComponent";
-import SideBar from "../userComponents/SideBar";
+import BuyerListComponent from "../Components/BuyerListComponent";
+import Header from "../Components/Header";
+import SideBar from "../Components/SideBar";
 
-const MarketIntelligence = () => {
+const BuyerList = () => {
   return (
     <>
       <div className="flex bg-[#EFF4F8]">
@@ -21,7 +21,7 @@ const MarketIntelligence = () => {
           {/* Scrollable content */}
           <div className="flex-1 p-6">
             {/* Example long content */}
-            <MarketComponent />
+            <BuyerListComponent />
           </div>
         </div>
       </div>
@@ -29,4 +29,4 @@ const MarketIntelligence = () => {
   );
 };
 
-export default MarketIntelligence;
+export default BuyerList;

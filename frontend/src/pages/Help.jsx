@@ -1,8 +1,9 @@
-import BuyerListComponent from "../userComponents/BuyerListComponent";
-import Header from "../userComponents/Header";
-import SideBar from "../userComponents/SideBar";
+import BuyerListComponent from "../Components/BuyerListComponent";
+import Header from "../Components/Header";
+import HelpComponent from "../Components/HelpComponent";
+import SideBar from "../Components/SideBar";
 
-const BuyerList = () => {
+const Help = () => {
   return (
     <>
       <div className="flex bg-[#EFF4F8]">
@@ -21,7 +22,7 @@ const BuyerList = () => {
           {/* Scrollable content */}
           <div className="flex-1 p-6">
             {/* Example long content */}
-            <BuyerListComponent />
+            <HelpComponent/>
           </div>
         </div>
       </div>
@@ -29,4 +30,4 @@ const BuyerList = () => {
   );
 };
 
-export default BuyerList;
+export default Help;
