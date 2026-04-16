@@ -115,7 +115,7 @@ based on these factors:
   - Target market ({target_country}): EU/UK buyers respond slower, MENA/SEA buyers faster
   - Product complexity: technical/certified products need more evaluation time
   Email 1 is always Day 0. Choose Email 2 and Email 3 days to fit this buyer's real buying cycle.
-  Good examples: [0, 5, 12] for enterprise EU, [0, 3, 8] for distributor MENA, [0, 4, 10] for standard
+  Good examples: day [0, 5, 12] for enterprise EU, day [0, 3, 8] for distributor MENA,  day [0, 4, 10] for standard
 
 Tone: professional but human. No buzzwords. Avoid "I hope this email finds you well."
 Personalisation placeholders: [First Name], [Company Name]
@@ -136,7 +136,7 @@ Return ONLY valid JSON, no explanation:
       "subject": "...",
       "body": "...",
       "tiles": ["...", "...", "..."]
-    }},
+    }},  
     {{
       "send_day": "<GPT chooses — int>",
       "type_label": "SOCIAL PROOF + SPEC SHEET",
