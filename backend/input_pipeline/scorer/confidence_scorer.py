@@ -81,7 +81,7 @@ QUALITY_PENALTIES: List[dict] = [
     },
     {
         "name":    "no_certifications_nutraceutical",
-        "penalty": 8,
+        "penalty": 2,
         "check":   lambda p: bool(
             p.category and
             "nutraceutical" in p.category.lower() and
@@ -205,7 +205,7 @@ def get_score_summary(product: ProductData) -> dict:
     {
         "product_name": "Organic Turmeric Powder",
         "score": 82,
-        "tier": "medium",
+        "tier": "high",
         "missing_fields": ["hs_code", "ingredients"],
         "total_penalty": 18,
         "quality_issues": []
@@ -252,9 +252,9 @@ def _score_to_tier(score: int) -> ConfidenceTier:
     Maps a numeric score to a ConfidenceTier enum value.
 
     Thresholds from config.py:
-        80–100 → HIGH   (green dot)
-        50–79  → MEDIUM (orange dot, needs review)
-        0–49   → LOW    (red dot, enter manually or exclude)
+        60–100 → HIGH   (green dot)
+        40–59  → MEDIUM (orange dot, needs review)
+        0–39   → LOW    (red dot, enter manually or exclude)
     """
     if score >= CONFIDENCE_THRESHOLDS["high"]:
         return ConfidenceTier.HIGH

@@ -14,10 +14,10 @@ It catches things rule-based scoring cannot:
     - HS code is present but is clearly wrong format
 
 When to run:
-    - Only runs on products where confidence_score is between 40–85
+    - Only runs on products where confidence_score is between 30-60
     - Below 40: already flagged as low, no need to spend LLM tokens
     - Above 85: already high confidence, rule-based result is trusted
-    - The 40–85 band is where semantic checks add the most value
+    - The 30-60 band is where semantic checks add the most value
 
 Usage:
     from input_pipeline.scorer.semantic_scorer import semantic_score_product
@@ -41,8 +41,8 @@ from modules.base_module import call_openai
 # ─────────────────────────────────────────────
 
 # Only run semantic scoring in this score band
-SEMANTIC_SCORE_MIN: int = 40
-SEMANTIC_SCORE_MAX: int = 85
+SEMANTIC_SCORE_MIN: int = 30
+SEMANTIC_SCORE_MAX: int = 60
 
 # Max adjustment semantic scorer can make (up or down)
 MAX_UPWARD_ADJUSTMENT:   int = 15
@@ -58,7 +58,7 @@ async def semantic_score_product(product: ProductData) -> ProductData:
     Runs semantic quality check on a product and adjusts its
     confidence score based on LLM assessment.
 
-    Only runs if confidence_score is in the 40–85 band.
+    Only runs if confidence_score is in the 30-60 band.
     Outside this band, returns product unchanged.
 
     Args:
@@ -105,7 +105,7 @@ async def semantic_score_products(
 ) -> List[ProductData]:
     """
     Batch semantic scoring with controlled concurrency.
-    Products outside the 40–85 band are returned immediately
+    Products outside the 30-60 band are returned immediately
     without making an LLM call.
 
     Args:
@@ -236,11 +236,11 @@ def _apply_semantic_result(product: ProductData, raw: str) -> ProductData:
 def _should_run_semantic(product: ProductData) -> bool:
     """
     Returns True if this product is in the band where semantic
-    scoring adds value (40–85).
+    scoring adds value (30-60).
 
     Outside this band:
-        < 40: already too low, semantic check won't save it
-        > 85: already high confidence, trust rule-based result
+        < 30: already too low, semantic check won't save it
+        > 60: already high confidence, trust rule-based result
     """
     return SEMANTIC_SCORE_MIN <= product.confidence_score <= SEMANTIC_SCORE_MAX
 

@@ -86,6 +86,36 @@ def clean_page(raw_page: RawPage) -> CrawledPage:
         If cleaning fails, clean_text will be empty and error will be set.
     """
 
+    # ── Stage 0: use inner_text if browser already extracted it ──
+    # For React/SPA sites, inner_text from the live DOM is far better
+    # than anything trafilatura or BeautifulSoup can extract from HTML
+    if raw_page.inner_text and len(raw_page.inner_text.split()) > CLEANER["min_word_count"]:
+        clean_text = _normalise_whitespace(raw_page.inner_text)
+                # Trim noise sections that appear after the main product content
+        STOP_PHRASES = [
+            "Add To Your Strip Lineup",
+            "You may also like",
+            "Related products",
+            "Customers also bought",
+            "Recently viewed",
+        ]
+        for phrase in STOP_PHRASES:
+            if phrase.lower() in clean_text.lower():
+                idx = clean_text.lower().index(phrase.lower())
+                clean_text = clean_text[:idx]
+                break
+
+        clean_text = clean_text[:CLEANER["max_chars_for_extraction"]]
+        return CrawledPage(
+            url=raw_page.url,
+            path=raw_page.path,
+            title=raw_page.title,
+            depth=raw_page.depth,
+            clean_text=clean_text,
+            snippet=_build_snippet(clean_text, CLEANER["snippet_length"]),
+            word_count=len(clean_text.split()),
+        )
+    
     # ── Guard: failed fetch ─────────────────────────
     if raw_page.error or not raw_page.html:
         return CrawledPage(
@@ -185,18 +215,15 @@ def _extract_with_trafilatura(html: str) -> str:
 
 
 def _extract_with_beautifulsoup(html: str) -> str:
-    """
-    Fallback extraction using BeautifulSoup.
-    Used when trafilatura returns nothing or too little.
-
-    Strips known noise tags and class-based noise elements,
-    then returns remaining visible text.
-    """
     try:
         soup = BeautifulSoup(html, "html.parser")
 
         # Remove known noise tags
         for tag in soup(NOISE_TAGS):
+            tag.decompose()
+
+        # Remove footer, address blocks, cookie banners by tag
+        for tag in soup(["footer", "address"]):
             tag.decompose()
 
         # Remove elements with noise-related class names
@@ -205,7 +232,22 @@ def _extract_with_beautifulsoup(html: str) -> str:
             if any(noise in classes for noise in NOISE_CLASS_KEYWORDS):
                 element.decompose()
 
-        # Get remaining text
+        # ── NEW: for React/MUI sites, target main content area first ──
+        # Try to find the main content container specifically
+        main_content = (
+            soup.find("main") or
+            soup.find(attrs={"role": "main"}) or
+            soup.find("article") or
+            soup.find(id=lambda x: x and "product" in x.lower()) or
+            soup.find(class_=lambda x: x and "product" in " ".join(x).lower() if isinstance(x, list) else "product" in x.lower())
+        )
+
+        if main_content:
+            text = main_content.get_text(separator=" ", strip=True)
+            if len(text.split()) > 30:   # only use if it has enough content
+                return text
+
+        # Fall back to full body text
         text = soup.get_text(separator=" ", strip=True)
         return text or ""
 

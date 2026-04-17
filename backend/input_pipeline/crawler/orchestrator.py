@@ -157,14 +157,13 @@ async def crawl_website(
             if not to_fetch:
                 break
 
-            _concurrency = CRAWLER.get("crawl_concurrency", 5)
             print(f"\n  📦 Fetching batch: {len(to_fetch)} pages "
-                  f"(concurrency={_concurrency})")
+                  f"(concurrency={CRAWLER['crawl_concurrency']})")
 
             # ── 2. Parallel fetch ─────────────────────────────────────────────
             raw_pages = await session.fetch_many(
                 [(url, depth) for url, depth, _ in to_fetch],
-                concurrency=_concurrency,
+                concurrency=CRAWLER['crawl_concurrency'],
             )
 
             # ── 3. Process results, collect next level ────────────────────────

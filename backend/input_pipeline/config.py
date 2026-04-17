@@ -77,7 +77,8 @@ SKIP_PATTERNS: List[str] = [
     # Specific noisy sections
     "blog", "news", "press", "videos", "videos-single",
     "gallery", "testimonial", "career", "jobs",
-    "search", "tag", "author",
+    "search", "tag", "author", "brochures", "formulations", "ingredients-books","ingredient-books"
+    "catelogue-brochures", "partner-program", "partners"
 ]
 
 
@@ -87,7 +88,7 @@ SKIP_PATTERNS: List[str] = [
 
 # Strong indicators of a product / ingredient / offering page
 PRODUCT_URL_SIGNALS: List[str] = [
-    "product", "products", "product-single", "product_detail",
+    "product", "product-single", "product_detail",
     "item", "items", "sku",
     "shop", "store",
     "catalog", "catalogue",
@@ -105,7 +106,7 @@ PRODUCT_URL_SIGNALS: List[str] = [
 
 # Indicators of a listing / category page (NOT a single product page)
 CATEGORY_URL_SIGNALS: List[str] = [
-    "category", "categories",
+    "category", "categories", "product-category"
     "all-products", "all_products",
     "collections",
     "filter", "brand", "tag",
@@ -178,7 +179,7 @@ CLEANER = {
 
     # Maximum characters of clean text to send to LLM
     # (keeps token costs low — product pages rarely need more than this)
-    "max_chars_for_extraction": 6000,
+    "max_chars_for_extraction": 7000,
 
     # Snippet length for display in UI (Step 2 product list)
     "snippet_length":           300,
