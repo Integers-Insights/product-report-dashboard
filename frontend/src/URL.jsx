@@ -1,1 +1,1 @@
-export const base_url1 = "https://microwave-findlaw-penny-ohio.trycloudflare.com";
+export const base_url1 = "https://restaurants-isaac-affiliate-monitors.trycloudflare.com";

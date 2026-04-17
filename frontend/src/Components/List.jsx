@@ -53,7 +53,7 @@ const List = ({ people, selectedPeople, setSelectedPeople }) => {
                                         <div>
                                             <button
                                                 type="button"
-                                                className={`rounded-xl px-2 py-1 text-xs font-light shadow-xs  focus-visible:outline-2 focus-visible:outline-offset-2 ${Number(person.btn1) >= 71 ? "bg-[#CCFFCF] text-[#2E7D32]" : person.btn1 >= 31 ? "bg-[#FFE9C5] text-[#D48C15]" : "bg-[#FFC4C4] text-[#C62828]"}`}
+                                                className={`rounded-xl px-2 py-1 text-xs font-light shadow-xs  focus-visible:outline-2 focus-visible:outline-offset-2 ${Number(person.btn1) >= 71 ? "bg-[#CCFFCF] text-[#2E7D32]" : Number(person.btn1) >= 31 ? "bg-[#FFE9C5] text-[#D48C15]" : "bg-[#FFC4C4] text-[#C62828]"}`}
                                             >
                                                 {person.btn1}% Confidence
                                             </button>

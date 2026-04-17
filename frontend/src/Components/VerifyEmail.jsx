@@ -18,7 +18,7 @@ const VerifyEmail = () => {
                     Your email has been successfully verified. You can now login to your account.
                 </p>
                 <button
-                    onClick={() => navigate("/user-login")}
+                    onClick={() => navigate("/login")}
                     className="w-full bg-[#0284C7] text-white py-2 rounded-lg hover:bg-[#0273AE] transition duration-300 font-medium cursor-pointer"
                 >
                     Go to Login

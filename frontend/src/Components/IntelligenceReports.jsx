@@ -4,9 +4,12 @@ import {
   Bars3Icon,
   ArrowUpIcon,
   MagnifyingGlassIcon,
-  BoltIcon
+  BoltIcon,
 } from "@heroicons/react/24/outline";
 import InitialText from "./InitialText";
+import { useEffect, useState } from "react";
+import { base_url1 } from "../URL";
+import Flag from "./Flag";
 
 const intelligenceReports_data = [
   {
@@ -45,7 +48,8 @@ const intelligenceReports_data = [
   },
 ];
 
-const IntelligenceReportsComponent = () => {
+const IntelligenceReportsComponent = ({allReportData}) => {
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -72,54 +76,76 @@ const IntelligenceReportsComponent = () => {
       </p>
 
       <div className="flex flex-col gap-6 mt-6">
-        {intelligenceReports_data?.map((item, index) => {
+        {allReportData?.map((item, index) => {
           return (
             <div
-              className="border border-l-4 border-[#2E7D32] bg-white p-3 rounded-lg flex justify-between card-hover"
+              className="border border-l-4 border-[#2E7D32] bg-white p-3 rounded-lg flex justify-between gap-5 card-hover"
               key={index}
             >
               <div className="flex gap-3 items-center">
                 {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                   <Squares2X2Icon className="h-6 w-6" />
                 </div> */}
-                <InitialText text={item.txt1} />
+                <InitialText text={item.title} />
                 <div>
                   <p className="text-base font-medium text-[#000000]">
-                    {item.txt1}
+                    {item.title}
                   </p>
                   <p className="flex items-center gap-2 text-xs font-regular text-[#5F6368] mt-2">
                     <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                      {item.txt2}
+                      {item.status}
                     </span>
-                    <span>{item.txt3}</span>
-                    <span>{item.txt4}</span>
-                    <span>{item.txt5}</span>
+                    <span><Flag country={item.target_country} /></span>
+                    <span>{item.report_type}</span>
+                    {/* <span>{item.last_analyzed_at}</span> */}
+
+                    <span>
+                      {item.last_analyzed_at
+                        ? new Date(item.last_analyzed_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )
+                        : ""}
+                    </span>
                   </p>
                   <p className="flex gap-2 text-xs font-regular text-[#5F6368] mt-2">
-                    <span>Score {item.txt6} ·</span>
-                    <span>{item.txt7} ·</span>
-                    <span>{item.txt8} ·</span>
-                    <span>{item.txt9} ·</span>
-                    <span>{item.txt10}</span>
+                    <span className="whitespace-nowrap">
+                      Score {item.score}/100
+                    </span>
+                    <span className="whitespace-nowrap">
+                      {item.keyword_count} keywords
+                    </span>
+                    <span className="whitespace-nowrap">
+                      {item.buyers_count} buyers
+                    </span>
+                    <span className="whitespace-nowrap">
+                      {item.segment_count} segments
+                    </span>
+                    <span>{item.summary_note}</span>
                   </p>
                   <p className="flex gap-2 mt-2">
                     <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                      {item.txt11}
+                      Score {item.score}/100
                     </span>
                     <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#E0F5FF] text-[#0284C7]">
-                      {item.txt12}
+                      {item.keyword_count} keywords
                     </span>
-                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#000000]">
-                      {item.txt13}
+                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
+                      {item.buyers_count} buyers
                     </span>
-                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#000000]">
-                      {item.txt14}
+                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
+                      {item.segment_count} segments
                     </span>
                   </p>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
+                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap">
                   Open Report
                 </button>
                 <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
@@ -139,7 +165,9 @@ const IntelligenceReportsComponent = () => {
           <div className="bg-[#E0F5FF] h-10 w-10 rounded-lg flex justify-center items-center">
             <BoltIcon className="h-6 w-6 text-[#0284C7]" />
           </div>
-          <p className="text-base text-[#000000] font-medium">Run more intelligence analyses</p>
+          <p className="text-base text-[#000000] font-medium">
+            Run more intelligence analyses
+          </p>
           <p className="text-sm text-[#5F6368] font-regular">
             Each run generates a full report saved here. You have 73 queries
             remaining.

@@ -87,7 +87,26 @@ function classNames(...classes) {
 const SideBar = () => {
   const [open_profile, setOpen_profile] = useState(false);
 
-  const [profil_data,setProfile_data] = useState({});
+  // user data state
+  const [full_name, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [company_name, setCompany_name] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [business_type, setBusiness_Type] = useState("");
+  const [business_type_data, setBusiness_Type_Data] = useState("");
+
+  //password
+  const [current_password, setCurrent_password] = useState("");
+  const [new_password, setNew_password] = useState("");
+  const [confirm_password, setConfirm_password] = useState("");
+  const [passError, setPassError] = useState(false);
+
+  // score data
+  const [usage_data1, setUserData1] = useState(0);
+  const [usage_data2, setUserData2] = useState(0);
+  const [usage_date, setUsage_date] = useState("");
 
   const navigate = useNavigate();
 
@@ -119,8 +138,15 @@ const SideBar = () => {
       let data = await response.json();
 
       if (data?.success) {
-        console.log("proile: ", data);
-        setProfile_data(data?.data);
+        // console.log("proile: ", data);
+        setFullName(data?.data?.full_name);
+        setEmail(data?.data?.email);
+        setPhone(data?.data?.phone);
+        setCountry(data?.data?.country);
+        setCompany_name(data?.data?.company_name);
+        setIndustry(data?.data?.industry);
+        setBusiness_Type(data?.data?.business_type);
+        setBusiness_Type_Data(data?.data?.business_type);
       }
     } catch (err) {
       console.log("Something went wrong.", err);
@@ -129,6 +155,172 @@ const SideBar = () => {
 
   useEffect(() => {
     getProfileData();
+  }, []);
+
+  const handleProfile1 = async () => {
+    // alert("api called for update profile");
+    try {
+      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+      let response = await fetch(`${base_url1}/update-profile`, {
+        method: "PUT",
+        body: JSON.stringify({ full_name, email, phone }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      let data = await response.json();
+      // console.log("updated data: ", data);
+      if (data.force_logout) {
+        alert(data.message || "Please verify your email and login again");
+        localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+        localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+        navigate("/login");
+      } else {
+        alert(data.message || "Profile updated successfully");
+      }
+    } catch (err) {
+      console.log("something went wrong.", err);
+    }
+  };
+
+  const handleProfile2 = async () => {
+    setPassError(false);
+
+    if (!current_password || !new_password || !confirm_password) {
+      setPassError(true);
+      return;
+    }
+
+    if (new_password.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
+    if (new_password !== confirm_password) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    // console.log("all pass: ", current_password, new_password, confirm_password);
+
+    let payload = { current_password, new_password, confirm_password };
+
+    console.log("paylod: ", payload);
+
+    try {
+      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+      let response = await fetch(`${base_url1}/change-password`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      let data = await response.json();
+      console.log("data: ", data);
+      if (data.force_logout) {
+        alert(
+          data.message || "Password updated successfully. Please login again.",
+        );
+        localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+        localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+        navigate("/login");
+      }
+
+      // console.log("updated data: ", data);
+      // if (data.force_logout) {
+      //   alert(data.message || "Email changed. Please login again.");
+      //   localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+      //   localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+      //   navigate("/login");
+      // } else {
+      //   alert(data.message || "Profile updated successfully");
+      // }
+    } catch (err) {
+      alert("something went wrong.");
+      console.log("something went wrong.", err);
+    }
+  };
+
+  const handleProfile3 = async () => {
+    // alert("api called for update profile");
+    // console.log(company_name,industry,business_type);
+    let payload = { company_name, industry, business_type };
+    console.log(payload);
+    try {
+      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+      let response = await fetch(`${base_url1}/profile/company`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      let data = await response.json();
+      // console.log("updated ind: ", data);
+      if (data.success) {
+        alert(data.message || "Company profile updated successfully");
+      } else {
+        alert(data.message || "");
+      }
+    } catch (err) {
+      console.log("something went wrong.", err);
+    }
+  };
+
+  const getScoutPlan = async () => {
+    // let payload = { company_name, industry, business_type };
+    // console.log(payload);
+    try {
+      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+      let response = await fetch(`${base_url1}/billing/usage`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      let data = await response.json();
+      // console.log("billing data: ", data);
+      if (data?.success) {
+        setUsage_date(data?.end_date);
+
+        if (data?.billing_cycle === "monthly") {
+          setUserData1(data?.usage?.monthly_limit || 0);
+          setUserData2(data?.usage?.monthly_remaining || 0);
+        } else {
+          setUserData1(data?.usage?.yearly_limit || 0);
+          setUserData2(data?.usage?.yearly_remaining || 0);
+        }
+      }
+    } catch (err) {
+      console.log("something went wrong.", err);
+    }
+  };
+
+  useEffect(() => {
+    getScoutPlan();
   }, []);
 
   return (
@@ -237,8 +429,12 @@ const SideBar = () => {
                       <span className="text-[13px]">Scout Plan</span>
                     </div>
                     <div>
-                      <span className="text-xl font-semibold">73</span>
-                      <span className="text-[#5F6368] text-[14px]">/100</span>
+                      <span className="text-xl font-semibold">
+                        {usage_data2}
+                      </span>
+                      <span className="text-[#5F6368] text-[14px]">
+                        /{usage_data1}
+                      </span>
                     </div>
                   </div>
 
@@ -250,11 +446,23 @@ const SideBar = () => {
                   </div>
                   <p>
                     <span className="text-[#5F6368] text-[11px]">
-                      27 queries used: Resets in
+                      27 queries used: Resets in{" "}
                     </span>
                     <span className="text-[14px] font-medium text-[#0284C7]">
-                      {" "}
-                      22 days
+                      {!usage_date || isNaN(new Date(usage_date).getTime())
+                        ? ""
+                        : (() => {
+                            const now = new Date();
+                            const target = new Date(usage_date);
+
+                            const days = Math.ceil(
+                              (target - now) / (1000 * 60 * 60 * 24),
+                            );
+
+                            if (days <= 0) return "Expired";
+                            if (days === 0) return "Today";
+                            return `${days} days`;
+                          })()}
                     </span>
                   </p>
 
@@ -303,7 +511,34 @@ const SideBar = () => {
             onClick={() => setOpen_profile(false)}
           ></div>
           <div className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl">
-            <Profile setOpen_profile={setOpen_profile} profil_data={profil_data} />
+            <Profile
+              setOpen_profile={setOpen_profile}
+              full_name={full_name}
+              setFullName={setFullName}
+              email={email}
+              setEmail={setEmail}
+              phone={phone}
+              setPhone={setPhone}
+              country={country}
+              setCountry={setCountry}
+              company_name={company_name}
+              setCompany_name={setCompany_name}
+              industry={industry}
+              setIndustry={setIndustry}
+              business_type={business_type}
+              business_type_data={business_type_data}
+              setBusiness_Type={setBusiness_Type}
+              handleProfile1={handleProfile1}
+              current_password={current_password}
+              setCurrent_password={setCurrent_password}
+              new_password={new_password}
+              setNew_password={setNew_password}
+              confirm_password={confirm_password}
+              setConfirm_password={setConfirm_password}
+              handleProfile2={handleProfile2}
+              passError={passError}
+              handleProfile3={handleProfile3}
+            />
           </div>
         </>
       )}
