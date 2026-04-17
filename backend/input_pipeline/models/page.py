@@ -54,7 +54,8 @@ class RawPage(BaseModel):
     url:        str
     path:       str                     # urlparse(url).path
     title:      str = ""
-    html:       str                     # full raw HTML
+    html:       str    
+    inner_text: str = ""                 # full raw HTML
     depth:      int = 0                 # crawl depth from start_url
     status:     int = 200               # HTTP status code if available
     error:      Optional[str] = None    # set if page fetch failed

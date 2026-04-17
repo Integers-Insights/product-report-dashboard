@@ -11,20 +11,82 @@ import json
 # 🔥 GLOBAL LIMIT (tune this)
 PIPELINE_LIMIT = asyncio.Semaphore(10)
 
-async def update_job_progress(conn, job_id, stage, progress, log=None):
+# async def update_job_progress(conn, job_id, stage, progress, log=None):
+#     await conn.execute("""
+#         UPDATE core_tables.pipeline_jobs
+#         SET 
+#             stage = $1,
+#             progress = $2,
+#             logs = COALESCE(logs, '[]'::jsonb) || $3::jsonb,
+#             updated_at = NOW()
+#         WHERE id = $4
+#     """,
+#         stage,
+#         progress,
+#         json.dumps([log]) if log else json.dumps([]),
+#         job_id
+#     )
+
+def _make_store_callback(job_id, user_id):
+    async def _cb(product):
+        print(f"💾 [live store] job={job_id} | product={getattr(product, 'product_name', 'unknown')}")
+        try:
+            async with (await safe_acquire()) as conn:
+                await store_pipeline_temp(
+                    conn=conn,
+                    job_id=job_id,
+                    user_id=user_id,
+                    products=[product],
+                )
+            print(f"✅ [live store] saved")
+        except Exception as e:
+            print(f"⚠️ Live store callback failed: {e}")
+    return _cb
+
+def _make_progress_callback(job_id):
+    async def _cb(pages_crawled: int, total_pages: int, products_found: int):
+        if not job_id:
+            return
+        try:
+            async with (await safe_acquire()) as conn:
+                await conn.execute("""
+                    UPDATE core_tables.pipeline_jobs
+                    SET pages_crawled  = $1,
+                        total_pages    = $2,
+                        products_found = $3,
+                        updated_at     = NOW()
+                    WHERE id = $4
+                """, pages_crawled, total_pages, products_found, job_id)
+        except Exception as e:
+            print(f"⚠️ Progress callback failed: {e}")
+    return _cb
+
+async def update_job_progress(
+    conn, job_id, stage, progress,
+    log=None,
+    pages_crawled=None,
+    total_pages=None,
+    products_found=None
+):
     await conn.execute("""
         UPDATE core_tables.pipeline_jobs
-        SET 
-            stage = $1,
-            progress = $2,
-            logs = COALESCE(logs, '[]'::jsonb) || $3::jsonb,
-            updated_at = NOW()
+        SET
+            stage          = $1,
+            progress       = $2,
+            logs           = COALESCE(logs, '[]'::jsonb) || $3::jsonb,
+            pages_crawled  = COALESCE($5, pages_crawled),
+            total_pages    = COALESCE($6, total_pages),
+            products_found = COALESCE($7, products_found),
+            updated_at     = NOW()
         WHERE id = $4
     """,
         stage,
         progress,
         json.dumps([log]) if log else json.dumps([]),
-        job_id
+        job_id,
+        pages_crawled,
+        total_pages,
+        products_found,
     )
 
 async def run_pipeline_and_store(user_id: str, website_url: str, job_id: str = None):
@@ -41,14 +103,24 @@ async def run_pipeline_and_store(user_id: str, website_url: str, job_id: str = N
             result = await run_pipeline(
                 website_url=website_url,
                 max_pages=CRAWLER["max_pages"],
-                run_semantic=True
+                run_semantic=True,
+                progress_callback=_make_progress_callback(job_id),
+                store_callback=_make_store_callback(job_id, user_id),  # ✅
             )
 
             # Update progress to "processing" after crawl completes
             if job_id:
                 try:
                     async with (await safe_acquire()) as conn:
-                        await update_job_progress(conn, job_id, "processing", 70, "Crawl complete, processing data...")
+                        await update_job_progress(
+                            conn, job_id,
+                            stage="processing",
+                            progress=70,
+                            log="Crawl complete, processing data...",
+                            pages_crawled=getattr(result, "pages_crawled", 0),
+                            total_pages=getattr(result, "total_pages", 0),
+                            products_found=len(getattr(result, "products", []) or []),
+                        )
                 except Exception as prog_err:
                     print("⚠️ Progress update failed (non-fatal):", str(prog_err))
 
@@ -162,22 +234,31 @@ async def pipeline_worker(worker_id: int):
                     print("❌ Failed to update job failure:", str(db_err))
 
                 continue
-
             # =====================================================
             # 📦 STEP 3: STORE RESULTS
             # =====================================================
             try:
                 async with (await safe_acquire()) as conn:
 
-                    # ✅ STORE PRODUCTS
+                    # ✅ STORE PRODUCTS — skip if already stored live
                     if result and getattr(result, "products", None):
-                        await store_pipeline_temp(
-                            conn=conn,
-                            job_id=job_id,
-                            user_id=user_id,
-                            products=result.products
-                        )
-                        print(f"📦 Stored {len(result.products)} products")
+                        existing = await conn.fetchval("""
+                            SELECT COUNT(*) 
+                            FROM product_info.pipeline_temp_products
+                            WHERE job_id = $1
+                        """, job_id)
+
+                        if existing == 0:
+                            # live store didn't run — fallback to bulk store
+                            await store_pipeline_temp(
+                                conn=conn,
+                                job_id=job_id,
+                                user_id=user_id,
+                                products=result.products
+                            )
+                            print(f"📦 Bulk stored {len(result.products)} products")
+                        else:
+                            print(f"📦 {existing} products already stored live — skipping bulk store")
 
                     # ✅ STORE COMPANY
                     if result and getattr(result, "company", None):

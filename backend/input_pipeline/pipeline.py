@@ -123,6 +123,8 @@ async def run_pipeline(
     max_pages:          int | None = None,
     run_semantic:       bool = True,
     extraction_concurrency: int = 8,
+    progress_callback=None,
+    store_callback=None
 ) -> PipelineResult:
     """
     Runs the full input pipeline for a given website URL.
@@ -144,6 +146,7 @@ async def run_pipeline(
     Returns:
         PipelineResult with products, company, and crawl stats.
     """
+    crawl_stats = {"pages_fetched": 0}
     start_time = time.monotonic()
     result     = PipelineResult(website_url=website_url)
 
@@ -183,11 +186,33 @@ async def run_pipeline(
             if page is None:                    # sentinel — crawler finished
                 break
 
+            # ✅ add this BEFORE _crawl_task definition
+    
+
             async def _extract_one(p=page) -> None:
                 async with semaphore:
                     try:
                         product = await extract_product(p)
                         products.append(product)
+
+                        # ✅ save to DB immediately after extraction
+                        if progress_callback:
+                            try:
+                                await progress_callback(
+                                    pages_crawled=crawl_stats["pages_fetched"],
+                                    total_pages=max_pages or 50,
+                                    products_found=len(products),
+                                )
+                            except Exception:
+                                pass
+
+                        # ✅ store product immediately
+                        if store_callback:
+                            try:
+                                await store_callback(product)
+                            except Exception as e:
+                                print(f"⚠️ Live store failed: {e}")
+
                     except Exception as e:
                         result.errors.append(f"Extraction error for {p.url}: {e}")
 
@@ -204,6 +229,17 @@ async def run_pipeline(
         )
         crawl = crawl_result
         result.crawl_result = crawl
+        crawl_stats["pages_fetched"] = crawl.pages_fetched  # ✅ update after crawl done
+        # ✅ final update with real page count
+        if progress_callback:
+            try:
+                await progress_callback(
+                    pages_crawled=crawl.pages_fetched,
+                    total_pages=crawl.pages_fetched,
+                    products_found=len(products),
+                )
+            except Exception:
+                pass
         print(f"\n  ✅ Crawl complete — {crawl.pages_fetched} pages fetched")
         print(f"  ✅ Extracted {len(products)} products")
 
