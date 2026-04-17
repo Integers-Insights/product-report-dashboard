@@ -27,7 +27,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 CRAWLER = {
     "max_depth":        3,
-    "max_pages":        400,        # hard cap per website
+    "max_pages":        50,        # hard cap per website
     
     "page_timeout_ms":       20_000,     # 20s per page
     "wait_after_load":       300,        # ms to wait after page load (inner pages)

@@ -2,6 +2,7 @@ from input_pipeline.pipeline import run_pipeline
 from services.onboarding_service import upsert_company_metadata,store_pipeline_temp
 import asyncio
 import traceback
+from input_pipeline.config import CRAWLER
 from db.database import safe_acquire,get_pool
 from state import RUN_WORKERS,WORKER_STATUS
 import json
@@ -39,7 +40,7 @@ async def run_pipeline_and_store(user_id: str, website_url: str, job_id: str = N
 
             result = await run_pipeline(
                 website_url=website_url,
-                max_pages=400,
+                max_pages=CRAWLER["max_pages"],
                 run_semantic=True
             )
 
