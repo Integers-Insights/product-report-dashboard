@@ -84,7 +84,7 @@ async def _persist_usage(
     prompt_tokens:     int,
     completion_tokens: int,
 ) -> None:
-    """Inserts one row into analytics.ai_usage_log. Never raises."""
+    """Inserts one row into core_tables.ai_usage_log. Never raises."""
     rates    = _MODEL_PRICING.get(model, (1.0, 1.0, 0.0))
     cost_usd = (
         (prompt_tokens     / 1_000_000) * rates[0]
@@ -97,7 +97,7 @@ async def _persist_usage(
         async with pool.acquire() as conn:
             await conn.execute(
                 """
-                INSERT INTO analytics.ai_usage_log
+                INSERT INTO core_tables.ai_usage_log
                     (company_id, report_id, product_id, provider, model,
                      call_type, module, prompt_tokens, completion_tokens,
                      total_tokens, cost_usd)
