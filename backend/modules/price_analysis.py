@@ -285,6 +285,8 @@ class PriceAnalysisModule(BaseModule):
         from modules.variants_formats import VariantsFormatsResult
         result = await PriceAnalysisModule().run(inp, variants_result)
     """
+    def module_name(self) -> str:
+        return "price_analysis" 
 
     # ── Shared helpers — thin wrappers over inherited BaseModule methods ─────
 

@@ -159,7 +159,8 @@ class B2CAudienceModule(BaseModule):
     Usage:
         result = await B2CAudienceModule().run(inp)
     """
-
+    def module_name(self) -> str:
+        return "buyer_discovery"
     # ── Step 1a: GPT consumer profile (training knowledge) ───────────────────
 
     async def _generate_profile(self, inp: ModuleInput) -> dict | None:

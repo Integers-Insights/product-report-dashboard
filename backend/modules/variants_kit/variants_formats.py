@@ -120,7 +120,8 @@ class VariantsFormatsModule(BaseModule):
     Usage:
         result = await VariantsFormatsModule().run(inp)
     """
-
+    def module_name(self) -> str:
+        return "variants_formats"
     # ── Step 1a: Sonar — discover variant names ──────────────────────────────
 
     async def _sonar_discover_variants(self, inp) -> str | None:

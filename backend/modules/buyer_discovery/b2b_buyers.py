@@ -135,7 +135,8 @@ class B2BBuyersModule(BaseModule):
     Usage:
         result = await B2BBuyersModule().run(inp)
     """
-
+    def module_name(self) -> str:
+        return "buyer_discovery"   # ← add this
     # ── Step 1: GPT keyword generation ──────────────────────────────────────
 
     async def _generate_keywords(self, inp: ModuleInput) -> list[list[str]]:

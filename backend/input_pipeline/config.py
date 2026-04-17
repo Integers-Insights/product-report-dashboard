@@ -285,7 +285,7 @@ CACHE = {
 GOOGLE_ADS = {
     "yaml_path":             str(Path(__file__).resolve().parent.parent / "google_ads.yaml"),
     "customer_id":           "1143624949",                 # from .env GOOGLE_ADS_CUSTOMER_ID
-    "max_keywords_per_seed": 50,
+    "max_keywords_per_seed": 20,
     "language_constant":     "languageConstants/1000",           # default: English
 }
  

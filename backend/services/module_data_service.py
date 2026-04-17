@@ -13,13 +13,15 @@ async def fetch_module_inputs(conn, company_id):
             co.name as company_name,
             co.headquarters_country,
             co.company_type,
-            cr.price_positioning,
-            cr.buyer_type
+            ur.price_positioning,
+            ur.buyer_type
         FROM core_tables.companies_other co
         LEFT JOIN product_info.company_preferences cr
             ON co.id = cr.company_id
         LEFT JOIN product_info.product_master pm
             ON pm.company_id = co.id
+        left join core_tables.user_research_preferences ur
+            on ur.user_id = pm.created_by
         WHERE co.id = $1
         AND pm.is_selected = TRUE
     """, company_id)
