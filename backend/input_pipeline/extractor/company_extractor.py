@@ -28,22 +28,12 @@ Usage:
 
 import json
 import asyncio
-from openai import AsyncOpenAI
-from dotenv import load_dotenv
 from typing import List, Optional, Tuple
 from input_pipeline.models.page import CrawledPage, PageType
 from input_pipeline.models.company import CompanyData
 from input_pipeline.extractor.prompts import get_prompt
 from input_pipeline.config import LLM, CLEANER
-
-load_dotenv()
-
-
-# ─────────────────────────────────────────────
-#  CLIENT  (module-level singleton)
-# ─────────────────────────────────────────────
-
-_client = AsyncOpenAI()
+from modules.base_module import call_openai
 
 
 # ─────────────────────────────────────────────
@@ -103,12 +93,17 @@ async def extract_company(
     )
 
     # ── Call LLM ─────────────────────────────────
-    raw_response = await _call_llm_with_retry(
-        system=prompt["system"],
-        user=user_message,
+    raw_response = await call_openai(
         model=LLM["extraction_model"],
+        messages=[
+            {"role": "system", "content": prompt["system"]},
+            {"role": "user",   "content": user_message},
+        ],
         max_tokens=LLM["extraction_max_tokens"],
         temperature=LLM["extraction_temperature"],
+        call_type="company_extraction",
+        module="company_extractor",
+        response_format={"type": "json_object"},
     )
 
     if raw_response is None:
@@ -178,48 +173,6 @@ def _merge_page_contents(pages: List[CrawledPage]) -> Tuple[str, List[str]]:
 
     return "".join(sections).strip(), source_urls
 
-
-# ─────────────────────────────────────────────
-#  LLM CALL WITH RETRY
-# ─────────────────────────────────────────────
-
-async def _call_llm_with_retry(
-    system:      str,
-    user:        str,
-    model:       str,
-    max_tokens:  int,
-    temperature: float,
-) -> Optional[str]:
-    """
-    Calls the LLM with exponential backoff retry.
-    Returns raw string response or None if all retries fail.
-    """
-    max_retries = LLM["max_retries"]
-    retry_delay = LLM["retry_delay_sec"]
-
-    for attempt in range(max_retries):
-        try:
-            response = await _client.chat.completions.create(
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": user},
-                ],
-                response_format={"type": "json_object"},
-            )
-            return response.choices[0].message.content
-
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait = retry_delay * (2 ** attempt)
-                print(f"  ⚠️  LLM attempt {attempt + 1} failed: {e}. "
-                      f"Retrying in {wait}s...")
-                await asyncio.sleep(wait)
-            else:
-                print(f"  ❌ LLM failed after {max_retries} attempts: {e}")
-                return None
 
 
 # ─────────────────────────────────────────────

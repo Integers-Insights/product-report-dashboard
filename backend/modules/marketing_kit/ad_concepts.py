@@ -31,7 +31,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 from input_pipeline.config import MARKETING_KIT
-from modules.base_module import BaseModule
+from modules.base_module import BaseModule, call_openai
 
 
 # ── Data models ──────────────────────────────────────────────────────────────
@@ -155,15 +155,21 @@ class AdConceptsModule(BaseModule):
             target_country=inp.target_country,
         )
 
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model=MARKETING_KIT["ad_model"],
-                temperature=MARKETING_KIT["ad_temp"],
-                max_tokens=MARKETING_KIT["ad_max_tokens"],
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=MARKETING_KIT["ad_max_tokens"],
+                temperature=MARKETING_KIT["ad_temp"],
+                call_type="ad_concepts",
+                module="ad_concepts",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            raw = resp.choices[0].message.content.strip()
+            if raw is None:
+                raise ValueError("call_openai returned None")
+            raw = raw.strip()
             raw = re.sub(r"^```(?:json)?|```$", "", raw, flags=re.MULTILINE).strip()
             data = json.loads(raw)
 

@@ -30,7 +30,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 from modules.scoring_prompts import SCORING_PROMPT
-from openai import AsyncOpenAI
+from modules.base_module import call_openai
 
 
 # ─────────────────────────────────────────────
@@ -241,14 +241,6 @@ class ScoringEngine:
         scoring_result = await engine.score(inp, runner_result)
     """
 
-    _client: Optional[AsyncOpenAI] = None
-
-    def _get_openai(self) -> AsyncOpenAI:
-        if not self._client:
-            import os
-            self._client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        return self._client
-
     async def score(self, inp, runner_result) -> ScoringResult:
         """
         Score all modules and generate opportunity summary.
@@ -272,15 +264,21 @@ class ScoringEngine:
             module_summary= module_summary,
         )
 
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.2,
-                max_tokens=1500,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.2,
+                call_type="scoring",
+                module="scoring_engine",
+                company_id=getattr(inp, "company_id", None),
+                report_id=getattr(inp, "report_id", None),
+                product_id=getattr(inp, "product_id", None),
             )
-            raw  = resp.choices[0].message.content.strip()
+            if raw is None:
+                raise ValueError("call_openai returned None")
+            raw  = raw.strip()
             raw  = re.sub(r"^```(?:json)?|```$", "", raw, flags=re.MULTILINE).strip()
             data = json.loads(raw)
 

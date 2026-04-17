@@ -33,6 +33,202 @@ load_dotenv()
 
 
 # ─────────────────────────────────────────────
+#  MODULE-LEVEL AI CLIENT CACHE
+#  Shared by call_openai() and call_sonar() below.
+#  BaseModule subclasses also use these via the helper functions.
+# ─────────────────────────────────────────────
+
+_module_openai_client: "AsyncOpenAI | None" = None
+_module_sonar_client:  "AsyncOpenAI | None" = None
+
+
+def _get_module_openai() -> AsyncOpenAI:
+    global _module_openai_client
+    if _module_openai_client is None:
+        _module_openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    return _module_openai_client
+
+
+def _get_module_sonar() -> AsyncOpenAI:
+    global _module_sonar_client
+    if _module_sonar_client is None:
+        _module_sonar_client = AsyncOpenAI(
+            api_key=os.getenv("PERPLEXITY_API_KEY"),
+            base_url="https://api.perplexity.ai",
+        )
+    return _module_sonar_client
+
+
+# ─────────────────────────────────────────────
+#  AI COST TRACKING
+# ─────────────────────────────────────────────
+
+# (input_per_1M_usd, output_per_1M_usd, per_request_usd)
+_MODEL_PRICING: dict[str, tuple[float, float, float]] = {
+    "gpt-4o":          (2.50, 10.00, 0.0),
+    "gpt-4o-mini":     (0.15,  0.60, 0.0),
+    "sonar":           (1.00,  1.00, 0.005),   # Perplexity: $5 / 1000 requests + tokens
+    "sonar-pro":       (3.00, 15.00, 0.005),
+    "sonar-reasoning": (1.00,  5.00, 0.005),
+}
+
+
+async def _persist_usage(
+    provider:          str,
+    model:             str,
+    call_type:         str,
+    module:            "str | None",
+    company_id:        "str | None",
+    report_id:         "str | None",
+    product_id:        "str | None",
+    prompt_tokens:     int,
+    completion_tokens: int,
+) -> None:
+    """Inserts one row into analytics.ai_usage_log. Never raises."""
+    rates    = _MODEL_PRICING.get(model, (1.0, 1.0, 0.0))
+    cost_usd = (
+        (prompt_tokens     / 1_000_000) * rates[0]
+        + (completion_tokens / 1_000_000) * rates[1]
+        + rates[2]
+    )
+    try:
+        from db.database import get_pool
+        pool = get_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO analytics.ai_usage_log
+                    (company_id, report_id, product_id, provider, model,
+                     call_type, module, prompt_tokens, completion_tokens,
+                     total_tokens, cost_usd)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+                """,
+                company_id, report_id, product_id,
+                provider, model, call_type, module,
+                prompt_tokens, completion_tokens,
+                prompt_tokens + completion_tokens,
+                round(cost_usd, 8),
+            )
+    except Exception as e:
+        print(f"  ⚠️  [cost_tracker] {e}")
+
+
+# ─────────────────────────────────────────────
+#  SHARED AI CALL FUNCTIONS
+#  Single place for all OpenAI and Sonar calls.
+#  Import call_openai / call_sonar in any module
+#  instead of building a raw client there.
+# ─────────────────────────────────────────────
+
+async def call_openai(
+    model:           str,
+    messages:        list,
+    max_tokens:      int,
+    temperature:     float,
+    call_type:       str,
+    module:          "str | None"  = None,
+    company_id:      "str | None"  = None,
+    report_id:       "str | None"  = None,
+    product_id:      "str | None"  = None,
+    response_format: "dict | None" = None,
+) -> "str | None":
+    """
+    Shared OpenAI call with retry logic and automatic cost logging.
+    Import and use this instead of calling the OpenAI client directly.
+    Returns the raw response string, or None on failure.
+    """
+    client = _get_module_openai()
+
+    for attempt in range(LLM["max_retries"]):
+        try:
+            kwargs: dict[str, Any] = dict(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                messages=messages,
+            )
+            if response_format:
+                kwargs["response_format"] = response_format
+
+            response = await client.chat.completions.create(**kwargs)
+            usage    = response.usage
+
+            asyncio.create_task(_persist_usage(
+                "openai", model, call_type, module,
+                company_id, report_id, product_id,
+                usage.prompt_tokens, usage.completion_tokens,
+            ))
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+            if attempt < LLM["max_retries"] - 1:
+                wait = LLM["retry_delay_sec"] * (2 ** attempt)
+                print(f"  ⚠️  [call_openai] attempt {attempt + 1} failed: {e}. Retry in {wait}s...")
+                await asyncio.sleep(wait)
+            else:
+                print(f"  ❌ [call_openai] {model}/{call_type} failed after {LLM['max_retries']} attempts: {e}")
+                return None
+
+
+async def call_sonar(
+    query:      str,
+    call_type:  str        = "sonar_research",
+    module:     "str | None" = None,
+    company_id: "str | None" = None,
+    report_id:  "str | None" = None,
+    product_id: "str | None" = None,
+) -> "str | None":
+    """
+    Shared Perplexity Sonar call with retry logic and automatic cost logging.
+    Import and use this instead of calling the Sonar client directly.
+    Respects the global _SONAR_SEMAPHORE to cap concurrent requests.
+    Returns the raw response string, or None on failure.
+    """
+    client = _get_module_sonar()
+
+    for attempt in range(LLM["max_retries"]):
+        try:
+            async with _SONAR_SEMAPHORE:
+                response = await client.chat.completions.create(
+                    model=LLM["sonar_model"],
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a trade research assistant. "
+                                "Provide factual, data-rich responses with "
+                                "specific numbers, statistics, and sources. "
+                                "Focus on recent data (2023-2025)."
+                            ),
+                        },
+                        {"role": "user", "content": query},
+                    ],
+                    max_tokens=2000,
+                    temperature=0.2,
+                )
+
+            usage = response.usage
+            asyncio.create_task(_persist_usage(
+                "perplexity", LLM["sonar_model"], call_type, module,
+                company_id, report_id, product_id,
+                usage.prompt_tokens, usage.completion_tokens,
+            ))
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+            is_rate_limit = "429" in str(e) or "rate_limit" in str(e).lower()
+            if attempt < LLM["max_retries"] - 1:
+                wait = (15 * (2 ** attempt)) if is_rate_limit else (LLM["retry_delay_sec"] * (2 ** attempt))
+                print(f"  ⚠️  [call_sonar] attempt {attempt + 1} failed: {e}. Retry in {wait}s...")
+                await asyncio.sleep(wait)
+            else:
+                print(f"  ❌ [call_sonar] failed after {LLM['max_retries']} attempts: {e}")
+                return None
+
+
+# ─────────────────────────────────────────────
 #  MODULE INPUT
 #  Standardised input passed to every module
 # ─────────────────────────────────────────────
@@ -57,6 +253,8 @@ class ModuleInput:
         price_positioning: str | None,  # Budget / Mid-range / Premium
         moq:              str | None,
         buyer_type:       str | None,   # B2B / B2C / Both
+        company_id:       str | None = None,   # SaaS: which company triggered this
+        report_id:        str | None = None,   # SaaS: which report/job
     ):
         self.product_id        = product_id
         self.product_name      = product_name
@@ -71,6 +269,8 @@ class ModuleInput:
         self.price_positioning = price_positioning or "Mid-range"
         self.moq               = moq or ""
         self.buyer_type        = buyer_type or "B2B"
+        self.company_id        = company_id
+        self.report_id         = report_id
 
     def cert_string(self) -> str:
         """Returns certifications as comma-separated string for use in queries."""
@@ -155,6 +355,8 @@ class BaseModule:
     def __init__(self):
         self._openai_client = None
         self._sonar_client  = None
+        self._company_id: "str | None" = None
+        self._report_id:  "str | None" = None
 
     def _get_openai(self) -> AsyncOpenAI:
         """Lazy OpenAI client — created on first use."""
@@ -201,6 +403,10 @@ class BaseModule:
             ModuleResult — always returned, never raises
         """
         print(f"\n  🔬 [{self.module_name()}] {inp.product_name} → {inp.target_country}")
+
+        # Capture SaaS context so helper calls can log it
+        self._company_id = getattr(inp, "company_id", None)
+        self._report_id  = getattr(inp, "report_id",  None)
 
         # ── Step 1: Sonar research query ─────────────
         query = self.build_query(inp)
@@ -291,98 +497,45 @@ class BaseModule:
     # ── Sonar call ───────────────────────────────────
 
     async def _call_sonar(self, query: str) -> str | None:
-        """
-        Calls Perplexity Sonar with the given query.
-        Returns the text response or None on failure.
-
-        Uses a global semaphore (_SONAR_SEMAPHORE) to cap concurrent
-        Sonar calls across all modules — prevents 429 rate limit errors.
-
-        429 errors get a longer backoff (15s, 30s) instead of the
-        standard 2s/4s, since Sonar rate limit windows are ~10–15s.
-        """
-        max_retries = LLM["max_retries"]
-        retry_delay = LLM["retry_delay_sec"]
-
-        for attempt in range(max_retries):
-            try:
-                async with _SONAR_SEMAPHORE:
-                    response = await self._get_sonar().chat.completions.create(
-                        model=LLM["sonar_model"],
-                        messages=[
-                            {
-                                "role": "system",
-                                "content": (
-                                    "You are a trade research assistant. "
-                                    "Provide factual, data-rich responses with "
-                                    "specific numbers, statistics, and sources. "
-                                    "Focus on recent data (2023-2025)."
-                                )
-                            },
-                            {
-                                "role": "user",
-                                "content": query,
-                            }
-                        ],
-                        max_tokens=2000,
-                        temperature=0.2,
-                    )
-                return response.choices[0].message.content
-
-            except Exception as e:
-                is_rate_limit = "429" in str(e) or "rate_limit" in str(e).lower()
-                if attempt < max_retries - 1:
-                    # 429: wait 15s → 30s. Other errors: wait 2s → 4s
-                    wait = (15 * (2 ** attempt)) if is_rate_limit else (retry_delay * (2 ** attempt))
-                    print(f"  ⚠️  Sonar attempt {attempt + 1} failed: {e}. "
-                          f"Retrying in {wait}s...")
-                    await asyncio.sleep(wait)
-                else:
-                    print(f"  ❌ Sonar failed after {max_retries} attempts: {e}")
-                    return None
+        """Thin wrapper — delegates to module-level call_sonar() with context."""
+        return await call_sonar(
+            query,
+            module=self.module_name(),
+            company_id=self._company_id,
+            report_id=self._report_id,
+        )
 
     # ── Structured extraction ────────────────────────
 
     async def _extract_structured(self, prompt: str) -> dict | None:
-        """
-        Calls gpt-4o-mini to extract structured JSON from Sonar response.
-        Returns parsed dict or None on failure.
-        """
-        max_retries = LLM["max_retries"]
-        retry_delay = LLM["retry_delay_sec"]
-
+        """Thin wrapper — delegates to module-level call_openai() with context."""
         system = (
             "You are a precise data extraction engine. "
             "Extract structured data from research text. "
             "Return ONLY valid JSON. No markdown, no explanation, no preamble. "
             "If a field cannot be found, set it to null."
         )
-
-        for attempt in range(max_retries):
-            try:
-                response = await self._get_openai().chat.completions.create(
-                    model=LLM["extraction_model"],
-                    max_tokens=LLM["extraction_max_tokens"],
-                    temperature=0.0,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user",   "content": prompt},
-                    ],
-                    response_format={"type": "json_object"},
-                )
-                raw = response.choices[0].message.content
-                return json.loads(raw)
-
-            except json.JSONDecodeError as e:
-                print(f"  ⚠️  JSON parse failed: {e}")
-                return None
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    wait = retry_delay * (2 ** attempt)
-                    await asyncio.sleep(wait)
-                else:
-                    print(f"  ❌ Extraction failed after {max_retries} attempts: {e}")
-                    return None
+        raw = await call_openai(
+            model=LLM["extraction_model"],
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": prompt},
+            ],
+            max_tokens=LLM["extraction_max_tokens"],
+            temperature=0.0,
+            call_type="extraction",
+            module=self.module_name(),
+            company_id=self._company_id,
+            report_id=self._report_id,
+            response_format={"type": "json_object"},
+        )
+        if raw is None:
+            return None
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as e:
+            print(f"  ⚠️  JSON parse failed: {e}")
+            return None
                 
     # ─────────────────────────────────────────────
     #  ANALYSIS NOTES
@@ -421,15 +574,15 @@ class BaseModule:
     Return only the analyst note text — no labels, no JSON.
     """.strip()
 
-        try:
-            response = await self._get_openai().chat.completions.create(
-                model=LLM["generation_model"],   # gpt-4o for quality writing
-                max_tokens=200,
-                temperature=0.7,                  # some creativity
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
-            )
-            return response.choices[0].message.content.strip()
-        except Exception:
-            return ""
+        raw = await call_openai(
+            model=LLM["generation_model"],
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=200,
+            temperature=0.7,
+            call_type="analyst_note",
+            module=self.module_name(),
+            company_id=self._company_id,
+            report_id=self._report_id,
+            product_id=inp.product_id,
+        )
+        return raw.strip() if raw else ""

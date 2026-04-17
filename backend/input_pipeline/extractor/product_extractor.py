@@ -23,21 +23,12 @@ Usage:
 
 import json
 import asyncio
-from openai import AsyncOpenAI
-from dotenv import load_dotenv
 
 from input_pipeline.models.page import CrawledPage
 from input_pipeline.models.product import ProductData
 from input_pipeline.extractor.prompts import get_prompt
 from input_pipeline.config import LLM
-
-load_dotenv()
-
-# ─────────────────────────────────────────────
-#  CLIENT  (module-level singleton)
-# ─────────────────────────────────────────────
-
-_client = AsyncOpenAI()      # reads OPENAI_API_KEY from env automatically
+from modules.base_module import call_openai
 
 
 # ─────────────────────────────────────────────
@@ -67,12 +58,17 @@ async def extract_product(page: CrawledPage) -> ProductData:
         clean_text=page.clean_text,
     )
 
-    raw_response = await _call_llm_with_retry(
-        system=prompt["system"],
-        user=user_message,
+    raw_response = await call_openai(
         model=LLM["extraction_model"],
+        messages=[
+            {"role": "system", "content": prompt["system"]},
+            {"role": "user",   "content": user_message},
+        ],
         max_tokens=LLM["extraction_max_tokens"],
         temperature=LLM["extraction_temperature"],
+        call_type="product_extraction",
+        module="product_extractor",
+        response_format={"type": "json_object"},
     )
 
     if raw_response is None:
@@ -104,50 +100,6 @@ async def extract_products_batch(
     tasks = [_extract_with_semaphore(p) for p in pages]
     return await asyncio.gather(*tasks)
 
-
-# ─────────────────────────────────────────────
-#  LLM CALL WITH RETRY
-# ─────────────────────────────────────────────
-
-async def _call_llm_with_retry(
-    system:      str,
-    user:        str,
-    model:       str,
-    max_tokens:  int,
-    temperature: float,
-) -> str | None:
-    """
-    Calls the LLM with exponential backoff retry.
-
-    Returns:
-        Raw string response from LLM, or None if all retries fail.
-    """
-    max_retries  = LLM["max_retries"]
-    retry_delay  = LLM["retry_delay_sec"]
-
-    for attempt in range(max_retries):
-        try:
-            response = await _client.chat.completions.create(
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": user},
-                ],
-                response_format={"type": "json_object"},   # enforce JSON mode
-            )
-            return response.choices[0].message.content
-
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait = retry_delay * (2 ** attempt)     # exponential backoff
-                print(f"  ⚠️  LLM attempt {attempt + 1} failed: {e}. "
-                      f"Retrying in {wait}s...")
-                await asyncio.sleep(wait)
-            else:
-                print(f"  ❌ LLM failed after {max_retries} attempts: {e}")
-                return None
 
 
 # ─────────────────────────────────────────────

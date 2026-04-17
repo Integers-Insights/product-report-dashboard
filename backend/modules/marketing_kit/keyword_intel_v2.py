@@ -36,7 +36,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from input_pipeline.config import MARKETING_KIT
-from modules.base_module import BaseModule
+from modules.base_module import BaseModule, call_openai
 
 from modules.marketing_kit.keyword_prompt import BUYER_INTENT_PROMPT, GAP_KEYWORDS_PROMPT, MULTILINGUAL_PROMPT
 # Re-use the same country→language map and data models from v1
@@ -99,15 +99,19 @@ class KeywordIntelModule(BaseModule):
             business_type= inp.business_type,
             target_country=inp.target_country,
         )
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.3,
-                max_tokens=800,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=800,
+                temperature=0.3,
+                call_type="keyword_buyer_intent",
+                module="keyword_intel",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            data = _extract_json(resp.choices[0].message.content.strip())
+            data = _extract_json(raw.strip() if raw else "")
             kws  = [k["keyword"] for k in data.get("buyer_intent", [])[:15]]
             print(f"     → GPT buyer-intent: {len(kws)} keywords generated")
             return kws
@@ -123,15 +127,19 @@ class KeywordIntelModule(BaseModule):
             business_type= inp.business_type,
             target_country=inp.target_country,
         )
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.3,
-                max_tokens=800,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=800,
+                temperature=0.3,
+                call_type="keyword_gap",
+                module="keyword_intel",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            data = _extract_json(resp.choices[0].message.content.strip())
+            data = _extract_json(raw.strip() if raw else "")
             kws  = [k["keyword"] for k in data.get("gap_keywords", [])[:15]]
             print(f"     → GPT gap keywords: {len(kws)} keywords generated")
             return kws
@@ -147,15 +155,19 @@ class KeywordIntelModule(BaseModule):
             target_country=inp.target_country,
             language=      language,
         )
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.3,
-                max_tokens=800,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=800,
+                temperature=0.3,
+                call_type="keyword_multilingual",
+                module="keyword_intel",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            data = _extract_json(resp.choices[0].message.content.strip())
+            data = _extract_json(raw.strip() if raw else "")
             kws  = [k["keyword"] for k in data.get("multilingual", [])[:15]]
             print(f"     → GPT multilingual ({language}): {len(kws)} keywords generated")
             return kws

@@ -36,7 +36,7 @@ from modules.variants_kit.variants_prompts import (
     SONAR_MARKET_DATA_QUERY, SONAR_MARKET_DATA_RETRY_QUERY,
     SONAR_DEFLECTION_PHRASES, GPT_FALLBACK_PROMPT,
 )
-from modules.base_module import BaseModule
+from modules.base_module import BaseModule, call_openai
 
 
 # ─────────────────────────────────────────────
@@ -287,16 +287,21 @@ class VariantsFormatsModule(BaseModule):
             ),
             your_product_idx=your_product_idx,
         )
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.0,
-                max_tokens=600,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=600,
+                temperature=0.0,
+                call_type="variants_tag_score",
+                module="variants_formats",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            raw  = resp.choices[0].message.content.strip()
-            
+            if raw is None:
+                raise ValueError("call_openai returned None")
+            raw  = raw.strip()
             raw  = re.sub(r"^```(?:json)?|```$", "", raw, flags=re.MULTILINE).strip()
             data = json.loads(raw)
 
@@ -338,16 +343,21 @@ class VariantsFormatsModule(BaseModule):
             certifications=", ".join(inp.certifications or []),
             variants_json=json.dumps(combined, indent=2),
         )
-        client = self._get_openai()
         try:
-            resp = await client.chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o",
-                temperature=0.7,
-                max_tokens=1500,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.7,
+                call_type="variants_analysis_notes",
+                module="variants_formats",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
             )
-            raw  = resp.choices[0].message.content.strip()
-
+            if raw is None:
+                raise ValueError("call_openai returned None")
+            raw  = raw.strip()
             raw  = re.sub(r"^```(?:json)?|```$", "", raw, flags=re.MULTILINE).strip()
             data = json.loads(raw)
             return {n["variant_name"]: n["analysis_note"] for n in data.get("notes", [])}

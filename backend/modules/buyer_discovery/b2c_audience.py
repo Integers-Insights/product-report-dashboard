@@ -24,12 +24,8 @@ Returns B2CDiscoveryResult containing ConsumerProfile.
 
 import json
 import asyncio
-import os
 
-from openai import AsyncOpenAI
-from dotenv import load_dotenv
-
-from modules.base_module import BaseModule, ModuleInput
+from modules.base_module import BaseModule, ModuleInput, call_openai
 from modules.buyer_discovery.models import (
     ConsumerSegment,
     PurchaseChannels,
@@ -38,8 +34,6 @@ from modules.buyer_discovery.models import (
     ConsumerProfile,
     B2CDiscoveryResult,
 )
-
-load_dotenv()
 
 
 # ─────────────────────────────────────────────
@@ -182,24 +176,28 @@ class B2CAudienceModule(BaseModule):
             certifications=inp.cert_string() or "none specified",
         )
 
+        system = (
+            "You are a B2C consumer intelligence expert. "
+            "Return only valid JSON. No markdown, no explanation."
+        )
         try:
-            response = await self._get_openai().chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user",   "content": prompt},
+                ],
                 max_tokens=1200,
                 temperature=0.4,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a B2C consumer intelligence expert. "
-                            "Return only valid JSON. No markdown, no explanation."
-                        ),
-                    },
-                    {"role": "user", "content": prompt},
-                ],
+                call_type="b2c_consumer_profile",
+                module="b2c_audience",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
                 response_format={"type": "json_object"},
             )
-            raw = response.choices[0].message.content
+            if raw is None:
+                raise ValueError("call_openai returned None")
             data = json.loads(raw)
             print(f"     → GPT-4o profile generated ({len(raw)} chars)")
             return data

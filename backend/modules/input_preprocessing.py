@@ -18,45 +18,45 @@ Example:
 """
 
 import asyncio
-import os
 
-from openai import AsyncOpenAI
-from dotenv import load_dotenv
-
-from modules.base_module import ModuleInput
+from modules.base_module import ModuleInput, call_openai
 from input_pipeline.config import LLM
-
-load_dotenv()
 
 
 # ─────────────────────────────────────────────
 #  SHARED GPT HELPER
 # ─────────────────────────────────────────────
 
-async def _gpt_text_call(prompt: str, max_tokens: int = 80) -> str | None:
-    """
-    Lightweight GPT-4o-mini call returning plain text (not JSON).
-    Creates its own client — this module is called before BaseModule instances exist.
-    """
-    try:
-        client   = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        response = await client.chat.completions.create(
-            model=LLM["extraction_model"],
-            max_tokens=max_tokens,
-            temperature=0.0,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"  ⚠️  [preprocess] GPT call failed: {e}")
-        return None
+async def _gpt_text_call(
+    prompt:     str,
+    max_tokens: int = 80,
+    company_id: "str | None" = None,
+    report_id:  "str | None" = None,
+) -> str | None:
+    """Lightweight GPT-4o-mini call via shared call_openai()."""
+    raw = await call_openai(
+        model=LLM["extraction_model"],
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=max_tokens,
+        temperature=0.0,
+        call_type="preprocessing",
+        module="input_preprocessing",
+        company_id=company_id,
+        report_id=report_id,
+    )
+    return raw.strip() if raw else None
 
 
 # ─────────────────────────────────────────────
 #  FUNCTION 1 — CLEAN PRODUCT NAME
 # ─────────────────────────────────────────────
 
-async def clean_product_name(raw_name: str, company_name: str = "") -> str:
+async def clean_product_name(
+    raw_name:   str,
+    company_name: str = "",
+    company_id: "str | None" = None,
+    report_id:  "str | None" = None,
+) -> str:
     """
     Strips brand/company name and quantity/weight from a raw product listing title.
 
@@ -83,7 +83,7 @@ Keep in the title:
 
 Return ONLY the cleaned product name. No quotes, no explanation, no punctuation at the end."""
 
-    result = await _gpt_text_call(prompt, max_tokens=60)
+    result = await _gpt_text_call(prompt, max_tokens=60, company_id=company_id, report_id=report_id)
     if result:
         print(f"     → Name: {raw_name!r} → {result!r}")
         return result
@@ -94,7 +94,12 @@ Return ONLY the cleaned product name. No quotes, no explanation, no punctuation 
 #  FUNCTION 2 — FIND HS CODE
 # ─────────────────────────────────────────────
 
-async def find_hs_code(product_name: str, category: str = "") -> str:
+async def find_hs_code(
+    product_name: str,
+    category:     str = "",
+    company_id:   "str | None" = None,
+    report_id:    "str | None" = None,
+) -> str:
     """
     Returns the closest 6-digit HS (Harmonized System) code for a product.
     Returns empty string if GPT fails or returns an invalid code.
@@ -111,7 +116,7 @@ Rules:
 
 Example output: 091030"""
 
-    result = await _gpt_text_call(prompt, max_tokens=20)
+    result = await _gpt_text_call(prompt, max_tokens=20, company_id=company_id, report_id=report_id)
     if result:
         clean = result.replace(".", "").replace(" ", "").strip()
         if clean.isdigit() and 4 <= len(clean) <= 10:
@@ -140,15 +145,17 @@ async def preprocess_module_input(inp: ModuleInput) -> ModuleInput:
     """
     print(f"\n  🔧 [preprocess] {inp.product_name!r}")
 
-    run_hs = not bool(inp.hs_code)
+    run_hs     = not bool(inp.hs_code)
+    company_id = getattr(inp, "company_id", None)
+    report_id  = getattr(inp, "report_id",  None)
 
     if run_hs:
         cleaned_name, hs_code = await asyncio.gather(
-            clean_product_name(inp.product_name, inp.company_name),
-            find_hs_code(inp.product_name, inp.category),
+            clean_product_name(inp.product_name, inp.company_name, company_id, report_id),
+            find_hs_code(inp.product_name, inp.category, company_id, report_id),
         )
     else:
-        cleaned_name = await clean_product_name(inp.product_name, inp.company_name)
+        cleaned_name = await clean_product_name(inp.product_name, inp.company_name, company_id, report_id)
         hs_code      = inp.hs_code
 
     inp.product_name = cleaned_name or inp.product_name
