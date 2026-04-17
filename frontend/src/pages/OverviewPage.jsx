@@ -1,24 +1,26 @@
+
 // import { useEffect, useState } from "react";
-// import AiGenerated from "../userComponents/AiGenerated";
-// import PopForm from "../userComponents/PopForm";
-// import Header from "../userComponents/Header";
-// import KpiCards from "../userComponents/KpiCards";
-// import SideBar from "../userComponents/SideBar";
-// import Opportunity from "../userComponents/Opportunity";
+// import AiGenerated from "../Components/AiGenerated";
+// import Header from "../Components/Header";
+// import KpiCards from "../Components/KpiCards";
+// import SideBar from "../Components/SideBar";
+// import Opportunity from "../Components/Opportunity";
+// import PopForm from "../Components/PopForm";
+// import { base_url1 } from "../URL";
 
 // const OverViewPage = () => {
 
 //     const [popupOpen, setPopupOpen] = useState(false);
 
-//     // useEffect(() => {
-//     //     let timeOut = setTimeout(() => {
-//     //         setPopupOpen(true);
-//     //     }, 1000);
+//     useEffect(() => {
+//         let timeOut = setTimeout(() => {
+//             setPopupOpen(true);
+//         }, 1000);
 
-//     //     return () => {
-//     //         clearTimeout(timeOut);
-//     //     }
-//     // }, []);
+//         return () => {
+//             clearTimeout(timeOut);
+//         }
+//     }, []);
 
 //     return (
 //         <>
@@ -58,6 +60,12 @@
 // };
 
 // export default OverViewPage;
+
+
+
+
+
+
 
 import { useEffect, useState } from "react";
 import AiGenerated from "../Components/AiGenerated";
@@ -117,7 +125,7 @@ const OverViewPage = () => {
       const data = await response.json();
 
       if (data?.success) {
-        console.log("overview Data:", data);
+        // console.log("overview Data:", data);
         setStatsData(data?.stats);
         setOpportunity_hubData(data?.opportunity_hub);
         // setRecent_activityData(data?.recent_activity);
@@ -149,11 +157,10 @@ const OverViewPage = () => {
       const data = await response.json();
 
       if (data?.success) {
-        console.log("overview Data1111:", data);
         setRecent_activityData(data?.recent_activity);
       }
     } catch (error) {
-      console.error("Something went wrong:", error.message);
+      console.log("Something went wrong:", error.message);
     }
   };
 

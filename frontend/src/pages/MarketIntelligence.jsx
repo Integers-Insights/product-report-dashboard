@@ -1,5 +1,5 @@
 import Header from "../Components/Header";
-import MarketComponent from "../Components/MarketComponent";
+import MarketComponent from "../Components/Market";
 import SideBar from "../Components/SideBar";
 
 const MarketIntelligence = () => {

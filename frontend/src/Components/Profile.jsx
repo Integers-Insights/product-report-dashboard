@@ -1,9 +1,38 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
-const Profile = ({ setOpen_profile,profil_data }) => {
-  const [active_tab, setActive_tab] = useState("Personal Info");
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
-  const [active_com, setActive_com] = useState("Manufacturer");
+import { useState } from "react";
+const Profile = ({
+  setOpen_profile,
+  full_name,
+  setFullName,
+  email,
+  setEmail,
+  phone,
+  setPhone,
+  country,
+  company_name,
+  setCompany_name,
+  industry,
+  setIndustry,
+  business_type,
+  setBusiness_Type,
+  business_type_data,
+  handleProfile1,
+  current_password,
+  setCurrent_password,
+  new_password,
+  setNew_password,
+  confirm_password,
+  setConfirm_password,
+  handleProfile2,
+  passError,
+  handleProfile3,
+}) => {
+  const [active_tab, setActive_tab] = useState("Personal Info");
+  const [editBussinessType, setEditBussinessType] = useState(false);
+
+  // console.log("edit: ", editBussinessType);
 
   const tab_btn = [
     "Personal Info",
@@ -30,14 +59,22 @@ const Profile = ({ setOpen_profile,profil_data }) => {
 
         <div className="h-20 w-full bg-[#0284C7] relative">
           <div className="border-3 h-17 w-17 rounded-full uppercase font-bold text-3xl flex justify-center items-center absolute left-15 -bottom-8 text-white bg-[#0284C7]">
-            AS
+            {typeof full_name === "string"
+              ? full_name
+                  .trim()
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((word) => word[0]?.toUpperCase() || "")
+                  .join("")
+              : ""}
           </div>
         </div>
 
-        <p className="mt-12 px-4 text-xl">Arjun Shah</p>
+        <p className="mt-12 px-4 text-xl">{full_name}</p>
 
         <p className="px-4 flex gap-3 text-sm font-regular text-[#5F6368] text-sm mt-2">
-          <span>arjun@greenleaf.in</span>
+          <span>{email}</span>
           <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium">
             Scout Plan
           </span>
@@ -72,6 +109,8 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                     id="fullName"
                     name="fullName"
                     type="text"
+                    value={full_name}
+                    onChange={(e) => setFullName(e.target.value)}
                     placeholder="full name"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -89,6 +128,8 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                     id="email"
                     name="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -105,7 +146,9 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                   <input
                     id="tel"
                     name="tel"
-                    type="number"
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91 9876543210"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -123,6 +166,8 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                     id="country"
                     name="country"
                     type="text"
+                    value={country}
+                    readOnly
                     placeholder="country name"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -130,7 +175,10 @@ const Profile = ({ setOpen_profile,profil_data }) => {
               </div>
 
               <div className="mt-3">
-                <button className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer">
+                <button
+                  className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer"
+                  onClick={handleProfile1}
+                >
                   save changes
                 </button>
               </div>
@@ -141,60 +189,145 @@ const Profile = ({ setOpen_profile,profil_data }) => {
             <div className="flex flex-col gap-3">
               <div>
                 <label
-                  htmlFor="password"
+                  htmlFor="currentpassword"
                   className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
                 >
                   Current Password <sup>*</sup>
                 </label>
-                <div className="mt-1">
+                {/* <div className="mt-1">
                   <input
                     id="password"
-                    name="password"
+                    name="current_password"
                     type="password"
-                    autoComplete="current-password"
+                    value={current_password}
+                    onChange={(e) => setCurrent_password(e.target.value)}
                     className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[var(--color-brand-primary1)] sm:text-sm/6"
                   />
+                  {passError && !current_password && (
+                      <p className="text-red-500 text-sm text-right">
+                        Enter current_password
+                      </p>
+                    )}
+                </div> */}
+                <div className="mt-1">
+                  <input
+                    id="currentpassword"
+                    name="current_password"
+                    type="password"
+                    value={current_password}
+                    onChange={(e) => setCurrent_password(e.target.value)}
+                    className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 sm:text-sm/6 ${
+                      passError && !current_password
+                        ? "outline-red-500 border-red-500 focus:outline-red-500"
+                        : "outline-gray-300 focus:outline-[var(--color-brand-primary1)]"
+                    }`}
+                  />
+
+                  {passError && !current_password && (
+                    <p className="text-red-500 text-sm text-right mt-1">
+                      Enter current password
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-5">
-                <div className="h-21">
+                {/* <div className="h-21">
                   <label
-                    htmlFor="password"
+                    htmlFor="newpassword"
                     className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
                   >
                     New Password <sup>*</sup>
                   </label>
                   <div className="mt-1">
                     <input
-                      id="password"
-                      name="password"
+                      id="newpassword"
+                      name="new_password"
                       type="password"
-                      autoComplete="current-password"
+                      value={new_password}
+                      onChange={(e) => setNew_password(e.target.value)}
                       className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[var(--color-brand-primary1)] sm:text-sm/6"
                     />
+                    {passError && !new_password && (
+                      <p className="text-red-500 text-sm text-right">
+                        Enter new password
+                      </p>
+                    )}
+                  </div>
+                </div> */}
+                <div className="h-21">
+                  <label
+                    htmlFor="newpassword"
+                    className="block text-sm/6 font-medium text-gray-900"
+                  >
+                    New Password <sup>*</sup>
+                  </label>
+
+                  <div className="mt-1">
+                    <input
+                      id="newpassword"
+                      name="new_password"
+                      type="password"
+                      value={new_password}
+                      onChange={(e) => setNew_password(e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 sm:text-sm/6 ${
+                        passError && !new_password
+                          ? "outline-red-500 focus:outline-red-500"
+                          : "outline-gray-300 focus:outline-[var(--color-brand-primary1)]"
+                      }`}
+                    />
+
+                    {passError && !new_password && (
+                      <p className="text-red-500 text-sm text-right mt-1">
+                        Enter new password
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="h-21">
                   <label
-                    htmlFor="password"
-                    className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
+                    htmlFor="confirmpassword"
+                    className="block text-sm/6 font-medium text-gray-900"
                   >
                     Confirm Password <sup>*</sup>
                   </label>
+
                   <div className="mt-1">
                     <input
-                      id="password"
-                      name="password"
+                      id="confirmpassword"
+                      name="confirm_password"
                       type="password"
-                      autoComplete="current-password"
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[var(--color-brand-primary1)] sm:text-sm/6"
+                      value={confirm_password}
+                      onChange={(e) => setConfirm_password(e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 sm:text-sm/6 ${
+                        (passError && !confirm_password) ||
+                        (confirm_password && new_password !== confirm_password)
+                          ? "outline-red-500 focus:outline-red-500"
+                          : "outline-gray-300 focus:outline-[var(--color-brand-primary1)]"
+                      }`}
                     />
+
+                    {/* Empty error */}
+                    {passError && !confirm_password && (
+                      <p className="text-red-500 text-sm text-right mt-1">
+                        Enter confirm password
+                      </p>
+                    )}
+
+                    {/* Match error */}
+                    {confirm_password && new_password !== confirm_password && (
+                      <p className="text-red-500 text-sm text-right mt-1">
+                        Passwords do not match
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
               <div>
-                <button className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer">
+                <button
+                  className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer"
+                  onClick={handleProfile2}
+                >
                   Update Password
                 </button>
               </div>
@@ -215,6 +348,8 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                     id="companyName"
                     name="companyName"
                     type="text"
+                    value={company_name}
+                    onChange={(e) => setCompany_name(e.target.value)}
                     placeholder="company name"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -232,6 +367,8 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                     id="industry"
                     name="industry"
                     type="text"
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
                     placeholder="Industry"
                     className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
                   />
@@ -242,28 +379,40 @@ const Profile = ({ setOpen_profile,profil_data }) => {
                 <p className="text-sm/6 font-medium text-gray-900">
                   Business Type
                 </p>
-                <div className="text-sm font-medium flex gap-3 mt-1">
-                  <button
-                    className={`border  px-4 py-1.5 rounded-2xl ${active_com === "Manufacturer" ? "bg-[#E0F5FF] text-[#0284C7]" : "text-[#5F6368] bg-gray-200"}`}
-                  >
-                    Manufacturer
+
+                <div className="flex justify-between items-center">
+                  <button className="text-sm font-medium flex gap-3 mt-1 px-4 py-1.5 rounded-2xl bg-[#E0F5FF] text-[#0284C7]">
+                    {business_type_data}
                   </button>
                   <button
-                    className={`border  px-4 py-1.5 rounded-2xl ${active_com === "Distributor" ? "bg-[#E0F5FF] text-[#0284C7]" : "text-[#5F6368] bg-gray-200"}`}
+                    className="cursor-pointer"
+                    onClick={() => setEditBussinessType(!editBussinessType)}
                   >
-                    Distributor
-                  </button>
-                  <button
-                    className={`border  px-4 py-1.5 rounded-2xl ${active_com === "Brand" ? "bg-[#E0F5FF] text-[#0284C7]" : "text-[#5F6368] bg-gray-200"}`}
-                  >
-                    Brand
+                    <PencilSquareIcon className="h-6 w-6" />
                   </button>
                 </div>
               </div>
-              <div></div>
+              <div>
+                {editBussinessType && (
+                  <div className="mt-5.5">
+                    <input
+                      id="BussinessType"
+                      name="BussinessType"
+                      type="text"
+                      value={business_type}
+                      onChange={(e) => setBusiness_Type(e.target.value)}
+                      placeholder="Bussiness type"
+                      className="block w-full rounded-md bg-white px-2 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="mt-3">
-                <button className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer">
+                <button
+                  className="bg-[#0284C7]  text-white font-medium px-3 py-1 rounded-lg cursor-pointer"
+                  onClick={handleProfile3}
+                >
                   save changes
                 </button>
               </div>

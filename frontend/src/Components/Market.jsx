@@ -59,17 +59,7 @@ const market_data = [
     txt1: "Market Demand",
     txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
     txt3: "Uses 0.5Q per run",
-  },
-  {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
-  },
-  {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
-  },
+  }
 ];
 
 const product_data = [
@@ -142,7 +132,7 @@ const MarketComponent = () => {
             <ChatBubbleOvalLeftEllipsisIcon className="h-7 w-7 text-[#0284C7]" />
           </div> */}
 
-      <div className="mt-6 grid grid-cols-4 gap-6">
+      <div className="mt-6 grid grid-cols-3 gap-6">
         {market_data?.map((item, index) => {
           const Icon = icons[index];
 
@@ -174,16 +164,16 @@ const MarketComponent = () => {
         })}
       </div>
 
-      <p className="flex justify-between mt-4">
+      {/* <p className="flex justify-between mt-4">
         <span className="text-sm font-medium text-[#5F6368]">
           Recent Module Runs
         </span>
         <span className="text-sm font-medium text-[#0284C7] hover:text-[#0475ad]">
           <Link to={"#"}>View all reports →</Link>
         </span>
-      </p>
+      </p> */}
 
-      <div className="border border-[#E6E6E6] bg-white mt-4 p-3 rounded-lg">
+      {/* <div className="border border-[#E6E6E6] bg-white mt-4 p-3 rounded-lg">
         <p className="flex justify-between">
           <span className="text-sm font-medium text-[#5F6368]">
             Product · Module · Market
@@ -197,9 +187,6 @@ const MarketComponent = () => {
             <div key={i}>
               <div className="flex justify-between items-center pb-3 mt-3 card-hover">
                 <div className="flex gap-2 items-center">
-                  {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-                    <Squares2X2Icon className="h-6 w-6" />
-                  </div> */}
                   <InitialText text={itm.txt1} />
                   <div>
                     <p className="text-sm font-medium text-[#000000]">
@@ -222,7 +209,7 @@ const MarketComponent = () => {
             </div>
           );
         })}
-      </div>
+      </div> */}
     </>
   );
 };

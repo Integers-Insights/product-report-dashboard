@@ -3,8 +3,6 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./Components/ScrollToTop";
 
-
-
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
     <div className="h-10 w-10 border-4 border-[#5FC4BE] border-t-transparent rounded-full animate-spin"></div>
@@ -20,16 +18,13 @@ const VerifyEmail = lazy(() => import("./Components/VerifyEmail"));
 const FailedVerification = lazy(
   () => import("./Components/FailedVerification"),
 );
-const MyProduct = lazy(() => import("./pages/MyProject"));
+const MyProduct = lazy(() => import("./pages/MyProduct"));
 const MarketIntelligence = lazy(() => import("./pages/MarketIntelligence"));
 const BuyerList = lazy(() => import("./pages/BuyerList"));
-const IntelligenceReports = lazy(
-  () => import("./pages/IntelligenceReports"),
-);
+const Intelligence = lazy(() => import("./pages/Intelligence"));
 const Help = lazy(() => import("./pages/Help"));
 
 const App = () => {
-
   const [mainLoader, setMainLoader] = useState(true);
 
   useEffect(() => {
@@ -55,12 +50,9 @@ const App = () => {
 
         <Suspense fallback={<Loader />}>
           <Routes>
-            {/* user */}
             <Route path="/" element={<OverViewPage />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
-            {/* <Route path="/sideBar" element={<SideBar />} /> */}
-            {/* <Route path="/form" element={<PopForm />} /> */}
             <Route path="/discover" element={<DiscoverProducts />} />
             <Route path="/full-report" element={<FullReport />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
@@ -68,13 +60,12 @@ const App = () => {
               path="/failed-verification"
               element={<FailedVerification />}
             />
-            {/* <Route path="/need" element={<NeedHelp />} /> */}
             <Route path="/product" element={<MyProduct />} />
             <Route path="/market" element={<MarketIntelligence />} />
             <Route path="/buyer" element={<BuyerList />} />
             <Route
               path="/intelligence-reports"
-              element={<IntelligenceReports />}
+              element={<Intelligence />}
             />
             <Route path="/help" element={<Help />} />
           </Routes>

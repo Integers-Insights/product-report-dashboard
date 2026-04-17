@@ -370,7 +370,8 @@ from modules.variants_kit.variants_formats import VariantsFormatsModule
 from modules.competitor_discovery import CompetitorDiscoveryModule
 from modules.input_preprocessing import preprocess_module_input
 # Marketing kit
-from modules.marketing_kit.keyword_intel import KeywordIntelModule
+# from modules.marketing_kit.keyword_intel import KeywordIntelModule
+from modules.marketing_kit.keyword_intel_v2 import KeywordIntelModule
 from modules.marketing_kit.email_sequence import EmailSequenceModule
 from modules.marketing_kit.ad_concepts import AdConceptsModule
 

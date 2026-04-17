@@ -58,7 +58,7 @@
 //     <>
 //       <div>
 //         <h1 className="text-[#000000] text-[28px] font-semibold">
-//           Good Morning, Guest 👋
+//           Good Morning, Guest
 //         </h1>
 //         <p className="text-[#5F6368] text-13">
 //           Here's your export intelligence dashboard - Tuesday, 11 March 2026.

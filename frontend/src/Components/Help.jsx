@@ -54,9 +54,25 @@ const HelpComponent = () => {
             <p className="mt-1 text-sm text-[#5F6368] font-regular">
               Response under 5 minutes.
             </p>
-            <button className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
+            {/* <button className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
               Start Chat
-            </button>
+            </button> */}
+            {/* <a
+              href="https://wa.me/+919321256706"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer inline-block"
+            >
+              Start Chat
+            </a> */}
+            <a
+              href="https://wa.me/919321256706?text=How%20can%20I%20help%20you%3F"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer inline-block"
+            >
+              Start Chat
+            </a>
           </div>
         </div>
         <div className="border border-[#E6E6E6] p-4 card-hover rounded-lg flex gap-3 bg-white">
@@ -68,11 +84,20 @@ const HelpComponent = () => {
               Email Support
             </p>
             <p className="mt-1 text-sm text-[#5F6368] font-regular">
-              support@intrade24.com · Within 24hrs.
+              <a href="mailto:info@integersinsights.com">
+                info@integersinsights.com
+              </a>{" "}
+              · Within 24hrs.
             </p>
-            <button className="border border-gray-500 mt-2 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
+            {/* <button className="border border-gray-500 mt-2 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
+              <a href="mailto:info@integersinsights.com">Send Email</a>
+            </button> */}
+            <a
+              href="mailto:info@integersinsights.com"
+              className="border border-gray-500 mt-2 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm inline-block"
+            >
               Send Email
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -83,10 +108,7 @@ const HelpComponent = () => {
         {faq_data?.map((item, index) => {
           const isOpen = open_Faq.includes(index);
           return (
-            <div
-              key={index}
-              className="border-b border-gray-300 mt-2"
-            >
+            <div key={index} className="border-b border-gray-300 mt-2">
               <div
                 className="flex justify-between items-center px-3 py-3 cursor-pointer bg-gray-50 hover:bg-white"
                 onClick={() => openFaq(index)}
@@ -111,3 +133,5 @@ const HelpComponent = () => {
   );
 };
 export default HelpComponent;
+
+// latest changes

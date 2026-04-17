@@ -41,38 +41,6 @@ Return ONLY valid JSON, no explanation:
 }}
 """
 
-# MULTILINGUAL_PROMPT = """
-# You are a multilingual B2B keyword researcher.
-
-# Product: {product_name}
-# Category: {category}
-# Certifications: {certifications}
-# Target country: {target_country}
-# Target language: {language}
-
-# Generate exactly {n} high-quality B2B buyer-intent keywords in {language} that 
-# a procurement manager or importer in {target_country} would search for when 
-# sourcing this product from India.
-
-# Mix of:
-# - Direct product terms in {language}
-# - Supplier / wholesale / bulk / certified variants in {language}
-# - Certification-specific terms (translate cert names where natural)
-# - 3-4 niche-specific phrases that large Western suppliers likely don't target
-
-# DO NOT include search volume or competition — those will be fetched from real data.
-# Return ONLY valid JSON, no explanation:
-# {{
-#   "multilingual": [
-#     {{ "keyword": "..." }},
-#     {{ "keyword": "..." }}
-#   ]
-# }}
-# """
-
-
-
-
 # ── GPT generation prompts ───────────────────────────────────────────────────
 
 BUYER_INTENT_PROMPT = """
