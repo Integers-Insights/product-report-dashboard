@@ -433,13 +433,15 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                 co.name                  AS company_name,
                 co.headquarters_country,
                 co.company_type,
-                cp.buyer_type,
-                cp.price_positioning
+                ur.buyer_type,
+                ur.price_positioning
             FROM product_info.product_master pm
             LEFT JOIN core_tables.companies_other co
                 ON co.id = pm.company_id
             LEFT JOIN product_info.company_preferences cp
                 ON cp.company_id = pm.company_id
+            left join core_tables.user_research_preferences ur
+                on ur.user_id = pm.created_by
             WHERE pm.company_id = $1
             AND pm.job_id = $2
         """, company_id, job_id)
@@ -455,13 +457,19 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         user_id = str(rows[0]["created_by"])
         print(f"✅ Found {len(rows)} products for job | user_id: {user_id}")
 
-        prefs = await conn.fetchrow("""
-            SELECT buyer_type
-            FROM product_info.company_preferences
-            WHERE company_id = $1
-        """, company_id)
+        user_id = str(rows[0]["created_by"])
+        print(f"✅ Found {len(rows)} products for job | user_id: {user_id}")
 
-        buyer_type = str(prefs["buyer_type"] or "B2B").upper().strip() if prefs else "B2B"
+        # ✅ debug — confirm what's in DB
+        prefs = await conn.fetchrow("""
+            SELECT user_id, buyer_type
+            FROM core_tables.user_research_preferences
+            WHERE user_id = $1
+        """, user_id)
+
+        print(f"🔍 prefs row: {dict(prefs) if prefs else None}")  # ← add this
+
+        buyer_type = str(prefs["buyer_type"]).upper().strip() if prefs else "B2B"
         print(f"📋 buyer_type from preferences: '{buyer_type}'")
 
         # =========================================================
@@ -638,11 +646,20 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                             await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
 
                     elif buyer_type == "BOTH":
-                        # ✅ Sequential — same connection cannot handle concurrent queries
+                        print(f"🔍 b2b: {obj.b2b} | success={getattr(obj.b2b, 'success', None)} | buyers={len(getattr(obj.b2b, 'buyers', []))}")
+                        print(f"🔍 b2c: {obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
+
                         if obj.b2b and obj.b2b.success:
                             await upsert_b2b_buyer_intelligence(pc, obj.b2b.to_db_row(), user_id)
+                            print(f"✅ B2B saved")
+                        else:
+                            print(f"⚠️ B2B skipped — b2b={obj.b2b} | success={getattr(obj.b2b, 'success', None)}")
+
                         if obj.b2c and obj.b2c.success:
                             await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
+                            print(f"✅ B2C saved")
+                        else:
+                            print(f"⚠️ B2C skipped — b2c={obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
 
                     else:
                         print(f"⚠️  [save_buyer] Unknown buyer_type='{buyer_type}' — skipping")

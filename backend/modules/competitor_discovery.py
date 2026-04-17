@@ -214,7 +214,8 @@ class CompetitorDiscoveryModule(BaseModule):
         # Feed into intel module:
         competitors = result.for_intel_module()
     """
-
+    def module_name(self) -> str:
+        return "competitor_discovery"
     # ── Step 1: Sonar discovery ──────────────────────────────────────────────
 
     async def _sonar_discover(self, inp) -> str | None:

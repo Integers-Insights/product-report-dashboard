@@ -32,7 +32,7 @@ from modules.base_module import BaseModule, ModuleInput, ModuleResult
 # ─────────────────────────────────────────────
 
 COUNTRY_DISCOVERY_PROMPT = """
-Which 15 countries which use {product_name} most?
+Which 2 countries which use {product_name} most?
 """
 
 COUNTRY_LIST_EXTRACTION_PROMPT = """
@@ -50,7 +50,7 @@ Return ONLY valid JSON:
 
 Rules:
 - Country names only — no regions, no blocs (e.g. "EU")
-- Maximum 10 countries
+- Maximum 2 countries
 - If fewer than 2 are mentioned, return only those found
 """
 
