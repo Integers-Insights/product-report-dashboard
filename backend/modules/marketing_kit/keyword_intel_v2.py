@@ -183,9 +183,11 @@ class KeywordIntelModule(BaseModule):
         language_constant: str,
         yaml_path:         str,
         customer_id:       str,
+        chunk_size:        int = 20,   # Google Ads API hard limit per request
     ) -> dict[str, dict]:
         """
-        Single Ads API call: all keywords passed as combined seeds.
+        Enriches keywords with Ads API metrics.
+        Automatically chunks into batches of ≤20 (API hard limit) and merges results.
         Returns dict keyed by lowercase keyword → {search_volume, competition, competition_index}.
         """
         try:
@@ -197,24 +199,29 @@ class KeywordIntelModule(BaseModule):
         service = client.get_service("KeywordPlanIdeaService")
         COMPETITION_MAP = {0: "Unknown", 1: "Low", 2: "Medium", 3: "High"}
 
-        request = client.get_type("GenerateKeywordIdeasRequest")
-        request.customer_id = customer_id
-        request.language    = language_constant
-        request.keyword_seed.keywords.extend([kw.lower() for kw in keywords])
-
-        response = self._ads_call_with_retry(service, request, "gpt-batch")
+        # Split into chunks to stay within the 20-keyword API limit
+        chunks = [keywords[i:i + chunk_size] for i in range(0, len(keywords), chunk_size)]
 
         metrics: dict[str, dict] = {}
-        for idea in response:
-            text = idea.text.strip().lower()
-            if text in metrics:
-                continue
-            m = idea.keyword_idea_metrics
-            metrics[text] = {
-                "search_volume":     int(m.avg_monthly_searches) if m else None,
-                "competition":       COMPETITION_MAP.get(int(m.competition) if m else 0, "Unknown"),
-                "competition_index": int(m.competition_index) if m else None,
-            }
+
+        for chunk in chunks:
+            request = client.get_type("GenerateKeywordIdeasRequest")
+            request.customer_id = customer_id
+            request.language    = language_constant
+            request.keyword_seed.keywords.extend([kw.lower() for kw in chunk])
+
+            response = self._ads_call_with_retry(service, request, "gpt-batch")
+
+            for idea in response:
+                text = idea.text.strip().lower()
+                if text in metrics:
+                    continue
+                m = idea.keyword_idea_metrics
+                metrics[text] = {
+                    "search_volume":     int(m.avg_monthly_searches) if m else None,
+                    "competition":       COMPETITION_MAP.get(int(m.competition) if m else 0, "Unknown"),
+                    "competition_index": int(m.competition_index) if m else None,
+                }
 
         print(f"     → Ads API returned {len(metrics)} keyword metrics")
         return metrics
