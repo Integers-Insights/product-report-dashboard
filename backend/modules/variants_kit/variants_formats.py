@@ -141,13 +141,14 @@ class VariantsFormatsModule(BaseModule):
     # ── Step 1b: GPT — extract clean name list ───────────────────────────────
 
     async def _extract_variant_names(self, sonar_text: str, inp) -> list[str]:
+        names=[]
         """GPT pulls just the variant names from Sonar call 1 response."""
         prompt = VARIANT_NAMES_EXTRACTION_PROMPT.format(
             product_name=inp.product_name,
             sonar_response=sonar_text[:2000],
         )
         data  = await self._extract_structured(prompt)
-        names = (data or {}).get("variants", [])[:6]
+        names = [n for n in names if isinstance(n, str) and n.strip()]
         print(f"     → {len(names)} variant names extracted: {', '.join(names)}")
         return names
 
