@@ -94,6 +94,7 @@ async def crawl_website(
     max_depth:     int | None = None,
     max_pages:     int | None = None,
     product_queue: asyncio.Queue | None = None,
+    page_callback=None,   # ✅ add this line
 ) -> CrawlResult:
     """
     BFS crawl of a website, returning pages grouped by type.

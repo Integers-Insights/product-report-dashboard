@@ -27,28 +27,27 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 CRAWLER = {
     "max_depth":        3,
-    "max_pages":        50,        # hard cap per website
-    
-    "page_timeout_ms":       20_000,     # 20s per page
-    "wait_after_load":       300,        # ms to wait after page load (inner pages)
-    "wait_after_load_home":  1500,       # ms to wait on homepage (SPA rendering)
-    "request_jitter_ms":     (100, 400), # (min, max) ms jitter between requests
-    "crawl_concurrency":     5,          # max parallel page fetches per batch
+    "max_pages":        50,
+
+    "page_timeout_ms":       30_000,      # ✅ 30s (was 20s)
+    "wait_after_load":       1000,        # ✅ 1s (was 300ms)
+    "wait_after_load_home":  3000,        # ✅ 3s (was 1500ms)
+    "request_jitter_ms":     (500, 1500), # ✅ more jitter (was 100-400ms)
+    "crawl_concurrency":     3,           # ✅ reduce parallel (was 5)
     "viewport":              {"width": 1440, "height": 900},
     "user_agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
+        "Chrome/122.0.0.0 Safari/537.36"  # ✅ newer Chrome version
     ),
-    # Depth budget per page type — how deep to crawl each type
     "depth_budget": {
-        "product":  3,      # crawl fully
-        "category": 2,      # crawl to find product links inside
-        "about":    1,      # shallow — just the page itself
-        "contact":  1,      # shallow
-        "home":     1,      # just extract links, don't recurse deep
-        "blog":     0,      # skip
-        "ignore":   0,      # skip
+        "product":  3,
+        "category": 2,
+        "about":    1,
+        "contact":  1,
+        "home":     1,
+        "blog":     0,
+        "ignore":   0,
     },
 }
 

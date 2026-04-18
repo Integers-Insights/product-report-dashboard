@@ -124,7 +124,7 @@ async def run_pipeline(
     run_semantic:       bool = True,
     extraction_concurrency: int = 8,
     progress_callback=None,
-    store_callback=None
+    store_callback=None,
 ) -> PipelineResult:
     """
     Runs the full input pipeline for a given website URL.
@@ -168,12 +168,26 @@ async def run_pipeline(
     # Bounded queue — crawler won't race more than 40 pages ahead of extractor
     product_queue: asyncio.Queue = asyncio.Queue(maxsize=40)
 
+    async def page_callback_wrap(pages_crawled: int, total_pages: int):
+        # ✅ update crawl_stats with live value from orchestrator
+        crawl_stats["pages_fetched"] = pages_crawled  # ← add this line
+        if progress_callback:
+            try:
+                await progress_callback(
+                    pages_crawled=pages_crawled,   # ✅ use value from orchestrator directly
+                    total_pages=total_pages,
+                    products_found=len(products),
+                )
+            except Exception as e:
+                print(f"❌ page_callback_wrap error: {e}")
+
     async def _crawl_task() -> CrawlResult:
         return await crawl_website(
             start_url=website_url,
             max_depth=max_depth,
             max_pages=max_pages,
             product_queue=product_queue,
+            page_callback=page_callback_wrap
         )
 
     async def _extraction_task() -> None:
@@ -194,25 +208,20 @@ async def run_pipeline(
                     try:
                         product = await extract_product(p)
                         products.append(product)
-
-                        # ✅ save to DB immediately after extraction
+                        if store_callback:          # ✅ add this
+                            try:
+                                await store_callback(product)
+                            except Exception as e:
+                                print(f"⚠️ Live store failed: {e}")
                         if progress_callback:
                             try:
                                 await progress_callback(
-                                    pages_crawled=crawl_stats["pages_fetched"],
+                                    pages_crawled=crawl_stats["pages_fetched"],  # ✅ live count
                                     total_pages=max_pages or 50,
                                     products_found=len(products),
                                 )
                             except Exception:
                                 pass
-
-                        # ✅ store product immediately
-                        if store_callback:
-                            try:
-                                await store_callback(product)
-                            except Exception as e:
-                                print(f"⚠️ Live store failed: {e}")
-
                     except Exception as e:
                         result.errors.append(f"Extraction error for {p.url}: {e}")
 

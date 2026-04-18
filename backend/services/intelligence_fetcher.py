@@ -191,6 +191,19 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
             WHERE product_id=$1
         """, product_id)
 
+        # ── BUYERS COUNT ─────────────────────────────────────────────────
+        b2b_buyers_count = await conn.fetchrow("""
+            SELECT buyers_count
+            FROM product_info.b2b_buyer_intelligence
+            WHERE product_id = $1
+        """, product_id)
+
+        b2c_buyers_count = await conn.fetchrow("""
+            SELECT jsonb_array_length(COALESCE(leading_brands, '[]'::jsonb)) AS buyers_count
+            FROM product_info.b2c_buyer_intelligence
+            WHERE product_id = $1
+        """, product_id)
+
         # =====================================================
         # 📊 TRADE
         # =====================================================
@@ -336,8 +349,27 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
             #"is_fallback": competitor["is_fallback"] if competitor else None,
         }
         scores        = _parse(overall["scores"])    if overall and overall["scores"]        else []
-        easy_win_count = sum(1 for s in scores if s.get("color") == "green")
-
+        easy_win_count = sum(
+                1 for row in market
+                if row.get("country_and_score") and
+                _parse(row["country_and_score"]) and
+                _parse(row["country_and_score"]).get("tier") == "Easy Win"
+            )
+        b2b_count = b2b_buyers_count["buyers_count"] if b2b_buyers_count and b2b_buyers_count["buyers_count"] else 0
+        b2c_count = b2c_buyers_count["buyers_count"] if b2c_buyers_count and b2c_buyers_count["buyers_count"] else 0
+        total_buyers = b2b_count + b2c_count
+        # ✅ flatten certifications dict → simple list
+        raw_certs = _parse(product["certifications"]) or {}
+        if isinstance(raw_certs, dict):
+            certifications = [
+                cert
+                for certs in raw_certs.values()
+                for cert in (certs if isinstance(certs, list) else [])
+            ]
+        elif isinstance(raw_certs, list):
+            certifications = raw_certs
+        else:
+            certifications = []
     except Exception as e:
         traceback.print_exc()
         return {"success": False, "error": "Failed to parse intelligence data", "detail": str(e), "code": "PARSE_ERROR"}
@@ -348,39 +380,37 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
     try:
         response = {
             "success": True,
-            "product": {
-                "name": product["product_name"],
-                "hs_code": product["hs_code"],
-                "company_name": product["company_name"],
-                "headquarters_country": product["headquarters_country"],
-                "buyer_type":product["buyer_type"],
-                "price_positioning":product["price_positioning"],
-                "monthly_supply_capacity":product["monthly_supply_capacity"],
-                "certifications": _parse(product["certifications"]),
-                "market_country": [row["country"] for row in market[:4]],
-            },
-            "overview": {
-                "score": overall["overall_score"] if overall else None,
-                "top_metrics": {
-                    "keywords": len(marketing_data["high_volume_buyer_intent"])
-                                if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
-                    "market_range": price_data[0]["top_metrics"].get("market_range")
-                                    if price_data and price_data[0].get("top_metrics") else None,
-                    "global_trade": trade_data["global_trade_value"].get("yoy_growth")
-                                    if trade_data and trade_data.get("global_trade_value") else None,
-                    "easy_win": easy_win_count,
+                "product": {
+                    "name":                    product["product_name"],
+                    "hs_code":                 product["hs_code"],
+                   # "company_name":            product["company_name"],
+                    "headquarters_country":    product["headquarters_country"],
+                    "buyer_type":              product["buyer_type"],
+                    "total_buyers":total_buyers,
+                    "price_positioning":       product["price_positioning"],
+                    "monthly_supply_capacity": product["monthly_supply_capacity"],
+                    "certifications": certifications,  # ✅ ["ISO 27001", "FDA Registered", "ISO 9001"]
+                    "market_country":          [row["country"] for row in market[:4]],
+                    "score":                   overall["overall_score"] if overall else None,
+                    "easy_win":                easy_win_count,
+                    "keywords":                len(marketing_data["high_volume_buyer_intent"])
+                                            if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
+                    "market_range":            price_data[0]["top_metrics"].get("market_range")
+                                            if price_data and price_data[0].get("top_metrics") else None,
+                    "global_trade":            trade_data["global_trade_value"].get("yoy_growth")
+                                            if trade_data and trade_data.get("global_trade_value") else None,
+                   
                 },
-                "summary_cards": scores,
-                "urgent_note": overall["urgent_note"] if overall else None,
-                "actions": _parse(overall["action_cards"]) if overall and overall["action_cards"] else [],
-            },
-            "variants":             {"variants_info": variants_data},
-            "market_intelligence":  {"market_info": market_data},
-            "price_intelligence":   {"price_info": price_data},
-            "buyers_intelligence":  buyers_data,
-            "trade_intelligence":   {"trade_info": trade_data},
-            "competitor_intelligence": competitor_data,
-            "marketing_intelligence":  {"marketing_info": marketing_data},
+                "overview":           scores,
+                "urgent_note":             overall["urgent_note"]   if overall else None,
+                "actions":                 _parse(overall["action_cards"]) if overall and overall["action_cards"] else [],
+                "variants":                {"variants_info": variants_data},
+                "market_intelligence":     {"market_info": market_data},
+                "price_intelligence":      {"price_info": price_data},
+                "buyers_intelligence":     buyers_data,
+                "trade_intelligence":      {"trade_info": trade_data},
+                "competitor_intelligence": competitor_data,
+                "marketing_intelligence":  {"marketing_info": marketing_data},
         }
 
         return response
@@ -741,6 +771,16 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
             FROM product_info.product_master
             WHERE created_by = $1
         """, user_id)
+
+        # fetch total pages crawled across all jobs for this user
+        crawl_meta = await conn.fetchrow("""
+            SELECT COALESCE(SUM(pages_crawled), 0) AS total_pages_crawled
+            FROM core_tables.pipeline_jobs
+            WHERE user_id = $1
+            AND status = 'completed'
+        """, user_id)
+
+        pages_crawled = crawl_meta["total_pages_crawled"] if crawl_meta else 0
     except Exception as e:
         traceback.print_exc()
         return {"success": False, "error": "Failed to fetch products overview", "detail": str(e), "code": "DB_FETCH_ERROR"}
@@ -828,6 +868,7 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
             "success":          True,
             "total":            len(cards),
             "products_analyzed": len(cards),
+            "pages_crawled":pages_crawled,
             "last_run":         meta["last_run"].strftime("%d %b %Y") if meta and meta["last_run"] else None,
             "time_taken":       f"{avg_time_min} minutes" if avg_time_min else None,
             "products":         cards,
