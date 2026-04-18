@@ -649,10 +649,8 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
     try:
         # ── 1. All products for this user ────────────────────────────────────
         products = await conn.fetch("""
-            SELECT pm.id, pm.product_name, pm.hs_code, pm.status,
-                   co.name AS company_name, co.headquarters_country
+            SELECT pm.id, pm.product_name, pm.hs_code
             FROM product_info.product_master pm
-            JOIN core_tables.companies_other co ON co.id = pm.company_id
             WHERE pm.created_by = $1
             ORDER BY pm.created_at DESC
         """, user_id)
@@ -662,7 +660,7 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
 
         # ── 2. Bulk fetch scores — scoped to user via subquery ───────────────
         scores_rows = await conn.fetch("""
-            SELECT oi.product_id, oi.overall_score, oi.scores, oi.urgent_note, oi.action_cards
+            SELECT oi.product_id, oi.overall_score, oi.scores, oi.urgent_note, oi.action_cards, oi.total_elapsed_sec
             FROM product_info.overall_intelligence_scores oi
             WHERE oi.product_id IN (
                 SELECT id FROM product_info.product_master WHERE created_by = $1
@@ -688,7 +686,61 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
                 SELECT id FROM product_info.product_master WHERE created_by = $1
             )
         """, user_id)
+                # ── 6. Bulk fetch keyword counts ─────────────────────────────────
+        keyword_rows = await conn.fetch("""
+            SELECT product_id, high_volume_buyer_intent
+            FROM product_info.marketing_intelligence
+            WHERE product_id IN (
+                SELECT id FROM product_info.product_master WHERE created_by = $1
+            )
+        """, user_id)
 
+        # ── 7. Bulk fetch market counts ───────────────────────────────────
+        market_count_rows = await conn.fetch("""
+            SELECT 
+                product_id,
+                COUNT(*) AS market_count,
+                AVG(
+                    NULLIF(
+                        REGEXP_REPLACE(
+                            SUBSTRING(demand_growth->>'value' FROM '[0-9]+\.?[0-9]*'),
+                            '[^0-9.]', '', 'g'
+                        ),
+                        ''
+                    )::float
+                ) AS avg_yoy
+            FROM product_info.market_intelligence
+            WHERE product_id IN (
+                SELECT id FROM product_info.product_master WHERE created_by = $1
+            )
+            AND country IS NOT NULL
+            AND demand_growth->>'value' IS NOT NULL
+            AND demand_growth->>'value' != ''
+            GROUP BY product_id
+        """, user_id)
+
+        # ── 5. Bulk fetch buyer counts — B2B + B2C ───────────────────────
+        b2b_buyer_rows = await conn.fetch("""
+            SELECT bi.product_id, bi.buyers_count
+            FROM product_info.b2b_buyer_intelligence bi
+            WHERE bi.product_id IN (
+                SELECT id FROM product_info.product_master WHERE created_by = $1
+            )
+        """, user_id)
+
+        b2c_buyer_rows = await conn.fetch("""
+            SELECT bi.product_id,
+                jsonb_array_length(COALESCE(bi.leading_brands, '[]'::jsonb)) AS buyers_count
+            FROM product_info.b2c_buyer_intelligence bi
+            WHERE bi.product_id IN (
+                SELECT id FROM product_info.product_master WHERE created_by = $1
+            )
+        """, user_id)
+        meta = await conn.fetchrow("""
+            SELECT MAX(updated_at) AS last_run
+            FROM product_info.product_master
+            WHERE created_by = $1
+        """, user_id)
     except Exception as e:
         traceback.print_exc()
         return {"success": False, "error": "Failed to fetch products overview", "detail": str(e), "code": "DB_FETCH_ERROR"}
@@ -697,7 +749,32 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
         # ── Index by product_id ───────────────────────────────────────────────
         scores_map = {str(r["product_id"]): r for r in scores_rows}
         price_map  = {str(r["product_id"]): r for r in price_rows}
+        
+        # ── B2B count ────────────────────────────────────────────────────
+        b2b_total = sum(r["buyers_count"] or 0 for r in b2b_buyer_rows)
 
+        # ── B2C count — count leading brands as B2C "buyers" ────────────
+        b2c_total = sum(r["buyers_count"] or 0 for r in b2c_buyer_rows)
+
+        total_buyers = b2b_total + b2c_total
+        market_count_map = {str(r["product_id"]): r for r in market_count_rows}
+        keyword_map = {str(r["product_id"]): _parse(r["high_volume_buyer_intent"]) or [] for r in keyword_rows}
+
+        # ── Aggregate stats ───────────────────────────────────────────────
+        total_keywords  = sum(len(v) for v in keyword_map.values())
+        easy_win_markets = 0
+        yoy_values = []
+
+        for pid_str, r in market_count_map.items():
+            if r["avg_yoy"]:
+                yoy_values.append(float(r["avg_yoy"]))
+
+        # easy win markets = sum of green scores across all products
+        for ov in scores_map.values():
+            raw = _parse(ov["scores"]) if ov["scores"] else []
+            easy_win_markets += sum(1 for s in raw if s.get("color") == "green")
+
+        avg_yoy = round(sum(yoy_values) / len(yoy_values), 1) if yoy_values else None
         # collect top market country per product
         market_map: Dict[str, str] = {}
         for r in market_rows:
@@ -712,44 +789,54 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
             ov   = scores_map.get(pid)
             pr   = price_map.get(pid)
 
-            # parse scores array → {dimension: {score, label, sublabel, color}}
-            raw_scores = _parse(ov["scores"]) if ov and ov["scores"] else []
-            score_map  = {s["dimension"]: s for s in raw_scores}
-
-            # parse top_metrics for market_range
             top_metrics = _parse(pr["top_metrics"]) if pr and pr["top_metrics"] else {}
+
+            raw_scores = _parse(ov["scores"]) if ov and ov["scores"] else []
+            simplified_scores = [
+                {
+                    "color": s.get("color"),
+                    "label": s.get("label"),
+                    "score": s.get("score"),
+                }
+                for s in raw_scores
+            ]
 
             easy_win_count = sum(1 for s in raw_scores if s.get("color") == "green")
 
             cards.append({
-                "product_id":           pid,
-                "product_name":         p["product_name"],
-                "hs_code":              p["hs_code"],
-                "status":               p["status"],
-                "company_name":         p["company_name"],
-                "headquarters_country": p["headquarters_country"],
-                "top_market":           market_map.get(pid),
+                "product_id":   pid,
+                "product_name": p["product_name"],
+                "hs_code":      p["hs_code"],
                 "overview": {
-                    "score":       ov["overall_score"] if ov else None,
-                    "urgent_note": ov["urgent_note"]   if ov else None,
-                    "easy_win":    easy_win_count,
+                    "score":        ov["overall_score"]   if ov else None,
+                    "urgent_note":  ov["urgent_note"]     if ov else None,
+                    "easy_win":     easy_win_count,
                     "market_range": top_metrics.get("market_range"),
-                    "scores": {
-                        "market_demand":       score_map.get("market_demand"),
-                        "variants_formats":    score_map.get("variants_formats"),
-                        "competition":         score_map.get("competition"),
-                        "trade_activity":      score_map.get("trade_activity"),
-                        "price_fit":           score_map.get("price_fit"),
-                        "buyer_availability":  score_map.get("buyer_availability"),
-                    },
-                    "intelligence_ready": ov is not None,
+                    "scores":       simplified_scores,
                 },
             })
 
+        # ── aggregate total time across all products ──────────────────────────
+        all_times = [
+            row["total_elapsed_sec"]
+            for row in scores_map.values()
+            if row and row.get("total_elapsed_sec")
+        ]
+        avg_time_min = round(sum(all_times) / len(all_times) / 60, 1) if all_times else None
+
         return {
-            "success": True,
-            "total":    len(cards),
-            "products": cards,
+            "success":          True,
+            "total":            len(cards),
+            "products_analyzed": len(cards),
+            "last_run":         meta["last_run"].strftime("%d %b %Y") if meta and meta["last_run"] else None,
+            "time_taken":       f"{avg_time_min} minutes" if avg_time_min else None,
+            "products":         cards,
+            "summary": [
+                {"key": "total_buyers",     "label": "Buyers Found",     "value": total_buyers},
+                {"key": "easy_win_markets", "label": "Easy Win Markets", "value": easy_win_markets},
+                {"key": "avg_yoy_demand",   "label": "Avg YoY Demand",   "value": f"+{avg_yoy}%" if avg_yoy else None},
+                {"key": "total_keywords",   "label": "Keywords",         "value": total_keywords},
+            ],
         }
 
     except Exception as e:

@@ -1229,7 +1229,7 @@ async def run_pipeline_endpoint(
 #             "detail":  str(e)
 #         })
 
-@router.get("/pipeline/products/live/{job_id}")
+@router.get("/pipeline/products/{job_id}")
 async def get_pipeline_products_live(
     job_id: str,
     conn=Depends(get_db),

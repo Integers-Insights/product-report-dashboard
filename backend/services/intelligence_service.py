@@ -738,7 +738,16 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                 async def save_overall():
                     obj = getattr(result, "scoring", None)
                     if obj and obj.success:
-                        await upsert_overall_intelligence(pc, obj.to_db_row(), user_id)
+                        db_row = obj.to_db_row()
+
+                        # ✅ sum all module elapsed times
+                        total_elapsed = sum(
+                            s.elapsed for s in result.statuses.values()
+                            if s.elapsed is not None
+                        )
+                        db_row["total_elapsed_sec"] = round(total_elapsed, 1)
+
+                        await upsert_overall_intelligence(pc, db_row, user_id)
 
                 # Sequential saves on the dedicated connection
                 await safe_insert("buyer",      save_buyer)

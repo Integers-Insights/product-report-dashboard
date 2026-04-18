@@ -30,11 +30,10 @@ def extract_emails(email_data):
 
 async def upsert_overall_intelligence(conn, data: dict, user_id: str):
 
-    scores = data.get("scores", [])
+    scores  = data.get("scores", [])
     actions = data.get("action_cards", [])
 
-    # 🔥 CRITICAL FIX
-    scores_json = json.dumps(scores)
+    scores_json  = json.dumps(scores)
     actions_json = json.dumps(actions)
 
     print("📦 SCORES:", scores_json)
@@ -51,29 +50,31 @@ async def upsert_overall_intelligence(conn, data: dict, user_id: str):
             action_cards,
             actions_count,
             created_by,
-            updated_by
+            updated_by,
+            total_elapsed_sec
         )
-        VALUES ($1,$2,$3::jsonb,$4,$5,$6::jsonb,$7,$8,$9)
+        VALUES ($1,$2,$3::jsonb,$4,$5,$6::jsonb,$7,$8,$8,$9)
         ON CONFLICT (product_id)
         DO UPDATE SET
-            overall_score = EXCLUDED.overall_score,
-            scores = EXCLUDED.scores,
-            scores_count = EXCLUDED.scores_count,
-            urgent_note = EXCLUDED.urgent_note,
-            action_cards = EXCLUDED.action_cards,
-            actions_count = EXCLUDED.actions_count,
-            updated_at = NOW(),
-            updated_by = EXCLUDED.updated_by
+            overall_score     = EXCLUDED.overall_score,
+            scores            = EXCLUDED.scores,
+            scores_count      = EXCLUDED.scores_count,
+            urgent_note       = EXCLUDED.urgent_note,
+            action_cards      = EXCLUDED.action_cards,
+            actions_count     = EXCLUDED.actions_count,
+            updated_at        = NOW(),
+            updated_by        = EXCLUDED.updated_by,
+            total_elapsed_sec = EXCLUDED.total_elapsed_sec
         """,
-        data.get("product_id"),
-        data.get("overall_score"),
-        scores_json,           # ✅ FIX
-        len(scores),
-        data.get("urgent_note"),
-        actions_json,          # ✅ FIX
-        len(actions),
-        None,
-        None
+        data.get("product_id"),       # $1
+        data.get("overall_score"),    # $2
+        scores_json,                  # $3
+        len(scores),                  # $4
+        data.get("urgent_note"),      # $5
+        actions_json,                 # $6
+        len(actions),                 # $7
+        user_id,                      # $8 — created_by + updated_by
+        data.get("total_elapsed_sec"), # $9
     )
 
     print(f"✅ Saved overall intelligence for product {data.get('product_id')}")
