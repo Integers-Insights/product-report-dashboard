@@ -515,29 +515,21 @@ async def upsert_b2c_buyer_intelligence(conn, data: dict, user_id: str):
 # 🔀 ROUTER — replaces upsert_buyer_intelligence
 # =====================================================
 async def upsert_buyer_intelligence(conn, data: dict, user_id: str):
-
     buyer_type = str(data.get("buyer_type") or "").upper()
-
     print(f"🔀 [upsert_buyer_intelligence] routing → buyer_type='{buyer_type}'")
-
     if buyer_type == "B2B":
         await upsert_b2b_buyer_intelligence(conn, data, user_id)
-
     elif buyer_type == "B2C":
         await upsert_b2c_buyer_intelligence(conn, data, user_id)
-
     elif buyer_type == "BOTH":
         await asyncio.gather(
             upsert_b2b_buyer_intelligence(conn, data,                  user_id),
             upsert_b2c_buyer_intelligence(conn, data,                  user_id),
         )
-
     else:
         print(f"⚠️  Unknown buyer_type '{buyer_type}' — skipping upsert")
 
-
 async def upsert_market_intelligence(conn, product_id, rows, user_id):
-
 
     query = """
         INSERT INTO product_info.market_intelligence (
