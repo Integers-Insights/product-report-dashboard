@@ -364,7 +364,7 @@ from typing import Callable, Optional, Any, Dict
 
 # Core modules
 from modules.market_demand import MarketDemandModule
-from modules.trade_intel import TradeIntelModule
+from modules.trade.trade_intel import TradeIntelModule
 from modules.buyer_discovery.router    import BuyerDiscoveryRouter
 from modules.variants_kit.variants_formats import VariantsFormatsModule
 from modules.competitor_discovery import CompetitorDiscoveryModule

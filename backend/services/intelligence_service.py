@@ -212,7 +212,7 @@ from db.database import get_pool
 from schemas.onbording_schema import IntelligenceRequest
 import uuid
 from services.intelligence_storage import *
-from modules.trade_intel import TradeIntelModule
+from backend.modules.trade.trade_intel import TradeIntelModule
 
 # Global semaphore: max 10 products processed concurrently across ALL users
 _SEM = asyncio.Semaphore(10)

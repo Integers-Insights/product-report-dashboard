@@ -148,7 +148,7 @@ class VariantsFormatsModule(BaseModule):
             sonar_response=sonar_text[:2000],
         )
         data  = await self._extract_structured(prompt)
-        names = [n for n in names if isinstance(n, str) and n.strip()]
+        names = [n for n in (data or {}).get("variant_names", []) if isinstance(n, str) and n.strip()]
         print(f"     → {len(names)} variant names extracted: {', '.join(names)}")
         return names
 

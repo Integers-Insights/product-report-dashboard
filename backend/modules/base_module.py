@@ -92,8 +92,11 @@ async def _persist_usage(
         + rates[2]
     )
     try:
-        from db.database import get_pool
-        pool = get_pool()
+        from db.database import get_pool, create_pool
+        try:
+            pool = get_pool()
+        except RuntimeError:
+            pool = await create_pool()
         async with pool.acquire() as conn:
             await conn.execute(
                 """
