@@ -491,17 +491,25 @@ class ModuleRunner:
         )
 
         # =========================================================
-        # STAGE 1: PARALLEL MODULES (SAFE)
+        # STAGE 1: PARALLEL MODULES
+        # keyword_intel runs here too — no dependency on other modules
         # =========================================================
         coros = {
-            "market_demand": MarketDemandModule().run_all_countries(inp),
-            "trade_intel": TradeIntelModule().run(inp),
-            "buyer_discovery": BuyerDiscoveryRouter().run(inp),
-            "variants_formats": VariantsFormatsModule().run(inp),
+            "market_demand":       MarketDemandModule().run_all_countries(inp),
+            "trade_intel":         TradeIntelModule().run(inp),
+            "buyer_discovery":     BuyerDiscoveryRouter().run(inp),
+            "variants_formats":    VariantsFormatsModule().run(inp),
             "competitor_discovery": CompetitorDiscoveryModule().run(inp),
-            "email_sequence": EmailSequenceModule().run(inp),
-            "ad_concepts": AdConceptsModule().run(inp),
+            "email_sequence":      EmailSequenceModule().run(inp),
+            "ad_concepts":         AdConceptsModule().run(inp),
         }
+
+        if not self.skip_keywords:
+            coros["keyword_intel"] = KeywordIntelModule().run(inp)
+        else:
+            result.statuses["keyword_intel"].status = "failed"
+            result.statuses["keyword_intel"].error = "Skipped — Google Ads not configured"
+            self.callback("keyword_intel", "failed", "Skipped")
 
         tasks = [
             self._run_one(result, name, coro)
@@ -518,21 +526,10 @@ class ModuleRunner:
                 setattr(result, name, output)
 
         # =========================================================
-        # STAGE 2: SEQUENTIAL MODULES (DEPENDENCIES)
+        # STAGE 2: SEQUENTIAL (depend on Stage 1 results)
         # =========================================================
 
-        # Keyword intel (optional)
-        if not self.skip_keywords:
-            kw = await self._run_one(
-                result, "keyword_intel", KeywordIntelModule().run(inp)
-            )
-            result.keyword_intel = kw
-        else:
-            result.statuses["keyword_intel"].status = "failed"
-            result.statuses["keyword_intel"].error = "Skipped — Google Ads not configured"
-            self.callback("keyword_intel", "failed", "Skipped")
-
-        # Price analysis (depends on variants)
+        # Price analysis depends on variants_formats output
         pa = await self._run_one(
             result,
             "price_analysis",
@@ -540,7 +537,7 @@ class ModuleRunner:
         )
         result.price_analysis = pa
 
-        # Scoring (final step)
+        # Scoring runs last — reads all module results
         sc = await self._run_one(
             result,
             "scoring",
