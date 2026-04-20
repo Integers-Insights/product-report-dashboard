@@ -558,7 +558,6 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                 }
             except Exception as usage_err:
                 print(f"⚠️ Usage check error: {usage_err}")
-
             # =================================================
             # 🚀 STEP 1: RUN PIPELINE (semaphore limits global concurrency)
             # =================================================
@@ -569,6 +568,57 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                         timeout=300
                     )
                     print(f"✅ RUN SUCCESS for product {inp.product_id}")
+
+                    # ✅ ADD HERE — right after the print
+                    critical_modules = ["market_demand", "trade_intel", "buyer_discovery", "variants_formats"]
+                    failed_modules = [
+                        name for name in critical_modules
+                        if result.statuses.get(name) and result.statuses[name].status == "failed"
+                    ]
+
+                    if len(failed_modules) >= 3:
+                        if usage_token:
+                            try:
+                                _pool = get_pool()
+                                async with _pool.acquire() as _rev_conn:
+                                    await revoke_usage(_rev_conn, usage_token)
+                            except Exception as rev_err:
+                                print(f"⚠️ revoke_usage failed: {rev_err}")
+
+                        try:
+                            _pool = get_pool()
+                            async with _pool.acquire() as _fc:
+                                await _fc.execute("""
+                                    UPDATE product_info.product_master
+                                    SET status = 'intelligence_failed',
+                                        updated_at = NOW()
+                                    WHERE id = $1
+                                """, inp.product_id)
+                        except Exception:
+                            pass
+
+                        # ✅ ADD THIS BLOCK HERE
+                        try:
+                            _pool = get_pool()
+                            async with _pool.acquire() as _jc:
+                                await _jc.execute("""
+                                    UPDATE core_tables.pipeline_jobs
+                                    SET status     = 'failed',
+                                        error      = $2,
+                                        updated_at = NOW()
+                                    WHERE id = $1
+                                """, job_id,
+                                "We're experiencing a temporary technical issue. Your query credit has been refunded — please try again in a few minutes.")
+                        except Exception as je:
+                            print(f"⚠️ Failed to update job status: {je}")
+
+                        return {
+                            "product_id": inp.product_id,
+                            "success":    False,
+                            "error":      "technical_error",
+                            "message":    "We're experiencing a temporary technical issue. Your query credit has been refunded — please try again in a few minutes.",
+                        }
+
                     if inp.hs_code:
                         try:
                             pool = get_pool()
@@ -739,14 +789,7 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                     obj = getattr(result, "scoring", None)
                     if obj and obj.success:
                         db_row = obj.to_db_row()
-
-                        # ✅ sum all module elapsed times
-                        total_elapsed = sum(
-                            s.elapsed for s in result.statuses.values()
-                            if s.elapsed is not None
-                        )
-                        db_row["total_elapsed_sec"] = round(total_elapsed, 1)
-
+                        db_row["total_elapsed_sec"] = result.elapsed_sec  # ✅ from RunnerResult
                         await upsert_overall_intelligence(pc, db_row, user_id)
 
                 # Sequential saves on the dedicated connection
@@ -793,10 +836,14 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         print(f"✅ Intelligence completed for job: {job_id}")
 
         return {
-            "success": True,
-            "job_id": job_id,
+            "success":        True,
+            "job_id":         job_id,
             "total_products": len(inputs),
-            "results": results
+            "results":        results,
+            # ✅ ADD THESE
+            "has_errors":     any(not r.get("success") for r in results),
+            "error_message":  "Some analyses could not be completed due to a temporary issue. Credits have been refunded."
+                            if any(not r.get("success") for r in results) else None,
         }
 
     except Exception as e:

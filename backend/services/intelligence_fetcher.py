@@ -303,16 +303,22 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 "target_country": marketing["target_country"],
                 "ad_concepts": _parse(marketing["ad_concepts"]),
             }
+        export_volume_trend = _parse(trade["export_volume_trend"]) or []
 
+        # ✅ extract year range from trend data
+        years = [row["year"] for row in export_volume_trend if row.get("year")]
+        trend_period = f"{min(years)}-{max(years)}" if years else None
         trade_data = None
         if trade:
             trade_data = {
+                "product_name":        product["product_name"],
+                "trend_period":        trend_period, 
                 "global_trade_value": _parse(trade["global_trade_value"]),
                 "volume_traded_globally": _parse(trade["volume_traded_globally"]),
-                "top_exporters": _parse(trade["top_exporters"]),
-                "top_importers": _parse(trade["top_importers"]),
                 "avg_global_trade_price": _parse(trade["avg_global_trade_price"]),
                 "country_export_share": _parse(trade["country_export_share"]),
+                "top_exporters": _parse(trade["top_exporters"]),
+                "top_importers": _parse(trade["top_importers"]),
                 "export_volume_trend": _parse(trade["export_volume_trend"]),
                 "export_pricing_commod": _parse(trade["export_pricing_commod"]),
                 "analysis_note": trade["analysis_note"],
@@ -321,6 +327,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
             }
 
         variants_data = _parse(variants["variants"]) if variants and variants["variants"] else []
+
         # replace old buyers_data block with this
         buyers_data = {
     # ✅ derive from what actually exists, not from preferences
