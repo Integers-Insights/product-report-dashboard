@@ -1,1 +1,1 @@
-export const base_url1 = "https://restaurants-isaac-affiliate-monitors.trycloudflare.com";
+export const base_url1 = "https://telescope-appeals-mechanical-purple.trycloudflare.com";
