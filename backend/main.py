@@ -1,3 +1,5 @@
+from aws_secrets import load_secrets
+load_secrets()
 import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware

@@ -443,12 +443,12 @@ def _default_countries() -> list[str]:
     """
     return [
         "United States",
-        "Germany",
-        "United Kingdom",
-        "UAE",
-        "Australia",
-        "Canada",
-        "Netherlands",
-        "Japan",
-        "India"
+        # "Germany",
+        # "United Kingdom",
+        # "UAE",
+        # "Australia",
+        # "Canada",
+        # "Netherlands",
+        # "Japan",
+        # "India"
     ]
