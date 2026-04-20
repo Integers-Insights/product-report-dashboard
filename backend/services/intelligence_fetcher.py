@@ -307,12 +307,13 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
         trade_data = None
         if trade:
             trade_data = {
+                "product_name":                    product["product_name"],
                 "global_trade_value": _parse(trade["global_trade_value"]),
                 "volume_traded_globally": _parse(trade["volume_traded_globally"]),
-                "top_exporters": _parse(trade["top_exporters"]),
-                "top_importers": _parse(trade["top_importers"]),
                 "avg_global_trade_price": _parse(trade["avg_global_trade_price"]),
                 "country_export_share": _parse(trade["country_export_share"]),
+                "top_exporters": _parse(trade["top_exporters"]),
+                "top_importers": _parse(trade["top_importers"]),
                 "export_volume_trend": _parse(trade["export_volume_trend"]),
                 "export_pricing_commod": _parse(trade["export_pricing_commod"]),
                 "analysis_note": trade["analysis_note"],
