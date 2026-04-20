@@ -789,14 +789,7 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                     obj = getattr(result, "scoring", None)
                     if obj and obj.success:
                         db_row = obj.to_db_row()
-
-                        # ✅ sum all module elapsed times
-                        total_elapsed = sum(
-                            s.elapsed for s in result.statuses.values()
-                            if s.elapsed is not None
-                        )
-                        db_row["total_elapsed_sec"] = round(total_elapsed, 1)
-
+                        db_row["total_elapsed_sec"] = result.elapsed_sec  # ✅ from RunnerResult
                         await upsert_overall_intelligence(pc, db_row, user_id)
 
                 # Sequential saves on the dedicated connection

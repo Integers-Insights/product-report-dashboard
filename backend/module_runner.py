@@ -378,7 +378,7 @@ from modules.marketing_kit.ad_concepts import AdConceptsModule
 # New modules
 from modules.price_analysis import PriceAnalysisModule
 from modules.scoring_engine import ScoringEngine
-
+import time
 
 # ─────────────────────────────────────────────
 #  MODULE STATUS
@@ -406,6 +406,7 @@ class RunnerResult:
     price_analysis: Optional[Any] = None
     scoring: Optional[Any] = None
     statuses: Dict[str, ModuleStatus] = field(default_factory=dict)
+    elapsed_sec:          float = 0.0
 
     def all_done(self) -> bool:
         return all(s.status in ("done", "failed") for s in self.statuses.values())
@@ -485,6 +486,7 @@ class ModuleRunner:
             return None
 
     async def run_all(self, inp) -> RunnerResult:
+        start_time = time.monotonic()
         inp = await preprocess_module_input(inp)
         result = RunnerResult(
             statuses={name: ModuleStatus(name=name) for name in MODULE_NAMES}
@@ -553,4 +555,5 @@ class ModuleRunner:
             icon = "✅" if s.status == "done" else "❌"
             print(f"  {icon} {name:<25} {s.elapsed or '—'}s")
 
+        result.elapsed_sec = round(time.monotonic() - start_time, 1)
         return result
