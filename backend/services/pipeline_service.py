@@ -53,7 +53,7 @@ def _make_progress_callback(job_id):
     async def _cb(pages_crawled: int, total_pages: int, products_found: int):
         if not job_id:
             return
-        print(f"📊 [progress_cb] pages={pages_crawled} | job_id={job_id} | type={type(job_id)}")
+       # print(f"📊 [progress_cb] pages={pages_crawled} | job_id={job_id} | type={type(job_id)}")
         try:
             import uuid
             async with (await safe_acquire()) as conn:
