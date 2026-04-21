@@ -896,7 +896,7 @@ async def fetch_dashboard_data(conn, user_id: str) -> Dict[str, Any]:
     try:
         # ── 1. User full_name ─────────────────────────────────────────────────
         user_row = await conn.fetchrow("""
-            SELECT full_name FROM core_auth_table.auth_user WHERE user_id = $1
+            SELECT full_name,user_id FROM core_auth_table.auth_user WHERE user_id = $1
         """, user_id)
         full_name = user_row["full_name"] if user_row else "Guest"
 
@@ -1111,6 +1111,7 @@ async def fetch_dashboard_data(conn, user_id: str) -> Dict[str, Any]:
         return {
             "success": True,
             "full_name": full_name,
+            "user_id":user_row["user_id"],
              "current_datetime": datetime.now(timezone.utc).isoformat(),
             "stats": [
                 {"key": "Products Tracked",  "total": products_total,   "this_week": products_this_week},

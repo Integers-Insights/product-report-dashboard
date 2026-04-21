@@ -2574,3 +2574,147 @@ async def get_reports_api(
     return await get_reports(conn, user_id)
 
 
+@router.delete("/account/{target_user_id}")
+async def delete_account(
+    target_user_id: str,
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    # ✅ only admin can access
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail={
+            "success": False,
+            "error": "Access denied. Admin only."
+        })
+
+    try:
+        # fetch all product ids for this user first
+        product_ids = await conn.fetch("""
+            SELECT id FROM product_info.product_master
+            WHERE created_by = $1
+        """, target_user_id)
+        
+        pid_list = [str(row["id"]) for row in product_ids]
+
+        # =====================================================
+        # 🗑️ DELETE PRODUCT INTELLIGENCE DATA
+        # =====================================================
+        if pid_list:
+            await conn.execute("""
+                DELETE FROM product_info.overall_intelligence_scores
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.market_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.trade_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.competitor_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.marketing_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.price_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.variants_formats
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.b2b_buyer_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.b2c_buyer_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.pipeline_temp_products
+                WHERE user_id = $1
+            """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE PIPELINE JOBS
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM core_tables.pipeline_jobs
+            WHERE user_id = $1
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE PRODUCT MASTER
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM product_info.product_master
+            WHERE created_by = $1
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE COMPANY DATA
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM product_info.company_preferences
+            WHERE company_id IN (
+                SELECT companies_other_id
+                FROM core_auth_table.auth_user
+                WHERE user_id = $1
+            )
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_tables.user_research_preferences
+            WHERE user_id = $1
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_tables.companies_other
+            WHERE id IN (
+                SELECT companies_other_id
+                FROM core_auth_table.auth_user
+                WHERE user_id = $1
+            )
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE AUTH SESSIONS + USER
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM core_auth_table.auth_sessions
+            WHERE user_id = $1
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_auth_table.auth_user
+            WHERE user_id = $1
+        """, target_user_id)
+
+        return {
+            "success": True,
+            "message": f"Account and all associated data deleted for user {target_user_id}",
+            "deleted_products": len(pid_list),
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "error": "Failed to delete account",
+            "detail": str(e)
+        })
