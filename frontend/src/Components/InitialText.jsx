@@ -102,7 +102,7 @@ const InitialText = ({ text }) => {
 
   return (
     <div
-      className="h-10 w-10 rounded-lg flex items-center justify-center font-semibold text-sm text-black"
+      className="h-10 w-10 rounded-lg flex-shrink-0 flex items-center justify-center font-semibold text-sm text-black"
       style={{ backgroundColor: bgColor }}
     >
       {getInitials(text) || ""}
