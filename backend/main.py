@@ -18,6 +18,7 @@ app.add_middleware(
         "http://172.16.31.72:5173",
         "http://192.168.0.100:5173",
         "http://192.168.0.100:8000",
+        "https://product-insight.integerstech.com",
         "null",
     ],
     allow_origin_regex=r"https://.*\.trycloudflare\.com",
