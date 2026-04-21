@@ -60,6 +60,110 @@ def get_device_name(user_agent_string):
 # SIGNUP
 # =========================================================
 
+# async def signup_user(conn, data, request, background_tasks):
+
+#     # 1️⃣ Validate
+#     if not data.email or not data.password or not data.company_name:
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Email, password and company name required"
+#         )
+
+#     # 2️⃣ Check email
+#     user = await conn.fetchrow("""
+#         SELECT user_id
+#         FROM core_auth_table.auth_user
+#         WHERE LOWER(email) = LOWER($1)
+#     """, data.email)
+
+#     if user:
+#         raise HTTPException(status_code=400, detail="Email already exists")
+
+#     # 3️⃣ Check company
+#     company = await conn.fetchrow("""
+#         SELECT id
+#         FROM core_tables.companies_other
+#         WHERE LOWER(name) = LOWER($1)
+#     """, data.company_name)
+
+#     if company:
+#         company_id = str(company["id"])
+#     else:
+#         company_id = str(uuid.uuid4())
+
+#         slug = await generate_unique_slug(conn, data.company_name)
+
+#         await conn.execute("""
+#             INSERT INTO core_tables.companies_other
+#             (
+#                 id,name,legal_name,slug,company_type,source,
+#                 created_at,updated_at
+#             )
+#             VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())
+#         """,
+#             company_id,
+#             data.company_name,
+#             data.company_name,
+#             slug,
+#             "customer",
+#             "customer"
+#         )
+
+#     # 4️⃣ Create user
+#     user_id = str(uuid.uuid4())
+#     hashed_password = hash_password(data.password)
+
+#     await conn.execute("""
+#         INSERT INTO core_auth_table.auth_user
+#         (
+#             user_id,email,password_hash,
+#             full_name,phone,status,
+#             companies_other_id,role,created_at
+#         )
+#         VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',NOW())
+#     """,
+#         user_id,
+#         data.email,
+#         hashed_password,
+#         data.full_name,
+#         data.phone,
+#         "pending_verification",
+#         company_id
+#     )
+
+#     # 5️⃣ Assign trial plan on signup (expires in 7 days)
+#     from utils.subscription_service import assign_trial_plan_if_needed
+#     await assign_trial_plan_if_needed(conn, company_id, trial_days=7)
+
+#     # 6️⃣ Email verification
+#     token = str(uuid.uuid4())
+
+#     await conn.execute("""
+#         INSERT INTO core_auth_table.email_verification_tokens
+#         (id,user_id,token,expires_at)
+#         VALUES ($1,$2,$3,$4)
+#     """,
+#         str(uuid.uuid4()),
+#         user_id,
+#         token,
+#         datetime.utcnow() + timedelta(hours=10)
+#     )
+
+#     # =========================================================
+#     # 🚀 BACKGROUND EMAIL (NON-BLOCKING)
+#     # =========================================================
+#     background_tasks.add_task(
+#         send_verification_email,
+#         data.email,
+#         token
+#     )
+
+#     return {
+#         "success": True,
+#         "message": "Signup successful. Verify your email."
+#     }
+
+
 async def signup_user(conn, data, request, background_tasks):
 
     # 1️⃣ Validate
@@ -67,6 +171,17 @@ async def signup_user(conn, data, request, background_tasks):
         raise HTTPException(
             status_code=400,
             detail="Email, password and company name required"
+        )
+
+    # ✅ GDPR consent required
+    if not data.gdpr_consent:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "error": "GDPR_CONSENT_REQUIRED",
+                "message": "You must accept the Privacy Policy to create an account."
+            }
         )
 
     # 2️⃣ Check email
@@ -90,15 +205,11 @@ async def signup_user(conn, data, request, background_tasks):
         company_id = str(company["id"])
     else:
         company_id = str(uuid.uuid4())
-
         slug = await generate_unique_slug(conn, data.company_name)
 
         await conn.execute("""
             INSERT INTO core_tables.companies_other
-            (
-                id,name,legal_name,slug,company_type,source,
-                created_at,updated_at
-            )
+            (id, name, legal_name, slug, company_type, source, created_at, updated_at)
             VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())
         """,
             company_id,
@@ -109,18 +220,21 @@ async def signup_user(conn, data, request, background_tasks):
             "customer"
         )
 
-    # 4️⃣ Create user
+    # 4️⃣ Create user ✅ with GDPR consent
     user_id = str(uuid.uuid4())
     hashed_password = hash_password(data.password)
 
     await conn.execute("""
         INSERT INTO core_auth_table.auth_user
         (
-            user_id,email,password_hash,
-            full_name,phone,status,
-            companies_other_id,role,created_at
+            user_id, email, password_hash,
+            full_name, phone, status,
+            companies_other_id, role,
+            gdpr_consent, gdpr_consent_at,
+            marketing_consent,
+            created_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',NOW())
+        VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',$8,NOW(),$9,NOW())
     """,
         user_id,
         data.email,
@@ -128,10 +242,12 @@ async def signup_user(conn, data, request, background_tasks):
         data.full_name,
         data.phone,
         "pending_verification",
-        company_id
+        company_id,
+        data.gdpr_consent,          # ✅
+        data.marketing_consent,     # ✅
     )
 
-    # 5️⃣ Assign trial plan on signup (expires in 7 days)
+    # 5️⃣ Assign trial plan
     from utils.subscription_service import assign_trial_plan_if_needed
     await assign_trial_plan_if_needed(conn, company_id, trial_days=7)
 
@@ -140,7 +256,7 @@ async def signup_user(conn, data, request, background_tasks):
 
     await conn.execute("""
         INSERT INTO core_auth_table.email_verification_tokens
-        (id,user_id,token,expires_at)
+        (id, user_id, token, expires_at)
         VALUES ($1,$2,$3,$4)
     """,
         str(uuid.uuid4()),
@@ -149,9 +265,6 @@ async def signup_user(conn, data, request, background_tasks):
         datetime.utcnow() + timedelta(hours=10)
     )
 
-    # =========================================================
-    # 🚀 BACKGROUND EMAIL (NON-BLOCKING)
-    # =========================================================
     background_tasks.add_task(
         send_verification_email,
         data.email,
@@ -162,7 +275,6 @@ async def signup_user(conn, data, request, background_tasks):
         "success": True,
         "message": "Signup successful. Verify your email."
     }
-
 
 # =========================================================
 # LOGIN
