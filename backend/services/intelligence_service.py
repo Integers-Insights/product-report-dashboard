@@ -215,7 +215,7 @@ from services.intelligence_storage import *
 from modules.trade.trade_intel import TradeIntelModule
 
 # Global semaphore: max 10 products processed concurrently across ALL users
-_SEM = asyncio.Semaphore(10)
+_SEM = asyncio.Semaphore(20)
 
 def _safe_dict(obj) -> dict:
     """Convert a dataclass/result object to dict, handling None."""
