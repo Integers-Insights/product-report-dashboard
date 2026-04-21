@@ -21,6 +21,63 @@ def _parse(val):
         return val
     return json.loads(val)
 
+async def extract_user_data(conn, user_id: str) -> dict:
+    """Fetch all data for a user across all tables."""
+
+    # ── User profile ──────────────────────────────
+    user = await conn.fetchrow("""
+        SELECT u.user_id, u.email, u.full_name, u.phone,
+               u.status, u.created_at,
+               c.name AS company_name, c.headquarters_country,
+               c.company_type, c.industry
+        FROM core_auth_table.auth_user u
+        LEFT JOIN core_tables.companies_other c
+            ON c.id = u.companies_other_id
+        WHERE u.user_id = $1
+    """, user_id)
+
+    # ── Products ──────────────────────────────────
+    products = await conn.fetch("""
+        SELECT id, product_name, hs_code, category,
+               description, status, created_at
+        FROM product_info.product_master
+        WHERE created_by = $1
+        ORDER BY created_at DESC
+    """, user_id)
+
+    # ── Market intelligence ───────────────────────
+    market = await conn.fetch("""
+        SELECT mi.country, mi.analysis_note, mi.created_at
+        FROM product_info.market_intelligence mi
+        JOIN product_info.product_master pm ON pm.id = mi.product_id
+        WHERE pm.created_by = $1
+    """, user_id)
+
+    # ── Buyers ────────────────────────────────────
+    b2b = await conn.fetch("""
+        SELECT bi.buyers, bi.target_country
+        FROM product_info.b2b_buyer_intelligence bi
+        JOIN product_info.product_master pm ON pm.id = bi.product_id
+        WHERE pm.created_by = $1
+    """, user_id)
+
+    # ── Pipeline jobs ─────────────────────────────
+    jobs = await conn.fetch("""
+        SELECT id, website_url, status, created_at
+        FROM core_tables.pipeline_jobs
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+    """, user_id)
+
+    return {
+        "exported_at": datetime.utcnow().strftime('%d %b %Y %H:%M UTC'),
+        "profile": dict(user) if user else {},
+        "products": [dict(p) for p in products],
+        "market_intelligence": [dict(m) for m in market],
+        "b2b_buyers": [dict(b) for b in b2b],
+        "pipeline_jobs": [dict(j) for j in jobs],
+    }
+
 async def get_reports(conn, user_id: str):
 
     try:

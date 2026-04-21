@@ -12,6 +12,8 @@ from utils.service import generate_unique_slug
 from db.database import get_db 
 from utils.service import get_current_user
 import os
+import boto3
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -55,6 +57,140 @@ def get_device_name(user_agent_string):
     except Exception:
         return "Unknown Device"
     
+async def send_data_export_email(user_email: str, full_name: str, data: dict):
+    """Send user their data export via email."""
+    try:
+        AWS_REGION            = os.getenv("AWS_REGION")
+        AWS_ACCESS_KEY_ID     = os.getenv("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+        SMTP_USER             = os.getenv("SMTP_USER")
+
+        import json
+        data_json = json.dumps(data, indent=2, default=str)
+
+        ses = boto3.client(
+            "ses",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        html_body = f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:20px;">
+        <div style="max-width:500px;margin:auto;background:#fff;padding:30px;border-radius:10px">
+            <h2 style="color:#0F172A;">📦 Your Data Export</h2>
+            <p>Hi {full_name},</p>
+            <p>As requested, here is a summary of your data from Intrade24.</p>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr><td style="padding:8px;color:#64748B;">Products</td>
+                    <td style="padding:8px;font-weight:bold;">{len(data.get('products', []))}</td></tr>
+                <tr style="background:#f8fafc;">
+                    <td style="padding:8px;color:#64748B;">Markets Analysed</td>
+                    <td style="padding:8px;font-weight:bold;">{len(data.get('market_intelligence', []))}</td></tr>
+                <tr><td style="padding:8px;color:#64748B;">Exported At</td>
+                    <td style="padding:8px;font-weight:bold;">{data.get('exported_at')}</td></tr>
+            </table>
+            <p>Your complete data is included below in JSON format.</p>
+            <pre style="background:#f1f5f9;padding:15px;border-radius:6px;
+                        font-size:11px;overflow:auto;max-height:400px;">
+{data_json[:3000]}{"..." if len(data_json) > 3000 else ""}
+            </pre>
+            <p style="font-size:12px;color:#64748B;margin-top:30px;">
+                If you have questions contact us at support@intrade24.com
+            </p>
+        </div>
+        </body>
+        </html>
+        """
+
+        ses.send_email(
+            Source=SMTP_USER,
+            Destination={"ToAddresses": [user_email]},
+            Message={
+                "Subject": {"Data": "Your Intrade24 Data Export"},
+                "Body": {
+                    "Html": {"Data": html_body},
+                    "Text": {"Data": f"Your data export:\n\n{data_json}"},
+                },
+            },
+        )
+
+        print(f"✅ Data export sent to {user_email}")
+
+    except Exception as e:
+        print(f"❌ Failed to send data export: {e}")
+
+async def send_data_export_request_email(user_email: str, full_name: str, user_id: str):
+    """Notify admin that a user requested data export."""
+    try:
+        AWS_REGION           = os.getenv("AWS_REGION")
+        AWS_ACCESS_KEY_ID    = os.getenv("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+        SMTP_USER            = os.getenv("SMTP_USER")
+        ADMIN_EMAIL          = os.getenv("ADMIN_EMAIL", "neel.integers@gmail.com")
+
+        if not all([AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, SMTP_USER]):
+            print("EMAIL ERROR: Missing environment variables")
+            return
+
+        ses = boto3.client(
+            "ses",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; background:#f5f7fa; padding:20px;">
+        <div style="max-width:500px;margin:auto;background:#ffffff;padding:30px;border-radius:10px">
+            <h2 style="color:#0F172A;">📦 Data Export Request</h2>
+            <p>A user has requested their data export.</p>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr><td style="padding:8px;color:#64748B;">Name</td><td style="padding:8px;font-weight:bold;">{full_name}</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:8px;color:#64748B;">Email</td><td style="padding:8px;font-weight:bold;">{user_email}</td></tr>
+                <tr><td style="padding:8px;color:#64748B;">User ID</td><td style="padding:8px;font-weight:bold;">{user_id}</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:8px;color:#64748B;">Requested</td><td style="padding:8px;font-weight:bold;">{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}</td></tr>
+            </table>
+            <p style="color:#DC2626;font-weight:bold;">⏰ Please send their data within 1-2 business days.</p>
+            <p style="font-size:12px;color:#64748B;margin-top:30px;">
+                Reply to this email or contact {user_email} directly.
+            </p>
+        </div>
+        </body>
+        </html>
+        """
+
+        text_body = f"""
+        Data Export Request
+
+        Name     : {full_name}
+        Email    : {user_email}
+        User ID  : {user_id}
+        Requested: {datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}
+
+        Please send their data within 1-2 business days.
+        """
+
+        response = ses.send_email(
+            Source=SMTP_USER,
+            Destination={"ToAddresses": [ADMIN_EMAIL]},
+            Message={
+                "Subject": {"Data": f"Data Export Request — {user_email}"},
+                "Body": {
+                    "Html": {"Data": html_body},
+                    "Text": {"Data": text_body},
+                },
+            },
+        )
+
+        print(f"✅ Export request email sent to admin | MessageId: {response.get('MessageId')}")
+
+    except ClientError as e:
+        print(f"❌ SES ClientError: {e.response['Error']['Message']}")
+    except Exception as e:
+        print(f"⚠️ Failed to send export request email: {e}")
 
 # =========================================================
 # SIGNUP
@@ -1532,3 +1668,4 @@ async def delete_user(conn, target_user_id: str, caller_user_id: str, company_id
         "message": "User deleted successfully.",
         "deleted_user_id": target_user_id,
     }
+
