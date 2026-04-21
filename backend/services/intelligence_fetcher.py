@@ -38,7 +38,7 @@ async def extract_user_data(conn, user_id: str) -> dict:
 
     # ── Products ──────────────────────────────────
     products = await conn.fetch("""
-        SELECT id, product_name, hs_code, category,
+        SELECT product_name, hs_code, category,
                description, status, created_at
         FROM product_info.product_master
         WHERE created_by = $1

@@ -15,7 +15,7 @@ from services.onboarding_service import store_pipeline_temp, upsert_company_meta
 #   2 GB RAM  → MAX_CONCURRENT_JOBS = 2
 #   4 GB RAM  → MAX_CONCURRENT_JOBS = 3
 #   8 GB RAM  → MAX_CONCURRENT_JOBS = 5
-MAX_CONCURRENT_JOBS = 3
+MAX_CONCURRENT_JOBS = 10
 
 MAX_JOB_RETRIES = 3
 
