@@ -202,11 +202,14 @@ async def worker() -> None:
     # Semaphore shared across all slots — caps concurrent Playwright browsers
     browser_semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
 
-    # Launch all slots concurrently — they independently race for jobs
-    await asyncio.gather(*[
-        _job_slot(slot_id, browser_semaphore)
-        for slot_id in range(MAX_CONCURRENT_JOBS)
-    ])
+    try:
+        # Launch all slots concurrently — they independently race for jobs
+        await asyncio.gather(*[
+            _job_slot(slot_id, browser_semaphore)
+            for slot_id in range(MAX_CONCURRENT_JOBS)
+        ])
+    finally:
+        await close_pool()
 
     print("\n🛑 All slots stopped — worker shutting down")
 
@@ -219,7 +222,4 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, handle_shutdown)
     signal.signal(signal.SIGINT, handle_shutdown)
 
-    try:
-        asyncio.run(worker())
-    finally:
-        asyncio.run(close_pool())
+    asyncio.run(worker())
