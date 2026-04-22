@@ -189,6 +189,45 @@ async def _job_slot(slot_id: int, browser_semaphore: asyncio.Semaphore) -> None:
 
 
 # ─────────────────────────────────────────────
+#  CLEANUP — runs every hour
+# ─────────────────────────────────────────────
+
+async def _cleanup_loop() -> None:
+    while not _shutdown:
+        try:
+            async with (await safe_acquire()) as conn:
+                # result tag is "DELETE N" — parse the count from it
+                r1 = await conn.execute("""
+                    DELETE FROM product_info.pipeline_temp_products
+                    WHERE status = 'processed'
+                      AND created_at < NOW() - INTERVAL '7 days'
+                """)
+                r2 = await conn.execute("""
+                    DELETE FROM product_info.pipeline_temp_products
+                    WHERE status = 'pending'
+                      AND created_at < NOW() - INTERVAL '30 days'
+                """)
+                r3 = await conn.execute("""
+                    DELETE FROM core_tables.pipeline_jobs
+                    WHERE status IN ('completed', 'failed')
+                      AND created_at < NOW() - INTERVAL '30 days'
+                """)
+
+                print(f"🧹 Cleanup: {r1} processed temps, {r2} abandoned temps, {r3} old jobs")
+
+        except Exception as e:
+            print(f"⚠️ Cleanup error: {e}")
+
+        # Run every hour
+        for _ in range(3600):
+            if _shutdown:
+                break
+            await asyncio.sleep(1)
+
+    print("🧹 Cleanup loop stopped")
+
+
+# ─────────────────────────────────────────────
 #  MAIN WORKER
 # ─────────────────────────────────────────────
 
@@ -203,11 +242,11 @@ async def worker() -> None:
     browser_semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
 
     try:
-        # Launch all slots concurrently — they independently race for jobs
-        await asyncio.gather(*[
-            _job_slot(slot_id, browser_semaphore)
-            for slot_id in range(MAX_CONCURRENT_JOBS)
-        ])
+        # Launch all slots + cleanup loop concurrently
+        await asyncio.gather(
+            *[_job_slot(slot_id, browser_semaphore) for slot_id in range(MAX_CONCURRENT_JOBS)],
+            _cleanup_loop(),
+        )
     finally:
         await close_pool()
 
