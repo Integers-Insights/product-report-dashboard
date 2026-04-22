@@ -1108,7 +1108,7 @@ async def run_pipeline_endpoint(
         SELECT COUNT(*)
         FROM core_tables.pipeline_jobs
         WHERE user_id = $1
-          AND status IN ('pending', 'running')
+          AND status IN ('pending', 'processing', 'running')
     """, user_id)
     print(f"🔍 [concurrent_check] user={user_id} | active_jobs={active_jobs}")
 

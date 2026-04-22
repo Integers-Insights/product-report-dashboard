@@ -125,7 +125,7 @@ async def check_concurrent_job_limit(conn, company_id: str, user_id: str):
         SELECT COUNT(*)
         FROM core_tables.pipeline_jobs
         WHERE user_id = $1
-          AND status IN ('pending', 'running')
+          AND status IN ('pending', 'processing', 'running')
     """, user_id)
 
     if active_jobs >= limit:
