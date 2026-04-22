@@ -96,7 +96,7 @@ PLAN_CONFIG = {
         "limit_type":          "monthly",  # enforce against billing-cycle pool
         "user_limit":          3,
         "yearly_discount":     "2_months_free",
-         "concurrent_job_limit": 1,
+        "concurrent_job_limit": 1,
     },
 }
 

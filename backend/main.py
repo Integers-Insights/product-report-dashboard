@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import onboarding
 from db.database import create_pool, close_pool
-from services.pipeline_service import pipeline_worker  
+from worker import _job_slot, MAX_CONCURRENT_JOBS  
 
 app = FastAPI()
 app.include_router(onboarding.router)
@@ -41,10 +41,11 @@ async def startup():
     await create_pool()
     print("🔥 API STARTED")
 
-    # ✅ start 10 pipeline workers
-    for i in range(10):
-        asyncio.create_task(pipeline_worker(i))
-    print(f"👷 Started 10 pipeline workers")
+    # ✅ start worker slots — uses worker.py _job_slot system
+    browser_semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
+    for slot_id in range(MAX_CONCURRENT_JOBS):
+        asyncio.create_task(_job_slot(slot_id, browser_semaphore))
+    print(f"👷 Started {MAX_CONCURRENT_JOBS} pipeline workers")
 
 
 # =====================================================

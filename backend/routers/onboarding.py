@@ -1100,9 +1100,19 @@ async def run_pipeline_endpoint(
     current_user = Depends(get_current_user),
     _= Depends(ensure_onboarding_completed)
 ):
-    user_id = current_user["user_id"]
+    user_id    = current_user["user_id"]
     company_id = current_user["company_id"]
-    # ✅ check concurrent job limit first
+
+    # ✅ debug — check active jobs count
+    active_jobs = await conn.fetchval("""
+        SELECT COUNT(*)
+        FROM core_tables.pipeline_jobs
+        WHERE user_id = $1
+          AND status IN ('pending', 'running')
+    """, user_id)
+    print(f"🔍 [concurrent_check] user={user_id} | active_jobs={active_jobs}")
+
+    # ✅ check concurrent job limit
     await check_concurrent_job_limit(conn, company_id, user_id)
     try:
         # =========================================================
