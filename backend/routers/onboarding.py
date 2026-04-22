@@ -22,7 +22,7 @@ from utils.subscription_service import (
     check_and_increment_usage,
     apply_plan_visibility,
     apply_trial_visibility,
-    check_and_handle_subscription_expiry,
+    check_concurrent_job_limit,
 )
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
@@ -1101,7 +1101,9 @@ async def run_pipeline_endpoint(
     _= Depends(ensure_onboarding_completed)
 ):
     user_id = current_user["user_id"]
-
+    company_id = current_user["company_id"]
+    # ✅ check concurrent job limit first
+    await check_concurrent_job_limit(conn, company_id, user_id)
     try:
         # =========================================================
         # ✅ CREATE JOB (INSTEAD OF RUNNING PIPELINE)

@@ -1,3 +1,9 @@
+import sys
+import asyncio
+
+# ✅ fix Playwright on Windows
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 from aws_secrets import load_secrets
 load_secrets()
 import asyncio
