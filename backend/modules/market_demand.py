@@ -262,7 +262,7 @@ Factors to weigh:
 
 Return ONLY valid JSON:
 {{
-  "score":        82,
+  "score":        ,
   "tier":         "Easy Win",
   "tier_color":   "green",
   "context_note": "3–6 word summary shown under country name in UI — e.g. '+18% YoY · high buyer density'",
@@ -443,12 +443,12 @@ def _default_countries() -> list[str]:
     """
     return [
         "United States",
-        "Germany",
-        "United Kingdom",
-        "UAE",
-        "Australia",
-        "Canada",
-        "Netherlands",
-        "Japan",
+        # "Germany",
+        # "United Kingdom",
+        # "UAE",
+        # "Australia",
+        # "Canada",
+        # "Netherlands",
+        # "Japan",
         "India"
     ]
