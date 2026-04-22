@@ -12,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import onboarding
 from db.database import create_pool, close_pool
-from worker import _job_slot, MAX_CONCURRENT_JOBS  
 
 app = FastAPI()
 app.include_router(onboarding.router)
@@ -41,11 +40,6 @@ async def startup():
     await create_pool()
     print("🔥 API STARTED")
 
-    # ✅ start worker slots — uses worker.py _job_slot system
-    browser_semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
-    for slot_id in range(MAX_CONCURRENT_JOBS):
-        asyncio.create_task(_job_slot(slot_id, browser_semaphore))
-    print(f"👷 Started {MAX_CONCURRENT_JOBS} pipeline workers")
 
 
 # =====================================================
@@ -57,7 +51,13 @@ async def shutdown():
     for task in tasks:
         task.cancel()
     if tasks:
-        await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        except asyncio.CancelledError:
+            pass
 
-    await close_pool()
+    try:
+        await close_pool()
+    except Exception:
+        pass
     print("🛑 DB Pool Closed")

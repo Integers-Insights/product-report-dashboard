@@ -1,6 +1,8 @@
 import asyncio
 import signal
 import json
+from aws_secrets import load_secrets
+load_secrets()
 from db.database import create_pool, close_pool, safe_acquire
 from services.pipeline_service import run_pipeline_and_store, update_job_progress
 from services.onboarding_service import store_pipeline_temp, upsert_company_metadata
