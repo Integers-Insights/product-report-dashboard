@@ -1,145 +1,216 @@
-import { FunnelIcon } from "@heroicons/react/24/outline";
+// import { useState } from "react";
+// import B2Bbuyers from "./B2Bbuyers";
+// import B2Cprofile from "./B2Cprofile";
+// import BothProfile from "./BothProfile";
 
-const listCardData = [
-    {
-        txt1: "NH",
-        txt2: "Natural Health Distributors Inc.",
-        txt3: "Active RFQ",
-        txt4: "USA",
-        txt5: "Contract Manufacturer",
-        txt6: "Annual spend €800K–2M",
-        txt7: "Previous supplier lost cert",
-        txt8: "Munich, DE",
-        txt9: "Search Outsearch",
-        txt10: "View Profile",
-        txt11: "94",
-        txt12: "Match",
-        view: false
-    },
-    {
-        txt1: "NH",
-        txt2: "Natural Health Distributors Inc.",
-        txt3: "Active RFQ",
-        txt4: "USA",
-        txt5: "Contract Manufacturer",
-        txt6: "Annual spend €800K–2M",
-        txt7: "Previous supplier lost cert",
-        txt8: "Munich, DE",
-        txt9: "Search Outsearch",
-        txt10: "View Profile",
-        txt11: "94",
-        txt12: "Match",
-        view: false
-    },
-    {
-        txt1: "NH",
-        txt2: "Natural Health Distributors Inc.",
-        txt3: "Active RFQ",
-        txt4: "USA",
-        txt5: "Contract Manufacturer",
-        txt6: "Annual spend €800K–2M",
-        txt7: "Previous supplier lost cert",
-        txt8: "Munich, DE",
-        txt9: "Search Outsearch",
-        txt10: "View Profile",
-        txt11: "94",
-        txt12: "Match",
-        view: false
-    },
-    {
-        txt1: "NH",
-        txt2: "Natural Health Distributors Inc.",
-        txt3: "Active RFQ",
-        txt4: "USA",
-        txt5: "Contract Manufacturer",
-        txt6: "Annual spend €800K–2M",
-        txt7: "Previous supplier lost cert",
-        txt8: "Munich, DE",
-        txt9: "Search Outsearch",
-        txt10: "View Profile",
-        txt11: "94",
-        txt12: "Match",
-        view: true
-    },
-    {
-        txt1: "NH",
-        txt2: "Natural Health Distributors Inc.",
-        txt3: "Active RFQ",
-        txt4: "USA",
-        txt5: "Contract Manufacturer",
-        txt6: "Annual spend €800K–2M",
-        txt7: "Previous supplier lost cert",
-        txt8: "Munich, DE",
-        txt9: "Search Outsearch",
-        txt10: "View Profile",
-        txt11: "94",
-        txt12: "Match",
-        view: true
+// const Buyer = () => {
+//   const [buyerType, setBuyerType] = useState("Both");
+
+//   return (
+//     <div className="border">
+//       {buyerType === "B2B" && <B2Bbuyers />}
+//       {buyerType === "B2C" && <B2Cprofile />}
+//     </div>
+//   );
+// };
+// export default Buyer;
+
+
+
+
+
+// import { useState, useEffect } from "react";
+// import B2Bbuyers from "./B2Bbuyers";
+// import B2Cprofile from "./B2Cprofile";
+
+// const Buyer = ({buyers_data}) => {
+
+//   let apiType=buyers_data?.buyer_type;
+//   // console.log("ap: ",apiType);
+//   // const [apiType, setApiType] = useState("BOTH");
+//   const [buyerType, setBuyerType] = useState("B2B");
+
+//   // useEffect(() => {
+//   //   const fetchData = async () => {
+//   //     const res = { type: "BOTH" };
+
+//   //     const type = res.type?.trim().toUpperCase() || "B2B";
+
+//   //     setApiType(type);
+
+//   //     setBuyerType((prev) => {
+//   //       if (type === "B2B") return "B2B";
+//   //       if (type === "B2C") return "B2C";
+//   //       return prev || "B2B";
+//   //     });
+//   //   };
+
+//   //   fetchData();
+//   // }, []);
+
+//   return (
+//     <div className="p-3">
+//       {/* Buttons */}
+//       <div className="mb-3 flex justify-end">
+//         <div className="border border-[#E6E6E6] flex gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+          
+//           {(apiType === "B2B" || apiType === "BOTH") && (
+//             <button
+//               onClick={() => setBuyerType("B2B")}
+//               className={`rounded px-2 py-1 text-sm font-medium cursor-pointer ${
+//                 buyerType === "B2B" ? "bg-white" : "hover:bg-gray-100"
+//               }`}
+//             >
+//               B2B Buyers
+//             </button>
+//           )}
+
+//           {(apiType === "B2C" || apiType === "BOTH") && (
+//             <button
+//               onClick={() => setBuyerType("B2C")}
+//               className={`rounded px-2 py-1 text-sm font-medium cursor-pointer ${
+//                 buyerType === "B2C" ? "bg-white" : "hover:bg-gray-100"
+//               }`}
+//             >
+//               B2C Profile
+//             </button>
+//           )}
+
+//         </div>
+//       </div>
+
+//       {/* Data */}
+//       {buyerType === "B2B" && <B2Bbuyers />}
+//       {buyerType === "B2C" && <B2Cprofile />}
+//     </div>
+//   );
+// };
+
+// export default Buyer;
+
+
+
+// import { useState, useEffect } from "react";
+// import B2Bbuyers from "./B2Bbuyers";
+// import B2Cprofile from "./B2Cprofile";
+
+// const Buyer = ({ buyers_data }) => {
+//   const apiType = buyers_data?.buyer_type?.trim().toUpperCase() || "B2B";
+
+//   const [buyerType, setBuyerType] = useState("B2B");
+
+//   useEffect(() => {
+//     if (apiType === "B2B") {
+//       setBuyerType("B2B");
+//     } else if (apiType === "B2C") {
+//       setBuyerType("B2C");
+//     } else if (apiType === "BOTH") {
+//       setBuyerType("B2B"); // default
+//     }
+//   }, [apiType]);
+
+//   return (
+//     <div className="p-3">
+//       {/* Buttons */}
+//       <div className="mb-3 flex justify-end">
+//         <div className="border border-[#E6E6E6] flex gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+
+//           {(apiType === "B2B" || apiType === "BOTH") && (
+//             <button
+//               onClick={() => setBuyerType("B2B")}
+//               className={`rounded px-2 py-1 text-sm font-medium cursor-pointer ${
+//                 buyerType === "B2B" ? "bg-white" : "hover:bg-gray-100"
+//               }`}
+//             >
+//               B2B Buyers
+//             </button>
+//           )}
+
+//           {(apiType === "B2C" || apiType === "BOTH") && (
+//             <button
+//               onClick={() => setBuyerType("B2C")}
+//               className={`rounded px-2 py-1 text-sm font-medium cursor-pointer ${
+//                 buyerType === "B2C" ? "bg-white" : "hover:bg-gray-100"
+//               }`}
+//             >
+//               B2C Profile
+//             </button>
+//           )}
+
+//         </div>
+//       </div>
+
+//       {/* Data */}
+//       {(buyerType === "B2B" && (apiType === "B2B" || apiType === "BOTH")) && <B2Bbuyers />}
+//       {(buyerType === "B2C" && (apiType === "B2C" || apiType === "BOTH")) && <B2Cprofile />}
+//     </div>
+//   );
+// };
+
+// export default Buyer;
+
+
+
+
+
+
+import { useState, useEffect } from "react";
+import B2Bbuyers from "./B2Bbuyers";
+import B2Cprofile from "./B2Cprofile";
+
+const Buyer = ({ buyers_data }) => {
+  const apiType = buyers_data?.buyer_type?.trim().toUpperCase() || "B2B";
+
+  const [buyerType, setBuyerType] = useState("B2B");
+
+  useEffect(() => {
+    if (apiType === "B2C") {
+      setBuyerType("B2C");
+    } else {
+      setBuyerType("B2B");
     }
-];
+  }, [apiType]);
 
-const Buyer = () => {
-    return (
-        <>
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-[#000000] text-base font-medium">Target Buyers</h2>
-                    <p className="text-[#5F6368] text-13 font-regular">200+ matched companies · Sorted by opportunity score · Contact details on Venture+</p>
-                </div>
-                <div className="flex gap-3 items-center">
-                    <div className="bg-[#FFF8EE] text-[#A66A07] text-sm font-medium py-0.5 px-3 rounded-2xl h-6.5">Contacts need Venture+</div>
-                    <div className="border border-gray-300 text-sm font-medium bg-gray-100 flex gap-2 items-center px-4 py-1.5 rounded-lg cursor-pointer">
-                        <FunnelIcon className="h-5 w-5" /> Filter
-                    </div>
-                </div>
+  return (
+    <div className="p-3">
+      
+      <div className="mb-3 flex justify-end">
+        <div className="border border-[#E6E6E6] flex gap-2 px-3 py-1 bg-gray-100 rounded-lg">
 
-            </div>
-            <div className="flex flex-col gap-6 mt-6">
-                {listCardData?.map((item, i) => {
-                    return (
-                        <div className="border flex justify-between p-3 border-[#96DBFF] rounded-lg card-hover" key={i}>
-                            <div className="flex gap-3 rounded-lg">
-                                <div className={`h-10 w-10 bg-[#EDF9FF] text-[#008ACB] text-center content-center rounded-lg uppercase ${item.view && "blur-sm"}`}>{item.txt1}</div>
-                                <div className={`flex flex-col gap-2 ${item.view && "blur-sm"}`}>
-                                    <div className="flex gap-3">
-                                        <p className="text-base font-medium text-[#000000]">{item.txt2}</p>
-                                        <button className="bg-[#F1FEF2] text-[#2E7D32] text-xs font-medium px-2 py-0.5 rounded-2xl">{item.txt3}</button>
-                                        <button className="bg-[#EDF9FF] text-[#008ACB] text-xs font-medium px-2 py-0.5 rounded-2xl">{item.txt4}</button>
-                                    </div>
-                                    <div className="text-xs font-light text-[#5F6368] flex gap-5">
-                                        <p>{item.txt5}</p>
-                                        <p>{item.txt6}</p>
-                                        <p>{item.txt7}</p>
-                                        <p>{item.txt8}</p>
-                                    </div>
-                                    {!item.view && <div className="flex gap-3">
-                                        <button className="bg-[#0284C7] text-sm font-medium text-[#FFFFFF] rounded-lg px-2 py-1">{item.txt9}</button>
-                                        <button className="border border-[#D9D9D9] text-sm font-medium text-[#000000] rounded-lg px-2 py-1">{item.txt10}</button>
-                                    </div>}
+          {(apiType === "B2B" || apiType === "BOTH") && (
+            <button
+              onClick={() => setBuyerType("B2B")}
+              className={`rounded px-2 py-1 text-sm font-medium ${
+                buyerType === "B2B" ? "bg-white" : "hover:bg-gray-100"
+              }`}
+            >
+              B2B Buyers
+            </button>
+          )}
 
-                                </div>
-                            </div>
-                            <div>
+          {(apiType === "B2C" || apiType === "BOTH") && (
+            <button
+              onClick={() => setBuyerType("B2C")}
+              className={`rounded px-2 py-1 text-sm font-medium ${
+                buyerType === "B2C" ? "bg-white" : "hover:bg-gray-100"
+              }`}
+            >
+              B2C Profile
+            </button>
+          )}
 
-                                {item.view ?
-                                    <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1">🔒 Venture+</button>
-                                    :
-                                    <>
-                                        <h1 className="text-xl font-semibold text-[#2E7D32] text-center">{item.txt11}</h1>
-                                        <p className="text-xs font-light text-[#5F6368]">{item.txt12}</p>
-                                    </>
-                                }
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+        </div>
+      </div>
 
-            <div className="border border-[#FFDFAB] bg-[#FFF8EE] p-3 rounded-lg mt-6 flex justify-between items-center">
-                <p>🔒 195 more buyers with contact details, procurement emails, LinkedIn profiles and RFQ history — unlock on Venture+</p>
-                <button className="bg-[#D48C15] text-white rounded-lg font-medium px-3 py-1">Upgrade to Venture+ →</button>
-            </div>
-        </>
-    );
+      {(buyerType === "B2B" && (apiType === "B2B" || apiType === "BOTH")) && (
+        <B2Bbuyers b2b={buyers_data?.b2b} />
+      )}
+
+      {(buyerType === "B2C" && (apiType === "B2C" || apiType === "BOTH")) && (
+        <B2Cprofile b2c={buyers_data?.b2c} />
+      )}
+    </div>
+  );
 };
+
 export default Buyer;

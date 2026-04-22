@@ -156,7 +156,7 @@ async def pipeline_worker(worker_id: int):
             job = None
 
             try:
-                print(f"🔍 Worker {worker_id} checking for jobs...")
+               # print(f"🔍 Worker {worker_id} checking for jobs...")
 
                 async with (await safe_acquire()) as conn:
                     async with conn.transaction():

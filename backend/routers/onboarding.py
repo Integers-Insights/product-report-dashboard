@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse,StreamingResponse
 from schemas.onbording_schema import *
 from utils.jwt_utils import *
 from db.database import get_pool
-from schemas.auth_service import signup_user,login_user,update_company_profile,change_user_password,google_signup_login,get_user_profile,get_company_users,update_user_profile,create_user,delete_user
+from schemas.auth_service import send_data_export_email,send_data_export_request_email,signup_user,login_user,update_company_profile,change_user_password,google_signup_login,get_user_profile,get_company_users,update_user_profile,create_user,delete_user
 from services.onboarding_service import ensure_onboarding_completed,resolve_company_id,upsert_company_for_user, update_step2, update_step3,upsert_research_preferences,insert_selected_products_v2
 from db.database import get_db
 import asyncpg
@@ -27,7 +27,7 @@ from utils.subscription_service import (
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
 import json
-from services.intelligence_fetcher import fetch_product_intelligence,get_all_products,get_reports,get_buyer_list, fetch_all_products_overview, fetch_dashboard_data, fetch_recent_activity
+from services.intelligence_fetcher import extract_user_data,fetch_product_intelligence,get_all_products,get_reports,get_buyer_list, fetch_all_products_overview, fetch_dashboard_data, fetch_recent_activity
 from services.intelligence_service import run_intelligence_background
 from services.module_data_service import fetch_module_inputs
 import traceback
@@ -2574,3 +2574,280 @@ async def get_reports_api(
     return await get_reports(conn, user_id)
 
 
+@router.delete("/account/{target_user_id}")
+async def delete_account(
+    target_user_id: str,
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    # ✅ only admin can access
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail={
+            "success": False,
+            "error": "Access denied. Admin only."
+        })
+
+    try:
+        # fetch all product ids for this user first
+        product_ids = await conn.fetch("""
+            SELECT id FROM product_info.product_master
+            WHERE created_by = $1
+        """, target_user_id)
+        
+        pid_list = [str(row["id"]) for row in product_ids]
+
+        # =====================================================
+        # 🗑️ DELETE PRODUCT INTELLIGENCE DATA
+        # =====================================================
+        if pid_list:
+            await conn.execute("""
+                DELETE FROM product_info.overall_intelligence_scores
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.market_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.trade_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.competitor_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.marketing_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.price_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.variants_formats
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.b2b_buyer_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.b2c_buyer_intelligence
+                WHERE product_id = ANY($1::uuid[])
+            """, pid_list)
+
+            await conn.execute("""
+                DELETE FROM product_info.pipeline_temp_products
+                WHERE user_id = $1
+            """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE PIPELINE JOBS
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM core_tables.pipeline_jobs
+            WHERE user_id = $1
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE PRODUCT MASTER
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM product_info.product_master
+            WHERE created_by = $1
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE COMPANY DATA
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM product_info.company_preferences
+            WHERE company_id IN (
+                SELECT companies_other_id
+                FROM core_auth_table.auth_user
+                WHERE user_id = $1
+            )
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_tables.user_research_preferences
+            WHERE user_id = $1
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_tables.companies_other
+            WHERE id IN (
+                SELECT companies_other_id
+                FROM core_auth_table.auth_user
+                WHERE user_id = $1
+            )
+        """, target_user_id)
+
+        # =====================================================
+        # 🗑️ DELETE AUTH SESSIONS + USER
+        # =====================================================
+        await conn.execute("""
+            DELETE FROM core_auth_table.auth_sessions
+            WHERE user_id = $1
+        """, target_user_id)
+
+        await conn.execute("""
+            DELETE FROM core_auth_table.auth_user
+            WHERE user_id = $1
+        """, target_user_id)
+
+        return {
+            "success": True,
+            "message": f"Account and all associated data deleted for user {target_user_id}",
+            "deleted_products": len(pid_list),
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "error": "Failed to delete account",
+            "detail": str(e)
+        })
+    
+@router.post("/account/request-data-export")
+async def request_data_export(
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    user_id    = current_user["user_id"]
+    company_id = current_user["company_id"]
+
+    # ✅ fetch user email
+    user = await conn.fetchrow("""
+        SELECT email, full_name
+        FROM core_auth_table.auth_user
+        WHERE user_id = $1
+    """, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ✅ store export request in DB
+    await conn.execute("""
+        INSERT INTO core_tables.data_export_requests
+        (id, user_id, company_id, status, requested_at)
+        VALUES ($1, $2, $3, 'pending', NOW())
+        ON CONFLICT (user_id) 
+        DO UPDATE SET status = 'pending', requested_at = NOW()
+    """,
+        str(uuid.uuid4()),
+        user_id,
+        company_id,
+    )
+
+    # ✅ notify admin via email
+    background_tasks.add_task(
+        send_data_export_request_email,
+        user_email=user["email"],
+        full_name=user["full_name"],
+        user_id=user_id,
+    )
+
+    return {
+        "success": True,
+        "message": "Data export request received. You will receive your data via email within 1-2 business days."
+    }
+
+@router.put("/admin/data-export/{user_id}/mark-sent")
+async def mark_export_sent(
+    user_id: str,
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    user_id = current_user["user_id"]
+    # if current_user.get("role") != "admin":
+    #     raise HTTPException(status_code=403, detail="Admin only")
+
+    await conn.execute("""
+        UPDATE core_tables.data_export_requests
+        SET status  = 'sent',
+            sent_at = NOW()
+        WHERE user_id = $1
+    """, user_id)
+
+    return {"success": True, "message": "Marked as sent"}
+
+@router.get("/account/data-export-status")
+async def get_export_status(
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    user_id = current_user["user_id"]
+
+    row = await conn.fetchrow("""
+        SELECT status, requested_at, sent_at
+        FROM core_tables.data_export_requests
+        WHERE user_id = $1
+    """, user_id)
+
+    if not row:
+        return {"success": True, "status": None, "message": "No export request found"}
+
+    return {
+        "success":      True,
+        "status":       row["status"],          # pending / sent
+        "requested_at": row["requested_at"].isoformat() if row["requested_at"] else None,
+        "sent_at":      row["sent_at"].isoformat() if row["sent_at"] else None,
+        "message":      "Your data is being prepared." if row["status"] == "pending"
+                        else "Your data has been sent to your email."
+    }
+
+@router.post("/admin/data-export/{user_id}/send")
+async def send_user_data_export(
+    user_id: str,
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    # if current_user.get("role") != "admin":
+    #     raise HTTPException(status_code=403, detail="Admin only")
+
+    # ✅ fetch user email
+    user = await conn.fetchrow("""
+        SELECT email, full_name
+        FROM core_auth_table.auth_user
+        WHERE user_id = $1
+    """, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ✅ extract all data
+    data = await extract_user_data(conn, user_id)
+
+    # ✅ send email with data as JSON attachment
+    background_tasks.add_task(
+        send_data_export_email,
+        user_email=user["email"],
+        full_name=user["full_name"],
+        data=data,
+    )
+
+    # ✅ mark as sent
+    await conn.execute("""
+        UPDATE core_tables.data_export_requests
+        SET status  = 'sent',
+            sent_at = NOW()
+        WHERE user_id = $1
+    """, user_id)
+
+    return {
+        "success": True,
+        "message": f"Data export sent to {user['email']}"
+    }

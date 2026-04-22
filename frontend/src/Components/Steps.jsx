@@ -35,10 +35,19 @@ export default function Steps() {
   const [loading1, setLoading1] = useState(false);
   const [joinId, setJobId] = useState("");
 
+  // step4 state
+
+  const [productsData, setProductsData] = useState([]);
+  const [banner_summary, setBanner_summary] = useState([]);
+  const [last_run_data, setLast_run_data] = useState("");
+  const [product_analyse_data, setProduct_analyse_data] = useState(0);
+  const [time_taken_data, setTime_taken_data] = useState("");
+  const [pages_crawled_data, setPages_crawled_data] = useState(0);
+
   // for display loading
   const [loading2, setLoading2] = useState(false);
 
-  console.log("joinId: ", joinId);
+  // console.log("joinId: ", joinId);
 
   const handleFetchProducts = async () => {
     if (!url) {
@@ -59,26 +68,29 @@ export default function Steps() {
         website_url: url,
       };
 
-      const response = await fetch(`${base_url1}/pipeline/run`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // console.log(payload);
+      nextStep();
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+      // const response = await fetch(`${base_url1}/pipeline/run`, {
+      //   method: "POST",
+      //   body: JSON.stringify(payload),
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
 
-      const data = await response.json();
-      console.log("step1: ", data);
-      if (data.success) {
-        setJobId(data?.job_id);
-        alert(data?.message);
-        nextStep();
-      }
+      // if (!response.ok) {
+      //   throw new Error(`Error: ${response.status}`);
+      // }
+
+      // const data = await response.json();
+      // console.log("step1: ", data);
+      // if (data.success) {
+      //   setJobId(data?.job_id);
+      //   alert(data?.message);
+      //   nextStep();
+      // }
 
       //   if (data?.success) {
       //     setRecent_activityData(data?.recent_activity);
@@ -108,7 +120,7 @@ export default function Steps() {
       }
 
       const data = await response.json();
-      console.log("product data: ", data);
+      // console.log("product data: ", data);
     } catch (error) {
       console.log("Something went wrong:", error.message);
     } finally {
@@ -116,10 +128,54 @@ export default function Steps() {
     }
   };
 
+  // last step card data
+  const getCardData = async () => {
+    try {
+      const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+
+      const response = await fetch(`${base_url1}/products-overview`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data?.success) {
+        // console.log("product card data: ", data);
+        setProductsData(Array.isArray(data?.products) ? data.products : []);
+        setBanner_summary(Array.isArray(data?.summary) ? data.summary : []);
+        setProduct_analyse_data(data?.products_analyzed || 0);
+        setLast_run_data(data?.last_run || "");
+        setTime_taken_data(data?.time_taken || "");
+        setPages_crawled_data(data?.pages_crawled || 0)
+      }
+    } catch (error) {
+      console.log("Something went wrong:", error.message);
+    }
+    //  finally {
+    //   setLoading2(false);
+    // }
+  };
+
   useEffect(() => {
     if (joinId === "") return;
     getProduct();
   }, [joinId]);
+
+  useEffect(() => {
+    getCardData();
+  }, []);
+
+  // console.log("productsData: ", productsData);
+  // console.log("banner_summary: ", banner_summary);
+  // console.log("last_run_data: ", last_run_data);
+  // console.log("product_analyse_data: ", product_analyse_data);
 
   return (
     <div className="w-full">
@@ -227,7 +283,14 @@ export default function Steps() {
         )}
         {currentStep === 3 && (
           <div>
-            <Step4 />
+            <Step4
+              productsData={productsData}
+              banner_summary={banner_summary}
+              product_analyse_data={product_analyse_data}
+              last_run_data={last_run_data}
+              time_taken_data={time_taken_data}
+              pages_crawled_data={pages_crawled_data}
+            />
           </div>
         )}
       </div>
@@ -277,6 +340,29 @@ export default function Steps() {
             )} */}
 
       {currentStep !== 0 && (
+        // <div className="flex justify-between">
+        //   <button
+        //     onClick={prevStep}
+        //     disabled={currentStep === 0}
+        //     className="px-4 py-2 border-2 border-[#0284C7] rounded-lg text-[#001413] cursor-pointer disabled:opacity-50 flex items-center gap-2 text-base font-semibold"
+        //   >
+        //     <ArrowLeftIcon className="h-5 w-5" /> Back
+        //   </button>
+
+        //   <button
+        //     onClick={nextStep}
+        //     disabled={currentStep === steps.length - 1}
+        //     className="px-4 py-2 rounded-lg bg-[#0284C7] text-white text-base font-semibold cursor-pointer disabled:opacity-50"
+        //   >
+        //     {currentStep === steps.length - 1 ? (
+        //       "Submit"
+        //     ) : (
+        //       <div className="flex items-center gap-2">
+        //         Confirm Selection <ArrowRightIcon className="h-5 w-5" />
+        //       </div>
+        //     )}
+        //   </button>
+        // </div>
         <div className="flex justify-between">
           <button
             onClick={prevStep}
@@ -286,19 +372,16 @@ export default function Steps() {
             <ArrowLeftIcon className="h-5 w-5" /> Back
           </button>
 
-          <button
-            onClick={nextStep}
-            disabled={currentStep === steps.length - 1}
-            className="px-4 py-2 rounded-lg bg-[#0284C7] text-white text-base font-semibold cursor-pointer disabled:opacity-50"
-          >
-            {currentStep === steps.length - 1 ? (
-              "Submit"
-            ) : (
+          {currentStep !== steps.length - 1 && (
+            <button
+              onClick={nextStep}
+              className="px-4 py-2 rounded-lg bg-[#0284C7] text-white text-base font-semibold cursor-pointer"
+            >
               <div className="flex items-center gap-2">
                 Confirm Selection <ArrowRightIcon className="h-5 w-5" />
               </div>
-            )}
-          </button>
+            </button>
+          )}
         </div>
       )}
     </div>

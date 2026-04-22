@@ -8,7 +8,7 @@ const List = ({ people, selectedPeople, setSelectedPeople }) => {
                         <div key={person.id} className="group has-checked:bg-gray-50 border-b border-[#E6E6E6] flex justify-between items-center py-1 card-hover">
                             <div className="flex">
                                 <div className="relative px-7 sm:w-12 sm:px-6">
-                                    <div className={`absolute inset-y-0 left-0 w-1 ${Number(person.btn1) >= 71 ? "bg-[#009A3F]" : person.btn1 >= 31 ? "bg-[#D48C15]" : "bg-[#C62828]"}`} />
+                                    <div className={`absolute inset-y-0 left-0 w-1 ${Number(person.btn1) >= 71 ? "bg-[#009A3F]" : Number(person.btn1) >= 31 ? "bg-[#D48C15]" : "bg-[#C62828]"}`} />
                                     <div className="absolute top-1/2 left-4 -mt-2 grid size-4 grid-cols-1">
                                         <input
                                             type="checkbox"

@@ -450,5 +450,5 @@ def _default_countries() -> list[str]:
         # "Canada",
         # "Netherlands",
         # "Japan",
-        "India"
+        # "India"
     ]

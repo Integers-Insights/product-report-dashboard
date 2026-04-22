@@ -47,12 +47,12 @@ Return JSON with EXACTLY these fields:
   "global_trade_value": {{
     "value_usd": "string or null — e.g. '$840M' or '$1.2B'",
     "year": integer or null,
-    "yoy_growth": "string or null — e.g. '+11%'"
+    "yoy_growth": "string or null — e.g. '+11'"
   }},
   "volume_traded_globally": {{
     "value_mt": "string or null — e.g. '320K' or '320000'",
     "year": integer or null,
-    "yoy_growth": "string or null — e.g. '+8%'"
+    "yoy_growth": "string or null — e.g. '+8'"
   }},
   "avg_global_trade_price": {{
     "price_per_kg": "string or null — e.g. '$2.63/kg'",
@@ -85,21 +85,21 @@ Return JSON with EXACTLY these fields:
 {{
   "country_export_share": {{
     "country": "{origin_country}",
-    "share_pct": "string or null — e.g. '64%'",
-    "trend": "string or null — e.g. 'Growing from 58% in 2021'"
+    "share_pct": "string or null — e.g. '64'",
+    "trend": "string or null — e.g. 'Growing from 58 in 2021'"
   }},
   "top_exporters": [
     {{
       "country": "string",
       "trad_value": "string or null — e.g. '205K MT'",
-      "share_pct": "string or null — e.g. '64%'"
+      "share_pct": "string or null — e.g. '64'"
     }}
   ],
   "top_importers": [
     {{
       "country": "string",
       "volume_mt": "string or null — e.g. '18.4K MT'",
-      "yoy_growth": "string or null — e.g. '+18%'"
+      "yoy_growth": "string or null — e.g. '+18'"
     }}
   ]
 }}

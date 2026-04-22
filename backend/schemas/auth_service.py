@@ -12,6 +12,8 @@ from utils.service import generate_unique_slug
 from db.database import get_db 
 from utils.service import get_current_user
 import os
+import boto3
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -55,10 +57,248 @@ def get_device_name(user_agent_string):
     except Exception:
         return "Unknown Device"
     
+async def send_data_export_email(user_email: str, full_name: str, data: dict):
+    """Send user their data export via email."""
+    try:
+        AWS_REGION            = os.getenv("AWS_REGION")
+        AWS_ACCESS_KEY_ID     = os.getenv("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+        SMTP_USER             = os.getenv("SMTP_USER")
+
+        import json
+        data_json = json.dumps(data, indent=2, default=str)
+
+        ses = boto3.client(
+            "ses",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        html_body = f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:20px;">
+        <div style="max-width:500px;margin:auto;background:#fff;padding:30px;border-radius:10px">
+            <h2 style="color:#0F172A;">📦 Your Data Export</h2>
+            <p>Hi {full_name},</p>
+            <p>As requested, here is a summary of your data from Intrade24.</p>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr><td style="padding:8px;color:#64748B;">Products</td>
+                    <td style="padding:8px;font-weight:bold;">{len(data.get('products', []))}</td></tr>
+                <tr style="background:#f8fafc;">
+                    <td style="padding:8px;color:#64748B;">Markets Analysed</td>
+                    <td style="padding:8px;font-weight:bold;">{len(data.get('market_intelligence', []))}</td></tr>
+                <tr><td style="padding:8px;color:#64748B;">Exported At</td>
+                    <td style="padding:8px;font-weight:bold;">{data.get('exported_at')}</td></tr>
+            </table>
+            <p>Your complete data is included below in JSON format.</p>
+            <pre style="background:#f1f5f9;padding:15px;border-radius:6px;
+                        font-size:11px;overflow:auto;max-height:400px;">
+{data_json[:3000]}{"..." if len(data_json) > 3000 else ""}
+            </pre>
+            <p style="font-size:12px;color:#64748B;margin-top:30px;">
+                If you have questions contact us at support@intrade24.com
+            </p>
+        </div>
+        </body>
+        </html>
+        """
+
+        ses.send_email(
+            Source=SMTP_USER,
+            Destination={"ToAddresses": [user_email]},
+            Message={
+                "Subject": {"Data": "Your Intrade24 Data Export"},
+                "Body": {
+                    "Html": {"Data": html_body},
+                    "Text": {"Data": f"Your data export:\n\n{data_json}"},
+                },
+            },
+        )
+
+        print(f"✅ Data export sent to {user_email}")
+
+    except Exception as e:
+        print(f"❌ Failed to send data export: {e}")
+
+async def send_data_export_request_email(user_email: str, full_name: str, user_id: str):
+    """Notify admin that a user requested data export."""
+    try:
+        AWS_REGION           = os.getenv("AWS_REGION")
+        AWS_ACCESS_KEY_ID    = os.getenv("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+        SMTP_USER            = os.getenv("SMTP_USER")
+        ADMIN_EMAIL          = os.getenv("ADMIN_EMAIL", "neel.integers@gmail.com")
+
+        if not all([AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, SMTP_USER]):
+            print("EMAIL ERROR: Missing environment variables")
+            return
+
+        ses = boto3.client(
+            "ses",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; background:#f5f7fa; padding:20px;">
+        <div style="max-width:500px;margin:auto;background:#ffffff;padding:30px;border-radius:10px">
+            <h2 style="color:#0F172A;">📦 Data Export Request</h2>
+            <p>A user has requested their data export.</p>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr><td style="padding:8px;color:#64748B;">Name</td><td style="padding:8px;font-weight:bold;">{full_name}</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:8px;color:#64748B;">Email</td><td style="padding:8px;font-weight:bold;">{user_email}</td></tr>
+                <tr><td style="padding:8px;color:#64748B;">User ID</td><td style="padding:8px;font-weight:bold;">{user_id}</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:8px;color:#64748B;">Requested</td><td style="padding:8px;font-weight:bold;">{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}</td></tr>
+            </table>
+            <p style="color:#DC2626;font-weight:bold;">⏰ Please send their data within 1-2 business days.</p>
+            <p style="font-size:12px;color:#64748B;margin-top:30px;">
+                Reply to this email or contact {user_email} directly.
+            </p>
+        </div>
+        </body>
+        </html>
+        """
+
+        text_body = f"""
+        Data Export Request
+
+        Name     : {full_name}
+        Email    : {user_email}
+        User ID  : {user_id}
+        Requested: {datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}
+
+        Please send their data within 1-2 business days.
+        """
+
+        response = ses.send_email(
+            Source=SMTP_USER,
+            Destination={"ToAddresses": [ADMIN_EMAIL]},
+            Message={
+                "Subject": {"Data": f"Data Export Request — {user_email}"},
+                "Body": {
+                    "Html": {"Data": html_body},
+                    "Text": {"Data": text_body},
+                },
+            },
+        )
+
+        print(f"✅ Export request email sent to admin | MessageId: {response.get('MessageId')}")
+
+    except ClientError as e:
+        print(f"❌ SES ClientError: {e.response['Error']['Message']}")
+    except Exception as e:
+        print(f"⚠️ Failed to send export request email: {e}")
 
 # =========================================================
 # SIGNUP
 # =========================================================
+
+# async def signup_user(conn, data, request, background_tasks):
+
+#     # 1️⃣ Validate
+#     if not data.email or not data.password or not data.company_name:
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Email, password and company name required"
+#         )
+
+#     # 2️⃣ Check email
+#     user = await conn.fetchrow("""
+#         SELECT user_id
+#         FROM core_auth_table.auth_user
+#         WHERE LOWER(email) = LOWER($1)
+#     """, data.email)
+
+#     if user:
+#         raise HTTPException(status_code=400, detail="Email already exists")
+
+#     # 3️⃣ Check company
+#     company = await conn.fetchrow("""
+#         SELECT id
+#         FROM core_tables.companies_other
+#         WHERE LOWER(name) = LOWER($1)
+#     """, data.company_name)
+
+#     if company:
+#         company_id = str(company["id"])
+#     else:
+#         company_id = str(uuid.uuid4())
+
+#         slug = await generate_unique_slug(conn, data.company_name)
+
+#         await conn.execute("""
+#             INSERT INTO core_tables.companies_other
+#             (
+#                 id,name,legal_name,slug,company_type,source,
+#                 created_at,updated_at
+#             )
+#             VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())
+#         """,
+#             company_id,
+#             data.company_name,
+#             data.company_name,
+#             slug,
+#             "customer",
+#             "customer"
+#         )
+
+#     # 4️⃣ Create user
+#     user_id = str(uuid.uuid4())
+#     hashed_password = hash_password(data.password)
+
+#     await conn.execute("""
+#         INSERT INTO core_auth_table.auth_user
+#         (
+#             user_id,email,password_hash,
+#             full_name,phone,status,
+#             companies_other_id,role,created_at
+#         )
+#         VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',NOW())
+#     """,
+#         user_id,
+#         data.email,
+#         hashed_password,
+#         data.full_name,
+#         data.phone,
+#         "pending_verification",
+#         company_id
+#     )
+
+#     # 5️⃣ Assign trial plan on signup (expires in 7 days)
+#     from utils.subscription_service import assign_trial_plan_if_needed
+#     await assign_trial_plan_if_needed(conn, company_id, trial_days=7)
+
+#     # 6️⃣ Email verification
+#     token = str(uuid.uuid4())
+
+#     await conn.execute("""
+#         INSERT INTO core_auth_table.email_verification_tokens
+#         (id,user_id,token,expires_at)
+#         VALUES ($1,$2,$3,$4)
+#     """,
+#         str(uuid.uuid4()),
+#         user_id,
+#         token,
+#         datetime.utcnow() + timedelta(hours=10)
+#     )
+
+#     # =========================================================
+#     # 🚀 BACKGROUND EMAIL (NON-BLOCKING)
+#     # =========================================================
+#     background_tasks.add_task(
+#         send_verification_email,
+#         data.email,
+#         token
+#     )
+
+#     return {
+#         "success": True,
+#         "message": "Signup successful. Verify your email."
+#     }
+
 
 async def signup_user(conn, data, request, background_tasks):
 
@@ -67,6 +307,17 @@ async def signup_user(conn, data, request, background_tasks):
         raise HTTPException(
             status_code=400,
             detail="Email, password and company name required"
+        )
+
+    # ✅ GDPR consent required
+    if not data.gdpr_consent:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "error": "GDPR_CONSENT_REQUIRED",
+                "message": "You must accept the Privacy Policy to create an account."
+            }
         )
 
     # 2️⃣ Check email
@@ -90,15 +341,11 @@ async def signup_user(conn, data, request, background_tasks):
         company_id = str(company["id"])
     else:
         company_id = str(uuid.uuid4())
-
         slug = await generate_unique_slug(conn, data.company_name)
 
         await conn.execute("""
             INSERT INTO core_tables.companies_other
-            (
-                id,name,legal_name,slug,company_type,source,
-                created_at,updated_at
-            )
+            (id, name, legal_name, slug, company_type, source, created_at, updated_at)
             VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())
         """,
             company_id,
@@ -109,18 +356,21 @@ async def signup_user(conn, data, request, background_tasks):
             "customer"
         )
 
-    # 4️⃣ Create user
+    # 4️⃣ Create user ✅ with GDPR consent
     user_id = str(uuid.uuid4())
     hashed_password = hash_password(data.password)
 
     await conn.execute("""
         INSERT INTO core_auth_table.auth_user
         (
-            user_id,email,password_hash,
-            full_name,phone,status,
-            companies_other_id,role,created_at
+            user_id, email, password_hash,
+            full_name, phone, status,
+            companies_other_id, role,
+            gdpr_consent, gdpr_consent_at,
+            marketing_consent,
+            created_at
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',NOW())
+        VALUES ($1,$2,$3,$4,$5,$6,$7,'admin',$8,NOW(),$9,NOW())
     """,
         user_id,
         data.email,
@@ -128,10 +378,12 @@ async def signup_user(conn, data, request, background_tasks):
         data.full_name,
         data.phone,
         "pending_verification",
-        company_id
+        company_id,
+        data.gdpr_consent,          # ✅
+        data.marketing_consent,     # ✅
     )
 
-    # 5️⃣ Assign trial plan on signup (expires in 7 days)
+    # 5️⃣ Assign trial plan
     from utils.subscription_service import assign_trial_plan_if_needed
     await assign_trial_plan_if_needed(conn, company_id, trial_days=7)
 
@@ -140,7 +392,7 @@ async def signup_user(conn, data, request, background_tasks):
 
     await conn.execute("""
         INSERT INTO core_auth_table.email_verification_tokens
-        (id,user_id,token,expires_at)
+        (id, user_id, token, expires_at)
         VALUES ($1,$2,$3,$4)
     """,
         str(uuid.uuid4()),
@@ -149,9 +401,6 @@ async def signup_user(conn, data, request, background_tasks):
         datetime.utcnow() + timedelta(hours=10)
     )
 
-    # =========================================================
-    # 🚀 BACKGROUND EMAIL (NON-BLOCKING)
-    # =========================================================
     background_tasks.add_task(
         send_verification_email,
         data.email,
@@ -162,7 +411,6 @@ async def signup_user(conn, data, request, background_tasks):
         "success": True,
         "message": "Signup successful. Verify your email."
     }
-
 
 # =========================================================
 # LOGIN
@@ -1420,3 +1668,4 @@ async def delete_user(conn, target_user_id: str, caller_user_id: str, company_id
         "message": "User deleted successfully.",
         "deleted_user_id": target_user_id,
     }
+

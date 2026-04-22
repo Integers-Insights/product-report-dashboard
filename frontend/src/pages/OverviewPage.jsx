@@ -1,4 +1,3 @@
-
 // import { useEffect, useState } from "react";
 // import AiGenerated from "../Components/AiGenerated";
 // import Header from "../Components/Header";
@@ -61,12 +60,6 @@
 
 // export default OverViewPage;
 
-
-
-
-
-
-
 import { useEffect, useState } from "react";
 import AiGenerated from "../Components/AiGenerated";
 import Header from "../Components/Header";
@@ -85,6 +78,8 @@ const OverViewPage = () => {
   const [ai_insightsData, setAi_insightsData] = useState([]);
   const [currentDate, setCurrentDate] = useState("");
   const [fullName, setFullName] = useState("");
+
+  console.log("stateData: ", statsData);
 
   useEffect(() => {
     const key = "CtKoIC)iR1SP)5mr&R4d";
@@ -123,15 +118,25 @@ const OverViewPage = () => {
       }
 
       const data = await response.json();
+      console.log("data: ", data);
+
+      // if (data?.success) {
+      //   // console.log("overview Data:", data);
+      //   setStatsData(data?.stats);
+      //   setOpportunity_hubData(data?.opportunity_hub);
+      //   // setRecent_activityData(data?.recent_activity);
+      //   setAi_insightsData(data?.ai_insights);
+      //   setCurrentDate(data?.current_datetime);
+      //   setFullName(data?.full_name);
+      // }
 
       if (data?.success) {
-        // console.log("overview Data:", data);
-        setStatsData(data?.stats);
-        setOpportunity_hubData(data?.opportunity_hub);
-        // setRecent_activityData(data?.recent_activity);
-        setAi_insightsData(data?.ai_insights);
-        setCurrentDate(data?.current_datetime);
-        setFullName(data?.full_name);
+        setStatsData(Array.isArray(data?.stats) ? data.stats : []);
+        setOpportunity_hubData(Array.isArray(data?.opportunity_hub) ? data.opportunity_hub : []);
+        setAi_insightsData(Array.isArray(data?.ai_insights) ? data.ai_insights : []);
+
+        setCurrentDate(data?.current_datetime || "");
+        setFullName(data?.full_name || "");
       }
     } catch (error) {
       console.error("Something went wrong:", error.message);
@@ -157,7 +162,7 @@ const OverViewPage = () => {
       const data = await response.json();
 
       if (data?.success) {
-        setRecent_activityData(data?.recent_activity);
+        setRecent_activityData(Array.isArray(data?.recent_activity) ? data?.recent_activity : []);
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);

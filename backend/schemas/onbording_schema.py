@@ -61,11 +61,13 @@ class Step3Request(BaseModel):
     referral_source: Optional[str]
 
 class SignupRequest(BaseModel):
-    email: EmailStr
-    password: str
-    company_name: str
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
+    email:              str
+    password:           str
+    company_name:       str
+    full_name:          str
+    phone:              Optional[str] = None
+    gdpr_consent:       bool = False    # ✅ must be True to signup
+    marketing_consent:  bool = False    # ✅ optional
 
 class LoginRequest(BaseModel):
     email: EmailStr
