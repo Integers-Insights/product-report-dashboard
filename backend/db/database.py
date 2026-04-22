@@ -92,9 +92,10 @@ async def close_pool():
     if db_pool:
         try:
             await asyncio.wait_for(db_pool.close(), timeout=5.0)
-        except asyncio.TimeoutError:
-            print("⚠️ Pool close timed out — forcing termination")
+        except (asyncio.TimeoutError, RuntimeError):
             db_pool.terminate()
+        except Exception:
+            pass
         finally:
             db_pool = None
 
