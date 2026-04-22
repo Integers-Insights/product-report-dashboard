@@ -180,7 +180,7 @@ class ResearchPreferencesRequest(BaseModel):
     buyer_type: Optional[str] = None
     price_positioning: Optional[str] = None
     monthly_supply_capacity: Optional[str] = None
-    annual_turnover: Optional[str] = None
+    target_country: List[str] = None
     certifications: Optional[CertificationSchema]
 
 
