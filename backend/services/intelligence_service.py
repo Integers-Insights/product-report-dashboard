@@ -472,10 +472,13 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         buyer_type = str(prefs["buyer_type"]).upper().strip() if prefs else "B2B"
         print(f"📋 buyer_type from preferences: '{buyer_type}'")
 
-        # =========================================================
-        # ✅ 2. BUILD INPUTS
-        # =========================================================
+        # ✅ build inputs AFTER reading fresh buyer_type
         inputs = build_module_inputs(rows)
+
+        # ✅ override buyer_type on all inputs with fresh value from prefs
+        for inp in inputs:
+            inp.buyer_type = buyer_type
+            print(f"✅ [override] product={inp.product_name} | buyer_type={inp.buyer_type}")
 
         # Status callback — writes current running engine to product_master
         # so the dashboard can show exactly which engine is active

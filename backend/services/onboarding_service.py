@@ -384,6 +384,7 @@ async def upsert_research_preferences(conn, user_id: str, data):
         ON CONFLICT (user_id)
         DO UPDATE SET
             goals = EXCLUDED.goals,
+            buyer_type=EXCLUDED.buyer_type,
             price_positioning = EXCLUDED.price_positioning,
             monthly_supply_capacity = EXCLUDED.monthly_supply_capacity,
             annual_turnover = EXCLUDED.annual_turnover,
