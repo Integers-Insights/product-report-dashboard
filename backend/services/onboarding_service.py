@@ -507,7 +507,8 @@ async def insert_selected_products_v2(conn, user_id, company_id, rows, job_id):
             $11,$12,$13,$14,$15,$16,$17,$18,$19,
             $20,$21,$22,$23
         )
-        ON CONFLICT (company_id, product_name, created_by) DO NOTHING
+        ON CONFLICT (company_id, product_name, created_by) DO UPDATE
+            SET job_id = EXCLUDED.job_id, updated_at = NOW()
     """
 
     inserted_count = 0
