@@ -1,35 +1,50 @@
 """
 modules/trade/trade_intel.py
 -----------------------------
-Module 4 — Trade Intelligence
+Module 4 — Trade Intelligence (orchestrator)
 
 Pipeline:
-    1. 4 Sonar queries in parallel (global overview, country shares, trend, pricing)
-    2. 4 paired extractions in parallel → merge into one dict
-    3. GPT fallback 1 — fills top-level null fields (scalars + objects)
-    4. GPT fallback 2 — fills null volume/share within country lists
-    5. GPT fallback 3 — fills null volume_mt within export trend entries
-    6. Analyst note generation
+    Stage 1 (parallel)
+        a. Sonar → global trade value, volume, avg price + YoY
+        b. Sonar → top exporter/importer country NAMES + origin share %
+        c. GPT   → commodity vs certified FOB pricing
 
-All prompt strings live in trade_prompts.py.
-DB table: product_info.trade_intelligence — one row per product.
+    Stage 2 (sequential — Comtrade rate-limited at 1.2s/call)
+        d. Comtrade → value + volume for each top exporter
+        e. Comtrade → value + volume for each top importer
+        f. Comtrade → 5-year export trend for origin country
+
+    Stage 3 (parallel)
+        g. GPT → structure Comtrade trader data into display strings
+        h. GPT → structure Comtrade trend data + add year labels
+
+    Stage 4
+        i. GPT → analyst note
+
+Sonar functions  → trade_sonar.py
+Comtrade client  → trade_comtrade.py
+All prompts      → trade_prompts.py
 """
 
 import json
 import asyncio
-from modules.base_module import BaseModule, ModuleInput, ModuleResult, call_openai, call_sonar
+from modules.base_module import BaseModule, ModuleInput, ModuleResult, call_openai
 from input_pipeline.config import LLM
 
+from modules.trade.trade_sonar import (
+    fetch_global_overview,
+    fetch_country_names,
+    fetch_pricing_gpt,
+)
+from modules.trade.trade_comtrade import fetch_traders, fetch_origin_trend
 from modules.trade.trade_prompts import (
-    QUERY_GLOBAL_OVERVIEW,          EXTRACT_GLOBAL_OVERVIEW,
-    QUERY_COUNTRY_SHARES,           EXTRACT_COUNTRY_SHARES,
-    QUERY_ORIGIN_TREND,             EXTRACT_ORIGIN_TREND,
-    QUERY_PRICING,                  EXTRACT_PRICING,
-    TRADE_FALLBACK_PROMPT,
-    COUNTRY_METRICS_FALLBACK_PROMPT,
-    TREND_GAPS_FALLBACK_PROMPT,
+    STRUCTURE_TRADERS_PROMPT,
+    STRUCTURE_TREND_PROMPT,
     TRADE_ANALYST_NOTE_PROMPT,
 )
+
+COMTRADE_YEAR = "2023"
+TREND_YEARS   = [2019, 2020, 2021, 2022, 2023, 2024]  # 2019 is base year for 2020 YoY
 
 
 class TradeIntelModule(BaseModule):
@@ -48,6 +63,7 @@ class TradeIntelModule(BaseModule):
             "top_importers":          None,
             "export_volume_trend":    None,
             "export_pricing_commod":  None,
+            "analysis_note":          None,
         }
 
     # ─────────────────────────────────────────────
@@ -59,74 +75,62 @@ class TradeIntelModule(BaseModule):
 
         self._company_id = getattr(inp, "company_id", None)
         self._report_id  = getattr(inp, "report_id",  None)
-
         hs   = inp.hs_code or "unknown"
-        prod = inp.product_name
         orig = inp.origin_country
 
-        # ── Step 1: 4 Sonar queries in parallel ──────────────────────────────
-        q1 = QUERY_GLOBAL_OVERVIEW.format(product_name=prod, hs_code=hs).strip()
-        q2 = QUERY_COUNTRY_SHARES.format(product_name=prod, hs_code=hs, origin_country=orig).strip()
-        q3 = QUERY_ORIGIN_TREND.format(product_name=prod, hs_code=hs, origin_country=orig).strip()
-        q4 = QUERY_PRICING.format(product_name=prod, hs_code=hs, origin_country=orig).strip()
-
-        s1, s2, s3, s4 = await asyncio.gather(
-            call_sonar(q1, call_type="trade_global_overview", module=self.module_name(), company_id=self._company_id, report_id=self._report_id, product_id=inp.product_id),
-            call_sonar(q2, call_type="trade_country_shares",  module=self.module_name(), company_id=self._company_id, report_id=self._report_id, product_id=inp.product_id),
-            call_sonar(q3, call_type="trade_origin_trend",    module=self.module_name(), company_id=self._company_id, report_id=self._report_id, product_id=inp.product_id),
-            call_sonar(q4, call_type="trade_pricing",         module=self.module_name(), company_id=self._company_id, report_id=self._report_id, product_id=inp.product_id),
+        # ── Stage 1: Sonar + GPT pricing in parallel ─────────────────────────
+        overview, country_data, pricing = await asyncio.gather(
+            fetch_global_overview(inp, self._company_id, self._report_id),
+            fetch_country_names(inp,   self._company_id, self._report_id),
+            fetch_pricing_gpt(inp,     self._company_id, self._report_id),
         )
 
-        if all(r is None for r in (s1, s2, s3, s4)):
-            print("  ❌ [trade_intel] All Sonar calls failed")
-            return ModuleResult(
-                product_id=inp.product_id,
-                target_country=orig,
-                module_name=self.module_name(),
-                data=self.empty_result(),
-                raw_sonar=None,
-                success=False,
-                error="All Sonar calls failed",
-            )
+        exporter_names = (country_data.get("top_exporter_names") or [])[:5]
+        importer_names = (country_data.get("top_importer_names") or [])[:5]
 
-        # ── Step 2: 4 extractions in parallel ────────────────────────────────
-        e1 = EXTRACT_GLOBAL_OVERVIEW.format(product_name=prod, hs_code=hs,    sonar_response=s1 or "").strip()
-        e2 = EXTRACT_COUNTRY_SHARES.format(product_name=prod,  origin_country=orig, sonar_response=s2 or "").strip()
-        e3 = EXTRACT_ORIGIN_TREND.format(product_name=prod,    origin_country=orig, sonar_response=s3 or "").strip()
-        e4 = EXTRACT_PRICING.format(product_name=prod,         origin_country=orig, sonar_response=s4 or "").strip()
+        print(f"     → Sonar: {len(exporter_names)} exporters, {len(importer_names)} importers identified")
 
-        r1, r2, r3, r4 = await asyncio.gather(
-            self._extract_structured(e1),
-            self._extract_structured(e2),
-            self._extract_structured(e3),
-            self._extract_structured(e4),
+        # ── Stage 2: Comtrade (sequential — rate-limited) ────────────────────
+        raw_exporters = []
+        raw_importers = []
+        raw_trend     = []
+
+        if exporter_names:
+            print(f"     → Comtrade: fetching {len(exporter_names)} exporters...")
+            raw_exporters = await fetch_traders(hs, exporter_names, "X", COMTRADE_YEAR)
+
+        if importer_names:
+            print(f"     → Comtrade: fetching {len(importer_names)} importers...")
+            raw_importers = await fetch_traders(hs, importer_names, "M", COMTRADE_YEAR)
+
+        print(f"     → Comtrade: fetching {len(TREND_YEARS)}-year trend for {orig}...")
+        raw_trend = await fetch_origin_trend(hs, orig, TREND_YEARS)
+
+        # ── Stage 3: GPT structuring in parallel ─────────────────────────────
+        # Drop the 2019 base entry — it was only needed to compute 2020 YoY
+        display_trend = raw_trend[1:] if len(raw_trend) == len(TREND_YEARS) else raw_trend
+
+        structured_traders, structured_trend = await asyncio.gather(
+            self._structure_traders(raw_exporters, raw_importers, inp),
+            self._structure_trend(display_trend, inp),
         )
 
-        # ── Step 3: Merge sections ────────────────────────────────────────────
-        merged: dict = self.empty_result()
+        # ── Merge all sections ────────────────────────────────────────────────
+        merged = {
+            "global_trade_value":     overview.get("global_trade_value"),
+            "volume_traded_globally": overview.get("volume_traded_globally"),
+            "avg_global_trade_price": overview.get("avg_global_trade_price"),
+            "country_export_share":   country_data.get("country_export_share"),
+            "top_exporters":          structured_traders.get("top_exporters"),
+            "top_importers":          structured_traders.get("top_importers"),
+            "export_volume_trend":    structured_trend.get("export_volume_trend"),
+            "export_pricing_commod":  pricing.get("export_pricing_commod"),
+        }
 
-        if r1:
-            merged["global_trade_value"]     = r1.get("global_trade_value")
-            merged["volume_traded_globally"] = r1.get("volume_traded_globally")
-            merged["avg_global_trade_price"] = r1.get("avg_global_trade_price")
-        if r2:
-            merged["country_export_share"] = r2.get("country_export_share")
-            merged["top_exporters"]        = r2.get("top_exporters")
-            merged["top_importers"]        = r2.get("top_importers")
-        if r3:
-            merged["export_volume_trend"]  = r3.get("export_volume_trend")
-        if r4:
-            merged["export_pricing_commod"] = r4.get("export_pricing_commod")
+        filled = sum(1 for v in merged.values() if v is not None)
+        print(f"  ✅ [trade_intel] {filled}/8 sections populated")
 
-        sonar_count = sum(1 for v in merged.values() if v is not None)
-        print(f"  ✅ [trade_intel] {sonar_count}/8 sections extracted from Sonar")
-
-        # ── Step 4: GPT fallbacks ─────────────────────────────────────────────
-        merged = await self._gpt_fill_top_level(merged, inp)
-        merged = await self._gpt_fill_country_metrics(merged, inp)
-        merged = await self._gpt_fill_trend_gaps(merged, inp)
-
-        # ── Step 5: Analyst note ──────────────────────────────────────────────
+        # ── Stage 4: Analyst note ─────────────────────────────────────────────
         merged["analysis_note"] = await self._generate_trade_note(inp, merged)
 
         return ModuleResult(
@@ -134,154 +138,90 @@ class TradeIntelModule(BaseModule):
             target_country=orig,
             module_name=self.module_name(),
             data=merged,
-            raw_sonar="\n\n---\n\n".join(filter(None, [s1, s2, s3, s4])),
+            raw_sonar=None,
             success=True,
         )
 
     # ─────────────────────────────────────────────
-    #  HELPERS
+    #  GPT STRUCTURE — Traders
     # ─────────────────────────────────────────────
 
-    @staticmethod
-    def _is_null(v) -> bool:
-        if v is None:
-            return True
-        if isinstance(v, list) and len(v) == 0:
-            return True
-        if isinstance(v, dict) and all(val is None for val in v.values()):
-            return True
-        return False
+    async def _structure_traders(
+        self,
+        raw_exporters: list,
+        raw_importers: list,
+        inp: ModuleInput,
+    ) -> dict:
+        """GPT formats raw Comtrade trader dicts into display strings."""
+        if not raw_exporters and not raw_importers:
+            return {}
 
-    async def _gpt_call(self, prompt: str, call_type: str, max_tokens: int, product_id: str) -> "dict | None":
-        """Shared GPT JSON call used by all three fallback methods."""
+        prompt = STRUCTURE_TRADERS_PROMPT.format(
+            product_name=inp.product_name,
+            hs_code=inp.hs_code or "unknown",
+            year=COMTRADE_YEAR,
+            exporters_json=json.dumps(raw_exporters, indent=2),
+            importers_json=json.dumps(raw_importers, indent=2),
+        ).strip()
+
+        raw = await call_openai(
+            model=LLM["extraction_model"],
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=600,
+            temperature=0.0,
+            call_type="trade_structure_traders",
+            module=self.module_name(),
+            company_id=self._company_id,
+            report_id=self._report_id,
+            product_id=inp.product_id,
+            response_format={"type": "json_object"},
+        )
         try:
-            raw = await call_openai(
-                model=LLM["extraction_model"],
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
-                temperature=0.0,
-                call_type=call_type,
-                module=self.module_name(),
-                company_id=self._company_id,
-                report_id=self._report_id,
-                product_id=product_id,
-                response_format={"type": "json_object"},
-            )
-            return json.loads(raw) if raw else None
-        except Exception as e:
-            print(f"  ⚠️  [trade_intel] {call_type} failed: {e}")
-            return None
+            return json.loads(raw) if raw else {}
+        except Exception:
+            return {}
 
     # ─────────────────────────────────────────────
-    #  GPT FALLBACK 1 — Top-level null fields
+    #  GPT STRUCTURE — Origin Trend
     # ─────────────────────────────────────────────
 
-    _TOP_LEVEL_FILLABLE = {
-        "global_trade_value", "volume_traded_globally", "avg_global_trade_price",
-        "country_export_share", "export_volume_trend", "export_pricing_commod",
-    }
+    async def _structure_trend(self, raw_trend: list, inp: ModuleInput) -> dict:
+        """GPT formats raw Comtrade trend entries and adds year labels."""
+        if not raw_trend:
+            return {}
 
-    async def _gpt_fill_top_level(self, data: dict, inp: ModuleInput) -> dict:
-        null_fields = [f for f in self._TOP_LEVEL_FILLABLE if self._is_null(data.get(f))]
-        if not null_fields:
-            return data
-
-        print(f"     → [trade_intel] GPT fallback 1: filling {null_fields}")
-
-        prompt = TRADE_FALLBACK_PROMPT.format(
+        prompt = STRUCTURE_TREND_PROMPT.format(
             product_name=inp.product_name,
-            hs_code=inp.hs_code or "unknown",
             origin_country=inp.origin_country,
-            null_fields=", ".join(null_fields),
-            current_data_json=json.dumps(data, indent=2),
+            trend_json=json.dumps(raw_trend, indent=2),
+        ).strip()
+
+        raw = await call_openai(
+            model=LLM["extraction_model"],
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=400,
+            temperature=0.0,
+            call_type="trade_structure_trend",
+            module=self.module_name(),
+            company_id=self._company_id,
+            report_id=self._report_id,
+            product_id=inp.product_id,
+            response_format={"type": "json_object"},
         )
-
-        filled = await self._gpt_call(prompt, "trade_fallback_top_level", 1400, inp.product_id)
-        if not filled:
-            return data
-
-        merged = dict(data)
-        for field in null_fields:
-            if filled.get(field) and not self._is_null(filled[field]):
-                merged[field] = filled[field]
-
-        filled_fields = [f for f in null_fields if not self._is_null(merged.get(f))]
-        print(f"     → [trade_intel] GPT fallback 1 filled: {filled_fields}")
-        return merged
-
-    # ─────────────────────────────────────────────
-    #  GPT FALLBACK 2 — Country metric gaps
-    # ─────────────────────────────────────────────
-
-    async def _gpt_fill_country_metrics(self, data: dict, inp: ModuleInput) -> dict:
-        exporters = data.get("top_exporters") or []
-        importers = data.get("top_importers") or []
-
-        exp_gaps = [e["country"] for e in exporters if isinstance(e, dict) and (e.get("trad_value") is None or e.get("share_pct") is None)]
-        imp_gaps = [e["country"] for e in importers if isinstance(e, dict) and (e.get("volume_mt") is None or e.get("yoy_growth") is None)]
-
-        if not exp_gaps and not imp_gaps:
-            return data
-
-        print(f"     → [trade_intel] GPT fallback 2: exporters {exp_gaps}, importers {imp_gaps}")
-
-        prompt = COUNTRY_METRICS_FALLBACK_PROMPT.format(
-            product_name=inp.product_name,
-            hs_code=inp.hs_code or "unknown",
-            exporters_json=json.dumps(exporters, indent=2),
-            importers_json=json.dumps(importers, indent=2),
-        )
-
-        filled = await self._gpt_call(prompt, "trade_fallback_country_metrics", 800, inp.product_id)
-        if not filled:
-            return data
-
-        merged = dict(data)
-        if filled.get("top_exporters") and len(filled["top_exporters"]) == len(exporters):
-            merged["top_exporters"] = filled["top_exporters"]
-        if filled.get("top_importers") and len(filled["top_importers"]) == len(importers):
-            merged["top_importers"] = filled["top_importers"]
-        return merged
-
-    # ─────────────────────────────────────────────
-    #  GPT FALLBACK 3 — Export volume trend gaps
-    # ─────────────────────────────────────────────
-
-    async def _gpt_fill_trend_gaps(self, data: dict, inp: ModuleInput) -> dict:
-        trend = data.get("export_volume_trend") or []
-        gap_years = [e["year"] for e in trend if isinstance(e, dict) and e.get("volume_mt") is None]
-
-        if not gap_years:
-            return data
-
-        print(f"     → [trade_intel] GPT fallback 3: filling volume_mt for years {gap_years}")
-
-        prompt = TREND_GAPS_FALLBACK_PROMPT.format(
-            product_name=inp.product_name,
-            hs_code=inp.hs_code or "unknown",
-            origin_country=inp.origin_country,
-            trend_json=json.dumps(trend, indent=2),
-        )
-
-        filled = await self._gpt_call(prompt, "trade_fallback_trend_gaps", 400, inp.product_id)
-        if not filled:
-            return data
-
-        new_trend = filled.get("export_volume_trend")
-        if new_trend and len(new_trend) == len(trend):
-            data = dict(data)
-            data["export_volume_trend"] = new_trend
-        return data
+        try:
+            return json.loads(raw) if raw else {}
+        except Exception:
+            return {}
 
     # ─────────────────────────────────────────────
     #  ANALYST NOTE
     # ─────────────────────────────────────────────
 
     async def _generate_trade_note(self, inp: ModuleInput, data: dict) -> str:
-        gtv   = data.get("global_trade_value")     or {}
-        share = data.get("country_export_share")   or {}
-        trend = data.get("export_volume_trend")    or []
-        price = data.get("export_pricing_commod")  or {}
+        gtv   = data.get("global_trade_value")    or {}
+        share = data.get("country_export_share")  or {}
+        trend = data.get("export_volume_trend")   or []
+        price = data.get("export_pricing_commod") or {}
 
         prompt = TRADE_ANALYST_NOTE_PROMPT.format(
             product_name=inp.product_name,

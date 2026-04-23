@@ -65,16 +65,18 @@ Rules: set to null if not in the research. No text outside JSON.
 
 
 # ─────────────────────────────────────────────
-#  SONAR QUERY 2 — Country Shares
+#  SONAR QUERY 2 — Country Names Only
+#  (Volumes/values come from UN Comtrade, not Sonar)
 # ─────────────────────────────────────────────
 
-QUERY_COUNTRY_SHARES = """
+QUERY_COUNTRY_NAMES = """
 Who are the top 5 exporting countries and top 5 importing countries for
-{product_name} (HS {hs_code}) by volume or value in 2023-2024?
-What is {origin_country}'s share of global exports and its 3-year trend?
+{product_name} (HS {hs_code}) in 2023-2024?
+What is {origin_country}'s share (%) of global exports and how has it trended
+over the past 3 years?
 """
 
-EXTRACT_COUNTRY_SHARES = """
+EXTRACT_COUNTRY_NAMES = """
 Extract from the research below.
 Product: {product_name} | Origin: {origin_country}
 
@@ -85,26 +87,17 @@ Return JSON with EXACTLY these fields:
 {{
   "country_export_share": {{
     "country": "{origin_country}",
-    "share_pct": "string or null — e.g. '64'",
-    "trend": "string or null — e.g. 'Growing from 58 in 2021'"
+    "share_pct": "string or null — e.g. '64%'",
+    "trend": "string or null — e.g. 'Growing from 58% in 2021'"
   }},
-  "top_exporters": [
-    {{
-      "country": "string",
-      "trad_value": "string or null — e.g. '205K MT'",
-      "share_pct": "string or null — e.g. '64'"
-    }}
-  ],
-  "top_importers": [
-    {{
-      "country": "string",
-      "volume_mt": "string or null — e.g. '18.4K MT'",
-      "yoy_growth": "string or null — e.g. '+18'"
-    }}
-  ]
+  "top_exporter_names": ["country1", "country2", "country3", "country4", "country5"],
+  "top_importer_names": ["country1", "country2", "country3", "country4", "country5"]
 }}
 
-Rules: up to 5 entries per list. null if not found. No text outside JSON.
+Rules:
+- top_exporter_names and top_importer_names: plain country name strings only, no data
+- up to 5 names per list
+- null if not found. No text outside JSON.
 """
 
 
@@ -177,6 +170,118 @@ Return JSON with EXACTLY this field:
 }}
 
 Rules: null if not found. No text outside JSON.
+"""
+
+
+# ─────────────────────────────────────────────
+#  GPT PROMPT — Pricing (no Sonar, training knowledge only)
+# ─────────────────────────────────────────────
+
+PRICING_GPT_PROMPT = """
+You are a commodity trade pricing expert.
+
+Based on your training knowledge, provide the typical FOB export price ranges
+from {origin_country} for {product_name} (HS code: {hs_code}).
+
+Return JSON with EXACTLY this structure:
+{{
+  "export_pricing_commod": {{
+    "commodity": {{
+      "price_range": "string or null — e.g. '$1.20-$2.80/kg FOB'",
+      "context": "string or null — e.g. 'Standard grade, high volume buyers'"
+    }},
+    "certified": {{
+      "price_range": "string or null — e.g. '$8-$16/kg FOB'",
+      "context": "string or null — e.g. 'USDA Organic / fair-trade certified, 4-6x commodity'"
+    }}
+  }}
+}}
+
+Exporter context: {origin_country}-based {business_type},
+certifications held: {certifications}, price positioning: {price_positioning}.
+
+Rules:
+- Use realistic price ranges based on actual market knowledge for {origin_country}
+- If you don't have reliable data, set price_range to null — do not guess
+- No text outside JSON
+"""
+
+
+# ─────────────────────────────────────────────
+#  GPT PROMPT — Structure Comtrade trader data
+# ─────────────────────────────────────────────
+
+STRUCTURE_TRADERS_PROMPT = """
+You are a trade data formatter. Convert raw Comtrade API data into clean display strings.
+
+Product: {product_name} (HS {hs_code}) | Year: {year}
+
+Raw exporter data (value_usd in USD, volume_mt in metric tons):
+{exporters_json}
+
+Raw importer data (value_usd in USD, volume_mt in metric tons):
+{importers_json}
+
+Return JSON with EXACTLY this structure:
+{{
+  "top_exporters": [
+    {{
+      "country": "string",
+      "value_usd": "string or null — e.g. '$12.4M' or '$1.2B'",
+      "volume_mt": "string or null — e.g. '18.4K MT' or '320K MT'"
+    }}
+  ],
+  "top_importers": [
+    {{
+      "country": "string",
+      "value_usd": "string or null — e.g. '$12.4M' or '$1.2B'",
+      "volume_mt": "string or null — e.g. '18.4K MT' or '320K MT'"
+    }}
+  ]
+}}
+
+Rules:
+- Format value_usd: use M/B suffixes for millions/billions, e.g. '$12.4M', '$1.2B'
+- Format volume_mt: use K suffix for thousands, e.g. '18.4K MT', '320K MT'
+- If the raw value_usd is null or 0 for a country, set both fields to null
+- Keep countries in the same order as input
+- No text outside JSON
+"""
+
+
+# ─────────────────────────────────────────────
+#  GPT PROMPT — Structure Comtrade origin trend
+# ─────────────────────────────────────────────
+
+STRUCTURE_TREND_PROMPT = """
+You are a trade data formatter. Convert raw Comtrade annual export data into
+a clean trend array with contextual year labels.
+
+Product: {product_name} | Origin: {origin_country}
+
+Raw trend data (volume_mt and value_usd per year, yoy_growth already computed):
+{trend_json}
+
+Return JSON with EXACTLY this structure:
+{{
+  "export_volume_trend": [
+    {{
+      "year": integer,
+      "volume_mt": "string or null — e.g. '148K MT'",
+      "yoy_growth": "string or null — copy from raw as-is",
+      "label": "string — always non-null, short 1-3 word label"
+    }}
+  ]
+}}
+
+Rules:
+- Format volume_mt: use K suffix for thousands, e.g. '18.4K MT'; null if raw is null or 0
+- yoy_growth: copy exactly from raw data — do not recompute
+- label: assign a short 1-3 word contextual label for EVERY year based on what
+  happened to this specific market that year —
+  e.g. "Post-COVID Surge", "Record High", "Supply Crunch", "Strong Growth",
+  "Price Correction", "Steady Climb", "Export Boom", "Pandemic Impact"
+- No text outside JSON
 """
 
 
