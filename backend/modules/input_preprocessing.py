@@ -20,6 +20,7 @@ Example:
 import asyncio
 
 from modules.base_module import ModuleInput, call_openai
+from services.module_data_service import build_module_inputs
 from input_pipeline.config import LLM
 
 
@@ -130,7 +131,7 @@ Example output: 091030"""
 #  ORCHESTRATOR
 # ─────────────────────────────────────────────
 
-async def preprocess_module_input(inp: ModuleInput) -> ModuleInput:
+async def preprocess_module_input(inp: build_module_inputs) -> ModuleInput:
     """
     Enriches ModuleInput before running intelligence modules.
 

@@ -205,7 +205,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
         product = await conn.fetchrow("""
             SELECT u.user_id,pm.product_name, pm.hs_code,
                    co.name AS company_name, co.headquarters_country,ur.buyer_type,
-                    ur.price_positioning,ur.monthly_supply_capacity,ur.certifications
+                    ur.price_positioning,ur.monthly_supply_capacity,ur.certifications,ur.target_country
             FROM product_info.product_master pm
             JOIN core_tables.companies_other co
                 ON co.id = pm.company_id
@@ -229,9 +229,6 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
             AND country IS NOT NULL
         """, product_id)
 
-        # =====================================================
-        # 🧑‍🤝‍🧑 BUYERS
-        # =====================================================
         # =====================================================
         # 🧑‍🤝‍🧑 BUYERS — fetch from both tables
         # =====================================================
@@ -447,7 +444,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 "product": {
                     "name":                    product["product_name"],
                     "hs_code":                 product["hs_code"],
-                   # "company_name":            product["company_name"],
+                    "target_country":            _parse(product["target_country"]) if product["target_country"] else [],
                     "headquarters_country":    product["headquarters_country"],
                     "buyer_type":              product["buyer_type"],
                     "total_buyers":total_buyers,

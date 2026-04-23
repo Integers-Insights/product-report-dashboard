@@ -22,7 +22,7 @@ from utils.subscription_service import (
     check_and_increment_usage,
     apply_plan_visibility,
     apply_trial_visibility,
-    check_and_handle_subscription_expiry,
+    check_concurrent_job_limit,
 )
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
@@ -1100,8 +1100,20 @@ async def run_pipeline_endpoint(
     current_user = Depends(get_current_user),
     _= Depends(ensure_onboarding_completed)
 ):
-    user_id = current_user["user_id"]
+    user_id    = current_user["user_id"]
+    company_id = current_user["company_id"]
 
+    # ✅ debug — check active jobs count
+    active_jobs = await conn.fetchval("""
+        SELECT COUNT(*)
+        FROM core_tables.pipeline_jobs
+        WHERE user_id = $1
+          AND status IN ('pending', 'processing', 'running')
+    """, user_id)
+    print(f"🔍 [concurrent_check] user={user_id} | active_jobs={active_jobs}")
+
+    # ✅ check concurrent job limit
+    await check_concurrent_job_limit(conn, company_id, user_id)
     try:
         # =========================================================
         # ✅ CREATE JOB (INSTEAD OF RUNNING PIPELINE)
@@ -1137,100 +1149,8 @@ async def run_pipeline_endpoint(
             detail=f"Pipeline failed to start: {str(e)}"
         )
 
-# @router.get("/pipeline/products/{job_id}")
-# async def get_pipeline_products(
-#     job_id: str,
-#     conn=Depends(get_db),
-#     current_user=Depends(get_current_user)
-# ):
-#     user_id = current_user["user_id"]
-#     try:
-#         # =====================================================
-#         # ⏳ WAIT until job is completed or failed
-#         # =====================================================
-#         MAX_WAIT_SECONDS = 500  # 5 min timeout
-#         POLL_INTERVAL    = 2    # check every 2 seconds
-#         waited           = 0
-
-#         while waited < MAX_WAIT_SECONDS:
-#             job = await conn.fetchrow("""
-#                 SELECT status, error
-#                 FROM core_tables.pipeline_jobs
-#                 WHERE id = $1 AND user_id = $2
-#             """, job_id, user_id)
-
-#             if not job:
-#                 raise HTTPException(status_code=404, detail={
-#                     "success": False,
-#                     "error":   "Job not found",
-#                     "code":    "JOB_NOT_FOUND"
-#                 })
-
-#             status = job["status"]
-
-#             if status == "completed":
-#                 break  # ✅ ready — fetch products below
-
-#             if status == "failed":
-#                 raise HTTPException(status_code=400, detail={
-#                     "success": False,
-#                     "error":   job["error"] or "Pipeline job failed.",
-#                     "code":    "JOB_FAILED"
-#                 })
-
-#             # still pending/processing — wait and retry
-#             await asyncio.sleep(POLL_INTERVAL)
-#             waited += POLL_INTERVAL
-
-#         else:
-#             # timeout — job took too long
-#             raise HTTPException(status_code=408, detail={
-#                 "success": False,
-#                 "error":   "Job timed out. Please try again.",
-#                 "code":    "JOB_TIMEOUT"
-#             })
-
-#         # =====================================================
-#         # ✅ Job completed — fetch and return products
-#         # =====================================================
-#         rows = await conn.fetch("""
-#             SELECT id, product_data, is_selected
-#             FROM product_info.pipeline_temp_products
-#             WHERE job_id = $1
-#               AND user_id = $2
-#             ORDER BY created_at DESC
-#         """, job_id, user_id)
-
-#         result = []
-#         for r in rows:
-#             data = r["product_data"]
-#             if isinstance(data, str):
-#                 data = json.loads(data)
-#             result.append({
-#                 "id":          str(r["id"]),
-#                 "is_selected": r["is_selected"],
-#                 **data
-#             })
-
-#         return {
-#             "success":  True,
-#             "status":   "completed",
-#             "products": result,
-#             "count":    len(result),
-#         }
-
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("GET PIPELINE PRODUCTS ERROR:", str(e))
-#         raise HTTPException(status_code=500, detail={
-#             "success": False,
-#             "error":   "Failed to fetch pipeline products",
-#             "detail":  str(e)
-#         })
-
 @router.get("/pipeline/products/{job_id}")
-async def get_pipeline_products_live(
+async def get_pipeline_products(
     job_id: str,
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
@@ -1238,39 +1158,59 @@ async def get_pipeline_products_live(
     user_id = current_user["user_id"]
     try:
         # =====================================================
-        # ✅ Fetch job status + products — no waiting
+        # ⏳ WAIT until job is completed or failed
         # =====================================================
-        job = await conn.fetchrow("""
-            SELECT status, error, products_found
-            FROM core_tables.pipeline_jobs
-            WHERE id = $1 AND user_id = $2
-        """, job_id, user_id)
+        MAX_WAIT_SECONDS = 500  # 5 min timeout
+        POLL_INTERVAL    = 2    # check every 2 seconds
+        waited           = 0
 
-        if not job:
-            raise HTTPException(status_code=404, detail={
+        while waited < MAX_WAIT_SECONDS:
+            job = await conn.fetchrow("""
+                SELECT status, error
+                FROM core_tables.pipeline_jobs
+                WHERE id = $1 AND user_id = $2
+            """, job_id, user_id)
+
+            if not job:
+                raise HTTPException(status_code=404, detail={
+                    "success": False,
+                    "error":   "Job not found",
+                    "code":    "JOB_NOT_FOUND"
+                })
+
+            status = job["status"]
+
+            if status == "completed":
+                break  # ✅ ready — fetch products below
+
+            if status == "failed":
+                raise HTTPException(status_code=400, detail={
+                    "success": False,
+                    "error":   job["error"] or "Pipeline job failed.",
+                    "code":    "JOB_FAILED"
+                })
+
+            # still pending/processing — wait and retry
+            await asyncio.sleep(POLL_INTERVAL)
+            waited += POLL_INTERVAL
+
+        else:
+            # timeout — job took too long
+            raise HTTPException(status_code=408, detail={
                 "success": False,
-                "error":   "Job not found",
-                "code":    "JOB_NOT_FOUND"
+                "error":   "Job timed out. Please try again.",
+                "code":    "JOB_TIMEOUT"
             })
 
-        status = job["status"]
-
-        if status == "failed":
-            raise HTTPException(status_code=400, detail={
-                "success": False,
-                "error":   job["error"] or "Pipeline job failed.",
-                "code":    "JOB_FAILED"
-            })
-
         # =====================================================
-        # ✅ Fetch whatever products are stored so far
+        # ✅ Job completed — fetch and return products
         # =====================================================
         rows = await conn.fetch("""
-            SELECT id, product_data, is_selected, created_at
+            SELECT id, product_data, is_selected
             FROM product_info.pipeline_temp_products
             WHERE job_id = $1
               AND user_id = $2
-            ORDER BY created_at ASC
+            ORDER BY created_at DESC
         """, job_id, user_id)
 
         result = []
@@ -1285,24 +1225,96 @@ async def get_pipeline_products_live(
             })
 
         return {
-            "success":      True,
-            "status":       status,
-            "is_completed": status == "completed",
-            "is_processing": status in ("processing", "pending"),
-            "products":     result,
-            "count":        len(result),
-            "total_expected": job["products_found"] or 0,
+            "success":  True,
+            "status":   "completed",
+            "products": result,
+            "count":    len(result),
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        print("GET LIVE PRODUCTS ERROR:", str(e))
+        print("GET PIPELINE PRODUCTS ERROR:", str(e))
         raise HTTPException(status_code=500, detail={
             "success": False,
-            "error":   "Failed to fetch live products",
+            "error":   "Failed to fetch pipeline products",
             "detail":  str(e)
         })
+
+# @router.get("/pipeline/products/{job_id}")
+# async def get_pipeline_products_live(
+#     job_id: str,
+#     conn=Depends(get_db),
+#     current_user=Depends(get_current_user)
+# ):
+#     user_id = current_user["user_id"]
+#     try:
+#         # =====================================================
+#         # ✅ Fetch job status + products — no waiting
+#         # =====================================================
+#         job = await conn.fetchrow("""
+#             SELECT status, error, products_found
+#             FROM core_tables.pipeline_jobs
+#             WHERE id = $1 AND user_id = $2
+#         """, job_id, user_id)
+
+#         if not job:
+#             raise HTTPException(status_code=404, detail={
+#                 "success": False,
+#                 "error":   "Job not found",
+#                 "code":    "JOB_NOT_FOUND"
+#             })
+
+#         status = job["status"]
+
+#         if status == "failed":
+#             raise HTTPException(status_code=400, detail={
+#                 "success": False,
+#                 "error":   job["error"] or "Pipeline job failed.",
+#                 "code":    "JOB_FAILED"
+#             })
+
+#         # =====================================================
+#         # ✅ Fetch whatever products are stored so far
+#         # =====================================================
+#         rows = await conn.fetch("""
+#             SELECT id, product_data, is_selected, created_at
+#             FROM product_info.pipeline_temp_products
+#             WHERE job_id = $1
+#               AND user_id = $2
+#             ORDER BY created_at ASC
+#         """, job_id, user_id)
+
+#         result = []
+#         for r in rows:
+#             data = r["product_data"]
+#             if isinstance(data, str):
+#                 data = json.loads(data)
+#             result.append({
+#                 "id":          str(r["id"]),
+#                 "is_selected": r["is_selected"],
+#                 **data
+#             })
+
+#         return {
+#             "success":      True,
+#             "status":       status,
+#             "is_completed": status == "completed",
+#             "is_processing": status in ("processing", "pending"),
+#             "products":     result,
+#             "count":        len(result),
+#             "total_expected": job["products_found"] or 0,
+#         }
+
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         print("GET LIVE PRODUCTS ERROR:", str(e))
+#         raise HTTPException(status_code=500, detail={
+#             "success": False,
+#             "error":   "Failed to fetch live products",
+#             "detail":  str(e)
+#         })
 
 # @router.get("/pipeline/status/{job_id}")
 # async def get_pipeline_status(

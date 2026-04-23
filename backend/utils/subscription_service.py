@@ -70,6 +70,7 @@ PLAN_CONFIG = {
         ],
         "daily_query_limit": 5,
         "user_limit": 1,
+         "concurrent_job_limit": 1,
     },
     "basic": {
         "modules": [
@@ -86,6 +87,7 @@ PLAN_CONFIG = {
         "limit_type":          "monthly",  # enforce against billing-cycle pool
         "user_limit":          1,
         "yearly_discount":     "2_months_free",
+        "concurrent_job_limit": 2
     },
     "pro": {
         "modules": "all",
@@ -94,6 +96,7 @@ PLAN_CONFIG = {
         "limit_type":          "monthly",  # enforce against billing-cycle pool
         "user_limit":          3,
         "yearly_discount":     "2_months_free",
+        "concurrent_job_limit": 3,
     },
 }
 
@@ -109,6 +112,37 @@ def _utcnow() -> datetime:
 # Returns None if no active subscription found.
 # Trial plan is assigned at login — not defaulted here.
 # =========================================================
+
+async def check_concurrent_job_limit(conn, company_id: str, user_id: str):
+    """Check if user has hit concurrent pipeline job limit for their plan."""
+    
+    plan_name = await get_company_plan(conn, company_id)
+    plan_cfg  = PLAN_CONFIG.get(plan_name or "trial", {})
+    limit     = plan_cfg.get("concurrent_job_limit", 1)
+
+    # count active jobs for this user
+    active_jobs = await conn.fetchval("""
+        SELECT COUNT(*)
+        FROM core_tables.pipeline_jobs
+        WHERE user_id = $1
+          AND status IN ('pending', 'processing', 'running')
+    """, user_id)
+
+    if active_jobs >= limit:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "success": False,
+                "error":   "CONCURRENT_JOB_LIMIT",
+                "active":  active_jobs,
+                "limit":   limit,
+                "plan":    plan_name,
+                "message": f"You already have {active_jobs} job(s) running. "
+                           f"Your {plan_name} plan allows {limit} concurrent job(s). "
+                           f"Please wait for them to complete or upgrade your plan."
+            }
+        )
+
 async def get_company_plan(conn, company_id: str) -> Optional[str]:
     if not company_id:
         return None

@@ -362,12 +362,15 @@ async def upsert_research_preferences(conn, user_id: str, data):
         certifications_json = None
 
         if data.certifications:
-            if hasattr(data.certifications, "dict"):
-                certifications_json = json.dumps(
-                    data.certifications.dict(exclude_none=True)
-                )
-            else:
-                certifications_json = json.dumps(data.certifications)
+            try:
+                if hasattr(data.certifications, "dict"):
+                    certifications_json = json.dumps(data.certifications.dict(exclude_none=True))
+                elif isinstance(data.certifications, (dict, list)):
+                    certifications_json = json.dumps(data.certifications)
+                elif isinstance(data.certifications, str):
+                    certifications_json = json.dumps({"value": data.certifications})
+            except Exception:
+                certifications_json = None
 
         query = """
         INSERT INTO core_tables.user_research_preferences (
@@ -376,7 +379,7 @@ async def upsert_research_preferences(conn, user_id: str, data):
             buyer_type,
             price_positioning,
             monthly_supply_capacity,
-            annual_turnover,
+            target_country,
             certifications
         )
         VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -384,12 +387,17 @@ async def upsert_research_preferences(conn, user_id: str, data):
         ON CONFLICT (user_id)
         DO UPDATE SET
             goals = EXCLUDED.goals,
+            buyer_type=EXCLUDED.buyer_type,
             price_positioning = EXCLUDED.price_positioning,
             monthly_supply_capacity = EXCLUDED.monthly_supply_capacity,
-            annual_turnover = EXCLUDED.annual_turnover,
+            target_country = EXCLUDED.target_country,
             certifications = EXCLUDED.certifications,
             updated_at = NOW()
         """
+
+        target_country = data.target_country
+        if isinstance(target_country, list):
+            target_country = json.dumps(target_country)
 
         await conn.execute(
             query,
@@ -398,7 +406,7 @@ async def upsert_research_preferences(conn, user_id: str, data):
             data.buyer_type,
             data.price_positioning,
             data.monthly_supply_capacity,
-            data.annual_turnover,
+            target_country,
             certifications_json
         )
 
@@ -506,7 +514,8 @@ async def insert_selected_products_v2(conn, user_id, company_id, rows, job_id):
             $11,$12,$13,$14,$15,$16,$17,$18,$19,
             $20,$21,$22,$23
         )
-        ON CONFLICT (company_id, product_name, created_by) DO NOTHING
+        ON CONFLICT (company_id, product_name, created_by) DO UPDATE
+            SET job_id = EXCLUDED.job_id, updated_at = NOW()
     """
 
     inserted_count = 0

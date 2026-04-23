@@ -213,6 +213,9 @@ from schemas.onbording_schema import IntelligenceRequest
 import uuid
 from services.intelligence_storage import *
 from modules.trade.trade_intel import TradeIntelModule
+import traceback
+from utils.subscription_service import check_and_increment_usage, revoke_usage
+from fastapi import HTTPException as FastAPIHTTPException
 
 # Global semaphore: max 10 products processed concurrently across ALL users
 _SEM = asyncio.Semaphore(20)
@@ -462,7 +465,7 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
 
         # ✅ debug — confirm what's in DB
         prefs = await conn.fetchrow("""
-            SELECT user_id, buyer_type
+            SELECT user_id, buyer_type,target_country
             FROM core_tables.user_research_preferences
             WHERE user_id = $1
         """, user_id)
@@ -472,10 +475,13 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         buyer_type = str(prefs["buyer_type"]).upper().strip() if prefs else "B2B"
         print(f"📋 buyer_type from preferences: '{buyer_type}'")
 
-        # =========================================================
-        # ✅ 2. BUILD INPUTS
-        # =========================================================
+        # ✅ build inputs AFTER reading fresh buyer_type
         inputs = build_module_inputs(rows)
+
+        # ✅ override buyer_type on all inputs with fresh value from prefs
+        for inp in inputs:
+            inp.buyer_type = buyer_type
+            print(f"✅ [override] product={inp.product_name} | buyer_type={inp.buyer_type}")
 
         # Status callback — writes current running engine to product_master
         # so the dashboard can show exactly which engine is active
@@ -508,9 +514,6 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         # 🚀 3. RUN PARALLEL
         # =========================================================
         async def run_single(inp):
-            import traceback
-            from utils.subscription_service import check_and_increment_usage, revoke_usage
-            from fastapi import HTTPException as FastAPIHTTPException
 
             # =================================================
             # ✅ STEP 0: MARK PROCESSING + CHECK QUERY LIMIT
@@ -563,11 +566,19 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
             # =================================================
             async with _SEM:
                 try:
+                    # ✅ save buyer_type before run_all overwrites it via preprocess
+                    _buyer_type_override = buyer_type  # from outer scope (fresh from prefs)
+
                     result = await asyncio.wait_for(
                         runner.run_all(inp),
                         timeout=300
                     )
                     print(f"✅ RUN SUCCESS for product {inp.product_id}")
+
+                    # ✅ fix buyer_type on result after preprocess may have overwritten it
+                    if result.buyer_discovery:
+                        result.buyer_discovery.buyer_type = _buyer_type_override
+                        print(f"✅ [buyer_type fix] set to {_buyer_type_override} on result")
 
                     # ✅ ADD HERE — right after the print
                     critical_modules = ["market_demand", "trade_intel", "buyer_discovery", "variants_formats"]
@@ -681,38 +692,55 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
 
                 async def save_buyer():
                     obj = getattr(result, "buyer_discovery", None)
-                    if not obj or not obj.success:
+                    if not obj:
                         return
 
-                    buyer_type = str(obj.buyer_type or "").upper().strip()
-                    print(f"🔀 [save_buyer] routing → buyer_type='{buyer_type}'")
+                    # ✅ use buyer_type from prefs (outer scope) not obj.buyer_type
+                    print(f"💾 [save_buyer] buyer_type={buyer_type} | obj.buyer_type={obj.buyer_type}")
 
+                    # ✅ delete stale data first
+                    try:
+                        _pool = get_pool()
+                        async with _pool.acquire() as _dc:
+                            if buyer_type == "B2B":
+                                await _dc.execute("""
+                                    DELETE FROM product_info.b2c_buyer_intelligence
+                                    WHERE product_id = $1
+                                """, inp.product_id)
+                            elif buyer_type == "B2C":
+                                await _dc.execute("""
+                                    DELETE FROM product_info.b2b_buyer_intelligence
+                                    WHERE product_id = $1
+                                """, inp.product_id)
+                    except Exception as e:
+                        print(f"⚠️ Failed to clear old buyer data: {e}")
+
+                    # ✅ use buyer_type from prefs for routing
                     if buyer_type == "B2B":
-                        if obj.b2b and obj.b2b.success:
-                            await upsert_b2b_buyer_intelligence(pc, obj.b2b.to_db_row(), user_id)
-
-                    elif buyer_type == "B2C":
-                        if obj.b2c and obj.b2c.success:
-                            await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
-
-                    elif buyer_type == "BOTH":
-                        print(f"🔍 b2b: {obj.b2b} | success={getattr(obj.b2b, 'success', None)} | buyers={len(getattr(obj.b2b, 'buyers', []))}")
-                        print(f"🔍 b2c: {obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
-
-                        if obj.b2b and obj.b2b.success:
-                            await upsert_b2b_buyer_intelligence(pc, obj.b2b.to_db_row(), user_id)
+                        b2b = getattr(obj, "b2b", None)
+                        if b2b and b2b.success:
+                            await upsert_b2b_buyer_intelligence(pc, b2b.to_db_row(), user_id)
                             print(f"✅ B2B saved")
                         else:
-                            print(f"⚠️ B2B skipped — b2b={obj.b2b} | success={getattr(obj.b2b, 'success', None)}")
+                            print(f"⚠️ B2B skipped — b2b={b2b} | success={getattr(b2b, 'success', None)}")
 
-                        if obj.b2c and obj.b2c.success:
-                            await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
+                    elif buyer_type == "B2C":
+                        b2c = getattr(obj, "b2c", None)
+                        if b2c and b2c.success:
+                            await upsert_b2c_buyer_intelligence(pc, b2c.to_db_row(), user_id)
                             print(f"✅ B2C saved")
                         else:
-                            print(f"⚠️ B2C skipped — b2c={obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
+                            print(f"⚠️ B2C skipped — b2c={b2c} | success={getattr(b2c, 'success', None)}")
 
-                    else:
-                        print(f"⚠️  [save_buyer] Unknown buyer_type='{buyer_type}' — skipping")
+                    elif buyer_type == "BOTH":
+                        b2b = getattr(obj, "b2b", None)
+                        b2c = getattr(obj, "b2c", None)
+                        if b2b and b2b.success:
+                            await upsert_b2b_buyer_intelligence(pc, b2b.to_db_row(), user_id)
+                            print(f"✅ B2B saved")
+                        if b2c and b2c.success:
+                            await upsert_b2c_buyer_intelligence(pc, b2c.to_db_row(), user_id)
+                            print(f"✅ B2C saved")
 
                 async def save_trade():
                     obj = getattr(result, "trade_intel", None)
@@ -867,7 +895,7 @@ async def run_intelligence_for_products(conn, products: list, company_meta: dict
                 description=p.get("description", ""),
                 certifications=p.get("certifications") or [],
                 origin_country=company_meta.get("country", "India"),
-                target_country="United States",
+                target_country=company_meta.get("target_country", ""),
                 company_name=company_meta.get("company_name", ""),
                 business_type=company_meta.get("business_type", ""),
                 price_positioning="Standard",

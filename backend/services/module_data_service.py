@@ -14,7 +14,8 @@ async def fetch_module_inputs(conn, company_id):
             co.headquarters_country,
             co.company_type,
             ur.price_positioning,
-            ur.buyer_type
+            ur.buyer_type,
+            ur.target_country
         FROM core_tables.companies_other co
         LEFT JOIN product_info.company_preferences cr
             ON co.id = cr.company_id
@@ -39,8 +40,8 @@ def build_module_inputs(rows):
             hs_code=r.get("hs_code"),
             description=r.get("description"),
             certifications=r.get("certifications") or [],
-            origin_country=r.get("headquarters_country") or "India",
-            target_country="",
+            origin_country=r.get("headquarters_country") or " ",
+            target_country=r.get("target_country"),
             company_name=r.get("company_name"),
             business_type=r.get("company_type"),
             price_positioning=r.get("price_positioning"),

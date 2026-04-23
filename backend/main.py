@@ -1,3 +1,9 @@
+# import sys
+# import asyncio
+
+# # ✅ fix Playwright on Windows
+# if sys.platform == "win32":
+#     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 from aws_secrets import load_secrets
 load_secrets()
 import asyncio
@@ -6,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import onboarding
 from db.database import create_pool, close_pool
-from services.pipeline_service import pipeline_worker  
 
 app = FastAPI()
 app.include_router(onboarding.router)
@@ -35,10 +40,6 @@ async def startup():
     await create_pool()
     print("🔥 API STARTED")
 
-    # ✅ start 10 pipeline workers
-    for i in range(10):
-        asyncio.create_task(pipeline_worker(i))
-    print(f"👷 Started 10 pipeline workers")
 
 
 # =====================================================
@@ -50,7 +51,13 @@ async def shutdown():
     for task in tasks:
         task.cancel()
     if tasks:
-        await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        except asyncio.CancelledError:
+            pass
 
-    await close_pool()
+    try:
+        await close_pool()
+    except Exception:
+        pass
     print("🛑 DB Pool Closed")
