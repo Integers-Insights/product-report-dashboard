@@ -31,12 +31,8 @@ import asyncio
 from modules.base_module import BaseModule, ModuleInput, ModuleResult, call_openai
 from input_pipeline.config import LLM
 
-from modules.trade.trade_sonar import (
-    fetch_global_overview,
-    fetch_country_names,
-    fetch_pricing_gpt,
-)
-from modules.trade.trade_comtrade import fetch_traders, fetch_origin_trend
+from modules.trade.trade_sonar import TradeSonarHelper
+from modules.trade.trade_comtrade import fetch_traders, fetch_origin_trend, fetch_origin_export_share
 from modules.trade.trade_prompts import (
     STRUCTURE_TRADERS_PROMPT,
     STRUCTURE_TREND_PROMPT,
@@ -79,10 +75,11 @@ class TradeIntelModule(BaseModule):
         orig = inp.origin_country
 
         # ── Stage 1: Sonar + GPT pricing in parallel ─────────────────────────
+        sonar = TradeSonarHelper()
         overview, country_data, pricing = await asyncio.gather(
-            fetch_global_overview(inp, self._company_id, self._report_id),
-            fetch_country_names(inp,   self._company_id, self._report_id),
-            fetch_pricing_gpt(inp,     self._company_id, self._report_id),
+            sonar.fetch_global_overview(inp),
+            sonar.fetch_country_names(inp),
+            sonar.fetch_pricing_gpt(inp),
         )
 
         exporter_names = (country_data.get("top_exporter_names") or [])[:5]
@@ -106,6 +103,10 @@ class TradeIntelModule(BaseModule):
         print(f"     → Comtrade: fetching {len(TREND_YEARS)}-year trend for {orig}...")
         raw_trend = await fetch_origin_trend(hs, orig, TREND_YEARS)
 
+        target_list = inp.target_country if inp.target_country else None
+        print(f"     → Comtrade: fetching export share for {orig} in target markets...")
+        raw_export_share = await fetch_origin_export_share(hs, orig, target_list, COMTRADE_YEAR)
+
         # ── Stage 3: GPT structuring in parallel ─────────────────────────────
         # Drop the 2019 base entry — it was only needed to compute 2020 YoY
         display_trend = raw_trend[1:] if len(raw_trend) == len(TREND_YEARS) else raw_trend
@@ -120,7 +121,7 @@ class TradeIntelModule(BaseModule):
             "global_trade_value":     overview.get("global_trade_value"),
             "volume_traded_globally": overview.get("volume_traded_globally"),
             "avg_global_trade_price": overview.get("avg_global_trade_price"),
-            "country_export_share":   country_data.get("country_export_share"),
+            "country_export_share":   raw_export_share or None,
             "top_exporters":          structured_traders.get("top_exporters"),
             "top_importers":          structured_traders.get("top_importers"),
             "export_volume_trend":    structured_trend.get("export_volume_trend"),

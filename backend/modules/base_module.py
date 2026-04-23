@@ -250,7 +250,7 @@ class ModuleInput:
         description:      str | None,
         certifications:   list[str],
         origin_country:   str,          # where the company is based
-        target_country:   str,          # which market to research
+        target_country:   list[str],          # which market to research
         company_name:     str | None,
         business_type:    str | None,   # Manufacturer / Exporter / Trader
         price_positioning: str | None,  # Budget / Mid-range / Premium

@@ -37,7 +37,6 @@ def _load_reporter_map() -> dict:
         _REPORTER_MAP = {
             entry["reporterDesc"].lower(): entry["reporterCode"]
             for entry in data["results"]
-            if not entry.get("isGroup", False)
         }
     return _REPORTER_MAP
 
@@ -57,6 +56,10 @@ _ALIASES = {
     "czech republic":        "czechia",
     "laos":                  "lao people's dem. rep.",
     "vietnam":               "viet nam",
+    "europe":                "european union",
+    "eu":                    "european union",
+    "russia":                "russian federation",
+    "uae":                   "united arab emirates"
 }
 
 
@@ -87,17 +90,25 @@ def get_reporter_code(country_name: str) -> "int | None":
 #  INTERNAL HTTP + AGGREGATION
 # ─────────────────────────────────────────────
 
-def _sync_fetch(hs_code: str, reporter_code: str, flow: str, period: str) -> dict:
+def _sync_fetch(
+    hs_code:      str,
+    reporter_code: str,
+    flow:          str,
+    period:        str,
+    partner_code:  str = "0",
+) -> dict:
     """Synchronous Comtrade API call. Always run via run_in_executor."""
     params = {
-        "cmdCode":       hs_code,
-        "reporterCode":  reporter_code,
-        "partnerCode":   "0",
-        "flowCode":      flow,
-        "period":        period,
-        "aggregateBy":   "cmdCode",
-        "format":        "JSON",
-        "maxRecords":    50000,
+        "cmdCode":      hs_code,
+        "reporterCode": reporter_code,
+        "partnerCode":  partner_code,
+        "flowCode":     flow,
+        "period":       period,
+        "aggregateBy":  "cmdCode",
+        "motCode":      "0",    # Total modes of transport — avoids row duplication
+        "customsCode":  "C00",  # Total customs procedure — avoids row duplication
+        "format":       "JSON",
+        "maxRecords":   50000,
     }
     headers = {"Ocp-Apim-Subscription-Key": COMTRADE_API_KEY}
     r = requests.get(BASE_URL, params=params, headers=headers, timeout=30)
@@ -106,18 +117,37 @@ def _sync_fetch(hs_code: str, reporter_code: str, flow: str, period: str) -> dic
 
 
 def _aggregate(data: dict) -> dict:
-    """Sums primaryValue and qty/netWgt across all rows in a Comtrade response."""
-    total_value = 0.0
-    total_qty   = 0.0
-    for row in data.get("data", []):
-        total_value += row.get("primaryValue", 0) or 0
-        qty = row.get("qty") or row.get("netWgt") or 0
-        total_qty += qty
-    avg_price = total_value / total_qty if total_qty else 0.0
+    """
+    Extracts SINGLE correct row (avoids duplication).
+    """
+
+    rows = data.get("data", [])
+    if not rows:
+        return {"value_usd": 0.0, "volume_mt": 0.0, "avg_price": 0.0}
+
+    # 🔥 Pick the row with MAX value (this is the true total)
+    best_row = max(rows, key=lambda r: r.get("primaryValue", 0) or 0)
+
+    value = (
+        best_row.get("primaryValue")
+        or best_row.get("fobvalue")
+        or best_row.get("cifvalue")
+        or 0
+    )
+
+    qty = (
+        best_row.get("qty")
+        or best_row.get("netWgt")
+        or best_row.get("grossWgt")
+        or 0
+    )
+
+    avg_price = value / qty if qty else 0.0
+
     return {
-        "value_usd": total_value,
-        "volume_mt":  total_qty,
-        "avg_price":  avg_price,
+        "value_usd": value,
+        "volume_mt": qty,
+        "avg_price": avg_price,
     }
 
 
@@ -202,7 +232,7 @@ async def fetch_origin_trend(
         Calls are serialized with 1.2s sleep to respect rate limits.
     """
     if years is None:
-        years = [2020, 2021, 2022, 2023, 2024]
+        years = [2019, 2020, 2021, 2022, 2023, 2024]
 
     code = get_reporter_code(origin_country)
     if code is None:
@@ -240,3 +270,100 @@ async def fetch_origin_trend(
         await asyncio.sleep(SLEEP_SEC)
 
     return entries
+
+
+# ─────────────────────────────────────────────
+#  FETCH ORIGIN EXPORT SHARE IN TARGET MARKETS
+# ─────────────────────────────────────────────
+
+_DEFAULT_TARGET_MARKETS = [
+    "United States", "Germany", "United Kingdom", "Netherlands", "Japan"
+]
+
+
+async def fetch_origin_export_share(
+    hs_code:          str,
+    origin_country:   str,
+    target_countries: "list | None" = None,
+    year:             str = "2023",
+) -> dict:
+    """
+    Calculates origin_country's export share across target markets.
+
+    For each target country:
+        - Fetch that country's total imports (partner=world)
+        - Fetch that country's imports from origin specifically (partner=origin_code)
+        - share = origin_imports / total_imports
+
+    Aggregated share = sum(origin_imports) / sum(total_imports) across all targets.
+
+    Args:
+        hs_code:          HS code string
+        origin_country:   Exporting country, e.g. "India"
+        target_countries: List of target market names; defaults to top 5 global importers
+        year:             Trade year
+
+    Returns:
+        {
+          "share_pct":   "64.2%",
+          "per_country": [{"country": "United States", "share_pct": "71.3%"}, ...]
+        }
+    """
+    if not target_countries:
+        target_countries = _DEFAULT_TARGET_MARKETS
+
+    origin_code = get_reporter_code(origin_country)
+    if not origin_code:
+        print(f"  ⚠️  [comtrade] No reporter code for origin '{origin_country}'")
+        return {}
+
+    loop                   = asyncio.get_event_loop()
+    total_world_value      = 0.0
+    total_origin_value     = 0.0
+    per_country: list      = []
+
+    for target in target_countries:
+        target_code = get_reporter_code(target)
+        if not target_code: 
+            print(f"     ⚠️  [comtrade] No reporter code for target '{target}' — skipping")
+            continue
+
+        try:
+            # Call 1: target country's total imports from world
+            world_raw   = await loop.run_in_executor(
+                None, _sync_fetch, hs_code, str(target_code), "M", year, "0"
+            )
+            world_m     = _aggregate(world_raw)
+            await asyncio.sleep(SLEEP_SEC)
+
+            # Call 2: target country's imports from origin specifically
+            origin_raw  = await loop.run_in_executor(
+                None, _sync_fetch, hs_code, str(target_code), "M", year, str(origin_code)
+            )
+            origin_m    = _aggregate(origin_raw)
+            await asyncio.sleep(SLEEP_SEC)
+
+            share_pct = (
+                round(origin_m["value_usd"] / world_m["value_usd"] * 100, 1)
+                if world_m["value_usd"] else 0.0
+            )
+            per_country.append({"country": target, "share_pct": share_pct})
+            total_world_value  += world_m["value_usd"]
+            total_origin_value += origin_m["value_usd"]
+
+            print(f"     → [comtrade] {origin_country} share in {target}: {share_pct}%")
+
+        except Exception as e:
+            print(f"     ⚠️  [comtrade] Export share for '{target}' failed: {e}")
+            await asyncio.sleep(SLEEP_SEC)
+
+    if not total_world_value:
+        return {}
+
+    agg_share = round(total_origin_value / total_world_value * 100, 1)
+    print(f"     → [comtrade] {origin_country} aggregated export share: {agg_share}%")
+
+    return {
+        "share_pct":   f"{agg_share}%",
+        "per_country": per_country,
+    }
