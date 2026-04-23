@@ -462,7 +462,7 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
 
         # ✅ debug — confirm what's in DB
         prefs = await conn.fetchrow("""
-            SELECT user_id, buyer_type
+            SELECT user_id, buyer_type,target_country
             FROM core_tables.user_research_preferences
             WHERE user_id = $1
         """, user_id)
@@ -684,38 +684,51 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
 
                 async def save_buyer():
                     obj = getattr(result, "buyer_discovery", None)
-                    if not obj or not obj.success:
+                    if not obj:
                         return
 
-                    buyer_type = str(obj.buyer_type or "").upper().strip()
-                    print(f"🔀 [save_buyer] routing → buyer_type='{buyer_type}'")
+                    # ✅ delete old buyer data before saving new
+                    try:
+                        _pool = get_pool()
+                        async with _pool.acquire() as _dc:
+                            if buyer_type == "B2B":
+                                # switching to B2B — clear old B2C data
+                                await _dc.execute("""
+                                    DELETE FROM product_info.b2c_buyer_intelligence
+                                    WHERE product_id = $1
+                                """, inp.product_id)
+                            elif buyer_type == "B2C":
+                                # switching to B2C — clear old B2B data
+                                await _dc.execute("""
+                                    DELETE FROM product_info.b2b_buyer_intelligence
+                                    WHERE product_id = $1
+                                """, inp.product_id)
+                            # BOTH — keep both, upsert will handle it
+                    except Exception as e:
+                        print(f"⚠️ Failed to clear old buyer data: {e}")
 
+                    # ✅ now save new buyer data
                     if buyer_type == "B2B":
-                        if obj.b2b and obj.b2b.success:
-                            await upsert_b2b_buyer_intelligence(pc, obj.b2b.to_db_row(), user_id)
+                        b2b = getattr(obj, "b2b", None)
+                        if b2b and b2b.success:
+                            await upsert_b2b_buyer_intelligence(pc, b2b.to_db_row(), user_id)
+                            print(f"✅ B2B saved")
 
                     elif buyer_type == "B2C":
-                        if obj.b2c and obj.b2c.success:
-                            await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
+                        b2c = getattr(obj, "b2c", None)
+                        if b2c and b2c.success:
+                            await upsert_b2c_buyer_intelligence(pc, b2c.to_db_row(), user_id)
+                            print(f"✅ B2C saved")
 
                     elif buyer_type == "BOTH":
-                        print(f"🔍 b2b: {obj.b2b} | success={getattr(obj.b2b, 'success', None)} | buyers={len(getattr(obj.b2b, 'buyers', []))}")
-                        print(f"🔍 b2c: {obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
-
-                        if obj.b2b and obj.b2b.success:
-                            await upsert_b2b_buyer_intelligence(pc, obj.b2b.to_db_row(), user_id)
+                        b2b = getattr(obj, "b2b", None)
+                        b2c = getattr(obj, "b2c", None)
+                        if b2b and b2b.success:
+                            await upsert_b2b_buyer_intelligence(pc, b2b.to_db_row(), user_id)
                             print(f"✅ B2B saved")
-                        else:
-                            print(f"⚠️ B2B skipped — b2b={obj.b2b} | success={getattr(obj.b2b, 'success', None)}")
-
-                        if obj.b2c and obj.b2c.success:
-                            await upsert_b2c_buyer_intelligence(pc, obj.b2c.to_db_row(), user_id)
+                        if b2c and b2c.success:
+                            await upsert_b2c_buyer_intelligence(pc, b2c.to_db_row(), user_id)
                             print(f"✅ B2C saved")
-                        else:
-                            print(f"⚠️ B2C skipped — b2c={obj.b2c} | success={getattr(obj.b2c, 'success', None)}")
-
-                    else:
-                        print(f"⚠️  [save_buyer] Unknown buyer_type='{buyer_type}' — skipping")
 
                 async def save_trade():
                     obj = getattr(result, "trade_intel", None)
@@ -870,7 +883,7 @@ async def run_intelligence_for_products(conn, products: list, company_meta: dict
                 description=p.get("description", ""),
                 certifications=p.get("certifications") or [],
                 origin_country=company_meta.get("country", "India"),
-                target_country="United States",
+                target_country=company_meta.get("target_country", ""),
                 company_name=company_meta.get("company_name", ""),
                 business_type=company_meta.get("business_type", ""),
                 price_positioning="Standard",
