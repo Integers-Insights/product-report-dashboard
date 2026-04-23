@@ -213,6 +213,9 @@ from schemas.onbording_schema import IntelligenceRequest
 import uuid
 from services.intelligence_storage import *
 from modules.trade.trade_intel import TradeIntelModule
+import traceback
+from utils.subscription_service import check_and_increment_usage, revoke_usage
+from fastapi import HTTPException as FastAPIHTTPException
 
 # Global semaphore: max 10 products processed concurrently across ALL users
 _SEM = asyncio.Semaphore(20)
@@ -511,9 +514,6 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         # 🚀 3. RUN PARALLEL
         # =========================================================
         async def run_single(inp):
-            import traceback
-            from utils.subscription_service import check_and_increment_usage, revoke_usage
-            from fastapi import HTTPException as FastAPIHTTPException
 
             # =================================================
             # ✅ STEP 0: MARK PROCESSING + CHECK QUERY LIMIT
@@ -566,11 +566,19 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
             # =================================================
             async with _SEM:
                 try:
+                    # ✅ save buyer_type before run_all overwrites it via preprocess
+                    _buyer_type_override = buyer_type  # from outer scope (fresh from prefs)
+
                     result = await asyncio.wait_for(
                         runner.run_all(inp),
                         timeout=300
                     )
                     print(f"✅ RUN SUCCESS for product {inp.product_id}")
+
+                    # ✅ fix buyer_type on result after preprocess may have overwritten it
+                    if result.buyer_discovery:
+                        result.buyer_discovery.buyer_type = _buyer_type_override
+                        print(f"✅ [buyer_type fix] set to {_buyer_type_override} on result")
 
                     # ✅ ADD HERE — right after the print
                     critical_modules = ["market_demand", "trade_intel", "buyer_discovery", "variants_formats"]
@@ -687,38 +695,42 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                     if not obj:
                         return
 
-                    # ✅ delete old buyer data before saving new
+                    # ✅ use buyer_type from prefs (outer scope) not obj.buyer_type
+                    print(f"💾 [save_buyer] buyer_type={buyer_type} | obj.buyer_type={obj.buyer_type}")
+
+                    # ✅ delete stale data first
                     try:
                         _pool = get_pool()
                         async with _pool.acquire() as _dc:
                             if buyer_type == "B2B":
-                                # switching to B2B — clear old B2C data
                                 await _dc.execute("""
                                     DELETE FROM product_info.b2c_buyer_intelligence
                                     WHERE product_id = $1
                                 """, inp.product_id)
                             elif buyer_type == "B2C":
-                                # switching to B2C — clear old B2B data
                                 await _dc.execute("""
                                     DELETE FROM product_info.b2b_buyer_intelligence
                                     WHERE product_id = $1
                                 """, inp.product_id)
-                            # BOTH — keep both, upsert will handle it
                     except Exception as e:
                         print(f"⚠️ Failed to clear old buyer data: {e}")
 
-                    # ✅ now save new buyer data
+                    # ✅ use buyer_type from prefs for routing
                     if buyer_type == "B2B":
                         b2b = getattr(obj, "b2b", None)
                         if b2b and b2b.success:
                             await upsert_b2b_buyer_intelligence(pc, b2b.to_db_row(), user_id)
                             print(f"✅ B2B saved")
+                        else:
+                            print(f"⚠️ B2B skipped — b2b={b2b} | success={getattr(b2b, 'success', None)}")
 
                     elif buyer_type == "B2C":
                         b2c = getattr(obj, "b2c", None)
                         if b2c and b2c.success:
                             await upsert_b2c_buyer_intelligence(pc, b2c.to_db_row(), user_id)
                             print(f"✅ B2C saved")
+                        else:
+                            print(f"⚠️ B2C skipped — b2c={b2c} | success={getattr(b2c, 'success', None)}")
 
                     elif buyer_type == "BOTH":
                         b2b = getattr(obj, "b2b", None)
