@@ -10,11 +10,12 @@ import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import onboarding
+from routers import onboarding, admin
 from db.database import create_pool, close_pool
 
 app = FastAPI()
 app.include_router(onboarding.router)
+app.include_router(admin.router)
 
 app.add_middleware(
     CORSMiddleware,

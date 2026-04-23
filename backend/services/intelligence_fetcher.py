@@ -356,6 +356,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 "buyer_type": marketing["buyer_type"],
                 "target_country": marketing["target_country"],
                 "ad_concepts": _parse(marketing["ad_concepts"]),
+                "product_name": product["product_name"],
             }
         export_volume_trend = _parse(trade["export_volume_trend"]) or []
 
