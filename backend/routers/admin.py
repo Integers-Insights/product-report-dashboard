@@ -22,6 +22,33 @@ async def require_super_admin(current_user=Depends(get_current_user), conn=Depen
 #  USER MANAGEMENT
 # ─────────────────────────────────────────────
 
+@router.get("/users/by-country")
+async def users_by_country(conn=Depends(get_db), _=Depends(require_super_admin)):
+    rows = await conn.fetch("""
+        SELECT
+            COALESCE(c.headquarters_country, 'Unknown') AS country,
+            COUNT(DISTINCT u.user_id)                   AS total_users,
+            COUNT(DISTINCT u.user_id) FILTER (WHERE u.status = 'active')   AS active_users,
+            COUNT(DISTINCT u.user_id) FILTER (WHERE u.status = 'inactive') AS inactive_users,
+            COUNT(DISTINCT cs.subscription_id) FILTER (WHERE sp.plan_name = 'trial')  AS trial_count,
+            COUNT(DISTINCT cs.subscription_id) FILTER (WHERE sp.plan_name = 'basic')  AS basic_count,
+            COUNT(DISTINCT cs.subscription_id) FILTER (WHERE sp.plan_name = 'pro')    AS pro_count
+        FROM core_auth_table.auth_user u
+        LEFT JOIN core_tables.companies_other c ON c.id = u.companies_other_id
+        LEFT JOIN core_auth_table.company_subscriptions cs
+            ON cs.company_id = c.id AND cs.status = 'active'
+        LEFT JOIN core_auth_table.subscription_plans sp ON sp.plan_id = cs.plan_id
+        where u.role='admin' or u.role='member' 
+        GROUP BY country
+        ORDER BY total_users DESC
+    """)
+    return {
+        "success": True,
+        "total_countries": len(rows),
+        "countries": [dict(r) for r in rows]
+    }
+
+
 @router.get("/users")
 async def list_users(conn=Depends(get_db), _=Depends(require_super_admin)):
     rows = await conn.fetch("""
@@ -37,6 +64,7 @@ async def list_users(conn=Depends(get_db), _=Depends(require_super_admin)):
         LEFT JOIN core_auth_table.company_subscriptions cs
             ON cs.company_id = c.id AND cs.status = 'active'
         LEFT JOIN core_auth_table.subscription_plans sp ON sp.plan_id = cs.plan_id
+        where u.role='admin' or u.role='member' 
         ORDER BY u.created_at DESC
     """)
     return {"success": True, "total": len(rows), "users": [dict(r) for r in rows]}
@@ -190,6 +218,69 @@ async def cancel_job(job_id: str, conn=Depends(get_db), _=Depends(require_super_
     if result == "UPDATE 0":
         raise HTTPException(status_code=404, detail="Job not found or already completed")
     return {"success": True, "job_id": job_id, "status": "cancelled"}
+
+
+# ─────────────────────────────────────────────
+#  SALES ANALYTICS
+# ─────────────────────────────────────────────
+
+@router.get("/sales/summary")
+async def sales_summary(conn=Depends(get_db), _=Depends(require_super_admin)):
+
+    rows = await conn.fetch("""
+        WITH periods AS (
+            SELECT
+                sp.plan_name,
+                cp.amount,
+                cp.created_at,
+                DATE_TRUNC('week',  CURRENT_DATE) AS this_week_start,
+                DATE_TRUNC('week',  CURRENT_DATE) - INTERVAL '7 days'  AS prev_week_start,
+                DATE_TRUNC('month', CURRENT_DATE) AS this_month_start,
+                DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month' AS prev_month_start
+            FROM core_auth_table.subscription_plans sp
+            JOIN core_auth_table.company_subscription_payments cp
+                ON sp.plan_id = cp.plan_id
+            WHERE cp.payment_status = 'paid'
+        )
+        SELECT
+            plan_name,
+
+            -- current week
+            COUNT(*)    FILTER (WHERE created_at >= this_week_start)                                          AS this_week_count,
+            COALESCE(SUM(amount) FILTER (WHERE created_at >= this_week_start), 0)                            AS this_week_revenue,
+
+            -- previous week
+            COUNT(*)    FILTER (WHERE created_at >= prev_week_start AND created_at < this_week_start)        AS prev_week_count,
+            COALESCE(SUM(amount) FILTER (WHERE created_at >= prev_week_start AND created_at < this_week_start), 0) AS prev_week_revenue,
+
+            -- current month
+            COUNT(*)    FILTER (WHERE created_at >= this_month_start)                                        AS this_month_count,
+            COALESCE(SUM(amount) FILTER (WHERE created_at >= this_month_start), 0)                          AS this_month_revenue,
+
+            -- previous month
+            COUNT(*)    FILTER (WHERE created_at >= prev_month_start AND created_at < this_month_start)      AS prev_month_count,
+            COALESCE(SUM(amount) FILTER (WHERE created_at >= prev_month_start AND created_at < this_month_start), 0) AS prev_month_revenue
+
+        FROM periods
+        GROUP BY plan_name
+        ORDER BY plan_name
+    """)
+
+    plans = [dict(r) for r in rows]
+
+    # totals across all plans
+    def _sum(key): return sum(r[key] for r in plans)
+
+    return {
+        "success": True,
+        "plans": plans,
+        "totals": {
+            "this_week":   {"count": _sum("this_week_count"),   "revenue": _sum("this_week_revenue")},
+            "prev_week":   {"count": _sum("prev_week_count"),   "revenue": _sum("prev_week_revenue")},
+            "this_month":  {"count": _sum("this_month_count"),  "revenue": _sum("this_month_revenue")},
+            "prev_month":  {"count": _sum("prev_month_count"),  "revenue": _sum("prev_month_revenue")},
+        }
+    }
 
 
 # ─────────────────────────────────────────────
