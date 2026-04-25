@@ -1618,53 +1618,99 @@ async def update_product(
 @router.post("/products/confirm/{job_id}")
 async def confirm_products(
     job_id: str,
+    body: dict = Body(default={}),
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    """
+    Confirm selected products and move them to the main product_master table.
+
+    Body (optional):
+      product_ids: list[str]        — UUIDs from pipeline_temp_products to select & confirm
+      updates:     dict[str, dict]  — per-product field overrides keyed by product_id
+
+    If product_ids is omitted the endpoint uses whatever is already marked
+    is_selected=TRUE in pipeline_temp_products for this job.
+    """
     try:
-        # user_id = current_user["sub"]
         user_id = current_user["user_id"]
         company_id = await get_company_id(conn, user_id)
 
-        # ✅ get selected
-        selected_products = await conn.fetch("""
-            SELECT product_data
-            FROM product_info.pipeline_temp_products
-            WHERE job_id = $1
-            AND user_id = $2
-            AND is_selected = TRUE
-        """, job_id, user_id)
+        if not company_id:
+            raise HTTPException(status_code=400, detail={"success": False, "error": "Company not found for this user"})
 
-        if not selected_products:
-            raise HTTPException(400, "No products selected")
+        product_ids: list = body.get("product_ids") or []
+        updates: dict     = body.get("updates") or {}
 
-        # ✅ insert into main
-        await insert_selected_products_v2(
-            conn,
-            user_id,
-            company_id,
-            selected_products,
-            job_id
-        )
+        async with conn.transaction():
 
-        # ✅ fetch inserted product ids
+            # ── STEP 1: if frontend sent explicit IDs, mark those as selected ──
+            if product_ids:
+                plan_name = await get_company_plan(conn, str(company_id))
+                await check_product_limit(conn, str(company_id), plan_name)
+
+                # reset any previous selection for this job
+                await conn.execute("""
+                    UPDATE product_info.pipeline_temp_products
+                    SET is_selected = FALSE
+                    WHERE job_id = $1 AND user_id = $2
+                """, job_id, user_id)
+
+                for pid in product_ids:
+                    row = await conn.fetchrow("""
+                        SELECT product_data
+                        FROM product_info.pipeline_temp_products
+                        WHERE id = $1 AND user_id = $2 AND job_id = $3
+                    """, pid, user_id, job_id)
+
+                    if not row:
+                        continue
+
+                    raw = row["product_data"]
+                    p = json.loads(raw) if isinstance(raw, str) else dict(raw)
+
+                    # apply any frontend edits for this product
+                    if pid in updates and isinstance(updates[pid], dict):
+                        p.update(updates[pid])
+
+                    await conn.execute("""
+                        UPDATE product_info.pipeline_temp_products
+                        SET product_data = $1, is_selected = TRUE, updated_at = NOW()
+                        WHERE id = $2
+                    """, json.dumps(p), pid)
+
+            # ── STEP 2: fetch all selected products ──────────────────────────
+            selected_products = await conn.fetch("""
+                SELECT product_data
+                FROM product_info.pipeline_temp_products
+                WHERE job_id = $1 AND user_id = $2 AND is_selected = TRUE
+            """, job_id, user_id)
+
+            if not selected_products:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "success": False,
+                        "error": "No products selected. Pass product_ids in the request body or call /products/select first."
+                    }
+                )
+
+            # ── STEP 3: insert into product_master ───────────────────────────
+            await insert_selected_products_v2(conn, user_id, company_id, selected_products, job_id)
+
+            # ── STEP 4: mark temp records as processed ───────────────────────
+            await conn.execute("""
+                UPDATE product_info.pipeline_temp_products
+                SET status = 'processed', updated_at = NOW()
+                WHERE job_id = $1 AND user_id = $2 AND is_selected = TRUE
+            """, job_id, user_id)
+
+        # ── STEP 5: return inserted products ─────────────────────────────────
         inserted_products = await conn.fetch("""
             SELECT id, product_name
             FROM product_info.product_master
-            WHERE job_id = $1
-              AND created_by = $2
-              AND company_id = $3
+            WHERE job_id = $1 AND created_by = $2 AND company_id = $3
         """, job_id, user_id, company_id)
-
-        # ✅ mark processed
-        await conn.execute("""
-            UPDATE product_info.pipeline_temp_products
-            SET status = 'processed',
-                updated_at = NOW()
-            WHERE job_id = $1
-            AND user_id = $2
-            AND is_selected = TRUE
-        """, job_id, user_id)
 
         return {
             "success": True,
@@ -1678,6 +1724,9 @@ async def confirm_products(
 
     except HTTPException:
         raise
+    except asyncpg.PostgresError as e:
+        print("CONFIRM DB ERROR:", str(e))
+        raise HTTPException(status_code=500, detail={"success": False, "error": "Database error while confirming products", "detail": str(e)})
     except Exception as e:
         print("CONFIRM ERROR:", str(e))
         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to confirm products", "detail": str(e)})
