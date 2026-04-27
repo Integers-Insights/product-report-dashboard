@@ -27,7 +27,7 @@ async def main():
         description="Around 20% of men suffer from declining performance and stamina due to work stress, busy schedules and a fast-paced lifestyle. AADAR ayurveda understands the challenges men face in today’s world and formulated a perfect blend with the help of Ayurveda and modern science to help men improve vitality and physical strength.",
         certifications=[],
         origin_country="India",
-        target_country="Europe",
+        target_country=["Europe"],
         company_name="aadar",
         business_type="Manufacturer & Exporter",
         price_positioning="Budget",
