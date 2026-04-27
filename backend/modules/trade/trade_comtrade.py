@@ -18,7 +18,7 @@ import os
 import requests
 from pathlib import Path
 
-COMTRADE_API_KEY = os.getenv("COMTRADE_API_KEY", "6cd03a973c53469c9fbf057ac6cc9e1d")
+COMTRADE_API_KEY = os.getenv("COMTRADE_API_KEY")
 BASE_URL = "https://comtradeapi.un.org/data/v1/get/C/A/HS"
 SLEEP_SEC = 1.2
 
