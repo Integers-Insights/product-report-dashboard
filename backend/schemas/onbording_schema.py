@@ -7,9 +7,14 @@ class UpdateCompanyRequest(BaseModel):
     industry:      Optional[str] = None
 
 class SubscriptionPaymentVerifyRequest(BaseModel):
-    razorpay_order_id:   str
-    razorpay_payment_id: str
-    razorpay_signature:  str
+    razorpay_order_id:   str = Field(..., description="Razorpay order ID returned from create-subscription-order")
+    razorpay_payment_id: str = Field(..., description="Razorpay payment ID from the Razorpay checkout callback")
+    razorpay_signature:  str = Field(..., description="Razorpay signature from the Razorpay checkout callback")
+
+class ApplyCouponRequest(BaseModel):
+    code:          str = Field(..., description="Coupon code entered by the user, e.g. SAVE20")
+    plan_name:     str = Field(..., description="Plan the user is subscribing to: trial, basic, or pro")
+    billing_cycle: str = Field(..., description="monthly or yearly")
 
 class Step1Request(BaseModel):
     full_name:Optional[str]
@@ -178,7 +183,7 @@ class PipelineResponse(BaseModel):
 class ResearchPreferencesRequest(BaseModel):
     goals: List[str]
     buyer_type: Optional[str] = None
-    price_positioning: Optional[str] = None
+    price_positioning: Optional[List[str]] = None
     monthly_supply_capacity: Optional[str] = None
     target_country: List[str] = None
     certifications: Optional[CertificationSchema]
