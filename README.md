@@ -239,4 +239,4 @@ Compliance documents are in `docs/security/`:
 
 ---
 
-*Internal repository — Integers Insights. Not open source.*
+*Internal repository — Integers Insights.*
