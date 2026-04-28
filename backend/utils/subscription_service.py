@@ -811,3 +811,74 @@ async def revoke_usage(conn, token: dict):
 
     except Exception as e:
         print(f"⚠️ revoke_usage failed: {e}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  COUPON HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def validate_coupon(conn, code: str, plan_name: str, original_amount: float) -> dict:
+    """
+    Validate a coupon code and return discount details.
+    Raises HTTPException on any validation failure.
+    Returns dict with: coupon_id, discount_type, discount_value, discount_amount, final_amount
+    """
+    now = datetime.now(timezone.utc)
+
+    row = await conn.fetchrow("""
+        SELECT id, code, discount_type, discount_value,
+               max_uses, used_count, min_order_amount,
+               valid_from, valid_until, applicable_plans, is_active
+        FROM core_auth_table.coupon_codes
+        WHERE UPPER(code) = UPPER($1)
+    """, code)
+
+    if not row:
+        raise HTTPException(status_code=404, detail={"success": False, "error": "Invalid coupon code"})
+
+    if not row["is_active"]:
+        raise HTTPException(status_code=400, detail={"success": False, "error": "This coupon is no longer active"})
+
+    if row["max_uses"] != -1 and row["used_count"] >= row["max_uses"]:
+        raise HTTPException(status_code=400, detail={"success": False, "error": "This coupon has reached its usage limit"})
+
+    if row["valid_from"] and now < row["valid_from"]:
+        raise HTTPException(status_code=400, detail={"success": False, "error": "This coupon is not yet valid"})
+
+    if row["valid_until"] and now > row["valid_until"]:
+        raise HTTPException(status_code=400, detail={"success": False, "error": "This coupon has expired"})
+
+    if row["applicable_plans"] and plan_name.lower() not in [p.lower() for p in row["applicable_plans"]]:
+        raise HTTPException(status_code=400, detail={"success": False, "error": f"This coupon is not valid for the {plan_name} plan"})
+
+    if original_amount < float(row["min_order_amount"]):
+        raise HTTPException(status_code=400, detail={
+            "success": False,
+            "error": f"Minimum order amount of ₹{row['min_order_amount']} required for this coupon"
+        })
+
+    # Calculate discount
+    if row["discount_type"] == "percentage":
+        discount_amount = round(original_amount * float(row["discount_value"]) / 100, 2)
+    else:  # flat
+        discount_amount = min(float(row["discount_value"]), original_amount)
+
+    final_amount = max(round(original_amount - discount_amount, 2), 0)
+
+    return {
+        "coupon_id":      str(row["id"]),
+        "code":           row["code"],
+        "discount_type":  row["discount_type"],
+        "discount_value": float(row["discount_value"]),
+        "discount_amount": discount_amount,
+        "final_amount":   final_amount,
+    }
+
+
+async def increment_coupon_usage(conn, coupon_id: str):
+    """Atomically increment used_count. Call only after Razorpay order is created."""
+    await conn.execute("""
+        UPDATE core_auth_table.coupon_codes
+        SET used_count = used_count + 1, updated_at = NOW()
+        WHERE id = $1
+    """, coupon_id)

@@ -399,12 +399,16 @@ async def upsert_research_preferences(conn, user_id: str, data):
         if isinstance(target_country, list):
             target_country = json.dumps(target_country)
 
+        price_positioning = data.price_positioning
+        if isinstance(price_positioning, list):
+            price_positioning = json.dumps(price_positioning)
+
         await conn.execute(
             query,
             user_id,
             data.goals,
             data.buyer_type,
-            data.price_positioning,
+            price_positioning,
             data.monthly_supply_capacity,
             target_country,
             certifications_json

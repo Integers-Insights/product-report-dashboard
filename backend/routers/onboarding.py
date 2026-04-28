@@ -23,6 +23,8 @@ from utils.subscription_service import (
     apply_plan_visibility,
     apply_trial_visibility,
     check_concurrent_job_limit,
+    validate_coupon,
+    increment_coupon_usage,
 )
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
@@ -2294,12 +2296,62 @@ async def verify_addon_payment(
 
 
 # =========================================================
+# BILLING — APPLY COUPON (validate before payment)
+# =========================================================
+@router.post("/billing/apply-coupon")
+async def apply_coupon(
+    body: ApplyCouponRequest,
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    try:
+        code          = body.code.strip()
+        plan_name     = body.plan_name
+        billing_cycle = body.billing_cycle
+
+        if not code:
+            raise HTTPException(status_code=400, detail={"success": False, "error": "Coupon code is required"})
+        if billing_cycle not in ("monthly", "yearly"):
+            raise HTTPException(status_code=400, detail={"success": False, "error": "billing_cycle must be 'monthly' or 'yearly'"})
+
+        plan = await conn.fetchrow("""
+            SELECT monthly_price, yearly_price
+            FROM core_auth_table.subscription_plans
+            WHERE LOWER(plan_name::text) = LOWER($1) AND status = 'active'
+        """, plan_name)
+
+        if not plan:
+            raise HTTPException(status_code=404, detail={"success": False, "error": "Plan not found"})
+
+        original_amount = float(plan["monthly_price"] if billing_cycle == "monthly" else plan["yearly_price"])
+
+        coupon = await validate_coupon(conn, code, plan_name, original_amount)
+
+        return {
+            "success":         True,
+            "code":            coupon["code"],
+            "discount_type":   coupon["discount_type"],
+            "discount_value":  coupon["discount_value"],
+            "original_amount": original_amount,
+            "discount_amount": coupon["discount_amount"],
+            "final_amount":    coupon["final_amount"],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("APPLY COUPON ERROR:", str(e))
+        raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to apply coupon", "detail": str(e)})
+
+
+# =========================================================
 # BILLING — CREATE SUBSCRIPTION ORDER
 # =========================================================
 @router.post("/billing/create-subscription-order")
 async def create_subscription_order(
     plan_name: str,
     billing_cycle: str,
+    coupon_code: str = None,
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
 ):
@@ -2320,8 +2372,8 @@ async def create_subscription_order(
         if not plan:
             raise HTTPException(status_code=404, detail="Plan not found")
 
-        amount = plan["monthly_price"] if billing_cycle == "monthly" else plan["yearly_price"]
-        if not amount:
+        original_amount = float(plan["monthly_price"] if billing_cycle == "monthly" else plan["yearly_price"])
+        if not original_amount:
             raise HTTPException(status_code=400, detail=f"{billing_cycle} pricing not available for this plan")
 
         # Prevent same-plan re-subscription
@@ -2336,6 +2388,17 @@ async def create_subscription_order(
         if current_plan and current_plan["plan_name"].lower() == plan_name.lower():
             raise HTTPException(status_code=400, detail=f"Already on {plan_name} plan")
 
+        # ── Apply coupon if provided ──────────────────────────────
+        coupon_id       = None
+        discount_amount = 0.0
+        final_amount    = original_amount
+
+        if coupon_code:
+            coupon          = await validate_coupon(conn, coupon_code.strip(), plan_name, original_amount)
+            coupon_id       = coupon["coupon_id"]
+            discount_amount = coupon["discount_amount"]
+            final_amount    = coupon["final_amount"]
+
         # Cancel any stale pending orders
         await conn.execute("""
             UPDATE core_auth_table.company_subscription_payments
@@ -2343,37 +2406,52 @@ async def create_subscription_order(
             WHERE company_id = $1 AND payment_status = 'pending'
         """, company_id)
 
-        # Create Razorpay order
+        # Create Razorpay order with final (discounted) amount
         rz = _get_razorpay_client()
         rz_order = rz.order.create({
-            "amount":   int(float(amount) * 100),  # paise
+            "amount":   int(final_amount * 100),  # paise
             "currency": "INR",
             "receipt":  str(uuid.uuid4()),
-            "notes":    {"company_id": company_id, "plan_name": plan_name, "billing_cycle": billing_cycle},
+            "notes":    {
+                "company_id":    company_id,
+                "plan_name":     plan_name,
+                "billing_cycle": billing_cycle,
+                "coupon_code":   coupon_code or "",
+            },
         })
         order_id = rz_order["id"]
 
         await conn.execute("""
             INSERT INTO core_auth_table.company_subscription_payments
             (id, company_id, plan_id, amount, currency, payment_status,
-             payment_provider, provider_order_id, billing_cycle)
-            VALUES ($1,$2,$3,$4,'INR','pending','razorpay',$5,$6)
+             payment_provider, provider_order_id, billing_cycle,
+             coupon_id, discount_amount)
+            VALUES ($1,$2,$3,$4,'INR','pending','razorpay',$5,$6,$7,$8)
         """,
             str(uuid.uuid4()),
             company_id,
             str(plan["plan_id"]),
-            amount,
+            final_amount,
             order_id,
             billing_cycle,
+            coupon_id,
+            discount_amount,
         )
 
+        # Increment coupon usage only after order is successfully created
+        if coupon_id:
+            await increment_coupon_usage(conn, coupon_id)
+
         return {
-            "success":       True,
-            "order_id":      order_id,
-            "plan_name":     plan_name,
-            "billing_cycle": billing_cycle,
-            "amount":        int(float(amount) * 100),
-            "currency":      "INR",
+            "success":         True,
+            "order_id":        order_id,
+            "plan_name":       plan_name,
+            "billing_cycle":   billing_cycle,
+            "original_amount": int(original_amount * 100),
+            "discount_amount": int(discount_amount * 100),
+            "amount":          int(final_amount * 100),  # actual charge in paise
+            "currency":        "INR",
+            "coupon_applied":  coupon_code is not None and coupon_id is not None,
         }
 
     except HTTPException:
