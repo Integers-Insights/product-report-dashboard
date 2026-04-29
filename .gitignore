@@ -2,6 +2,7 @@
 .env
 *.env
 secrets/
+google_ads.yaml
 
 # Python junk files
 __pycache__/
