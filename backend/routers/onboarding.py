@@ -920,18 +920,47 @@ async def save_research_preferences(
         # =========================================================
         # ✅ 3. VALIDATE PRODUCTS FOR THIS JOB ONLY
         # =========================================================
+        # First try exact job match, then fall back to any company product
         products = await conn.fetch("""
-            SELECT id
-            FROM product_info.product_master
-            WHERE company_id = $1
-            AND job_id = $2
+            SELECT id FROM product_info.product_master
+            WHERE company_id = $1 AND job_id = $2
         """, company_id, job_id)
 
         if not products:
-            raise HTTPException(
-                status_code=400,
-                detail="No products found for this job"
-            )
+            # Auto-confirm temp products for this job (any status) if not yet in product_master
+            temp_rows = await conn.fetch("""
+                SELECT product_data
+                FROM product_info.pipeline_temp_products
+                WHERE job_id = $1 AND user_id = $2
+            """, job_id, user_id)
+
+            if temp_rows:
+                await insert_selected_products_v2(conn, user_id, company_id, temp_rows, job_id)
+                await conn.execute("""
+                    UPDATE product_info.pipeline_temp_products
+                    SET status = 'processed', updated_at = NOW()
+                    WHERE job_id = $1 AND user_id = $2
+                """, job_id, user_id)
+
+            # Re-fetch after auto-confirm attempt; fall back to all company products
+            products = await conn.fetch("""
+                SELECT id FROM product_info.product_master
+                WHERE company_id = $1 AND job_id = $2
+            """, company_id, job_id)
+
+        if not products:
+            # Final fallback: run intelligence on all existing company products
+            products = await conn.fetch("""
+                SELECT id FROM product_info.product_master
+                WHERE company_id = $1
+            """, company_id)
+
+        if not products:
+            return {
+                "success": True,
+                "message": "Preferences saved. No products found for this company — add and confirm products first.",
+                "intelligence_started": False,
+            }
 
         # =========================================================
         # ✅ 4. UPDATE STATUS → PROCESSING (ONLY THIS JOB)
@@ -941,8 +970,8 @@ async def save_research_preferences(
             SET status = 'intelligence_processing',
                 updated_at = NOW()
             WHERE company_id = $1
-            AND job_id = $2
-        """, company_id, job_id)
+            AND id = ANY($2::uuid[])
+        """, company_id, [r["id"] for r in products])
 
         print(f"🚀 Starting intelligence | job_id={job_id} | products={len(products)}")
 
@@ -1644,6 +1673,8 @@ async def confirm_products(
         product_ids: list = body.get("product_ids") or []
         updates: dict     = body.get("updates") or {}
 
+        print(f"[CONFIRM] job_id={job_id} user_id={user_id} product_ids={product_ids}")
+
         async with conn.transaction():
 
             # ── STEP 1: if frontend sent explicit IDs, mark those as selected ──
@@ -1664,6 +1695,8 @@ async def confirm_products(
                         FROM product_info.pipeline_temp_products
                         WHERE id = $1 AND user_id = $2 AND job_id = $3
                     """, pid, user_id, job_id)
+
+                    print(f"[CONFIRM] lookup pid={pid} found={row is not None}")
 
                     if not row:
                         continue
@@ -2719,135 +2752,138 @@ async def delete_account(
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    # ✅ only admin can access
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail={
-            "success": False,
-            "error": "Access denied. Admin only."
-        })
-
     try:
-        # fetch all product ids for this user first
-        product_ids = await conn.fetch("""
-            SELECT id FROM product_info.product_master
-            WHERE created_by = $1
-        """, target_user_id)
-        
-        pid_list = [str(row["id"]) for row in product_ids]
-
-        # =====================================================
-        # 🗑️ DELETE PRODUCT INTELLIGENCE DATA
-        # =====================================================
-        if pid_list:
-            await conn.execute("""
-                DELETE FROM product_info.overall_intelligence_scores
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.market_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.trade_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.competitor_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.marketing_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.price_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.variants_formats
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.b2b_buyer_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.b2c_buyer_intelligence
-                WHERE product_id = ANY($1::uuid[])
-            """, pid_list)
-
-            await conn.execute("""
-                DELETE FROM product_info.pipeline_temp_products
-                WHERE user_id = $1
-            """, target_user_id)
-
-        # =====================================================
-        # 🗑️ DELETE PIPELINE JOBS
-        # =====================================================
-        await conn.execute("""
-            DELETE FROM core_tables.pipeline_jobs
-            WHERE user_id = $1
+        # Fetch company_id once — used to scope ALL product/company deletes
+        company_id = await conn.fetchval("""
+            SELECT companies_other_id FROM core_auth_table.auth_user WHERE user_id = $1
         """, target_user_id)
 
-        # =====================================================
-        # 🗑️ DELETE PRODUCT MASTER
-        # =====================================================
-        await conn.execute("""
-            DELETE FROM product_info.product_master
-            WHERE created_by = $1
-        """, target_user_id)
+        product_count = await conn.fetchval("""
+            SELECT COUNT(*) FROM product_info.product_master WHERE company_id = $1
+        """, company_id) if company_id else 0
 
-        # =====================================================
-        # 🗑️ DELETE COMPANY DATA
-        # =====================================================
-        await conn.execute("""
-            DELETE FROM product_info.company_preferences
-            WHERE company_id IN (
-                SELECT companies_other_id
-                FROM core_auth_table.auth_user
-                WHERE user_id = $1
-            )
-        """, target_user_id)
+        async with conn.transaction():
+            if company_id:
+                # ── nullify ai_usage_log product FK (preserve logs for cost tracking) ──
+                await conn.execute("""
+                    UPDATE core_tables.ai_usage_log
+                    SET product_id = NULL
+                    WHERE product_id IN (
+                        SELECT id FROM product_info.product_master WHERE company_id = $1
+                    )
+                """, company_id)
 
-        await conn.execute("""
-            DELETE FROM core_tables.user_research_preferences
-            WHERE user_id = $1
-        """, target_user_id)
+                # ── intelligence child tables (ALL company products) ───────────────
+                for table in (
+                    "product_info.overall_intelligence_scores",
+                    "product_info.market_intelligence",
+                    "product_info.trade_intelligence",
+                    "product_info.competitor_intelligence",
+                    "product_info.marketing_intelligence",
+                    "product_info.price_intelligence",
+                    "product_info.variants_formats",
+                    "product_info.b2b_buyer_intelligence",
+                    "product_info.b2c_buyer_intelligence",
+                ):
+                    await conn.execute(f"""
+                        DELETE FROM {table}
+                        WHERE product_id IN (
+                            SELECT id FROM product_info.product_master WHERE company_id = $1
+                        )
+                    """, company_id)
 
-        await conn.execute("""
-            DELETE FROM core_tables.companies_other
-            WHERE id IN (
-                SELECT companies_other_id
-                FROM core_auth_table.auth_user
-                WHERE user_id = $1
-            )
-        """, target_user_id)
+                # ── pipeline temp + jobs ───────────────────────────────────────────
+                await conn.execute("""
+                    DELETE FROM product_info.pipeline_temp_products WHERE user_id = $1
+                """, target_user_id)
 
-        # =====================================================
-        # 🗑️ DELETE AUTH SESSIONS + USER
-        # =====================================================
-        await conn.execute("""
-            DELETE FROM core_auth_table.auth_sessions
-            WHERE user_id = $1
-        """, target_user_id)
+                await conn.execute("""
+                    DELETE FROM core_tables.pipeline_jobs WHERE user_id = $1
+                """, target_user_id)
 
-        await conn.execute("""
-            DELETE FROM core_auth_table.auth_user
-            WHERE user_id = $1
-        """, target_user_id)
+                # ── product master (all company products) ─────────────────────────
+                await conn.execute("""
+                    DELETE FROM product_info.product_master WHERE company_id = $1
+                """, company_id)
+
+            if company_id:
+                # ── company preferences & subscriptions ───────────────────────────
+                await conn.execute("""
+                    DELETE FROM product_info.company_preferences WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_tables.company_metadata WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.company_addon_purchases WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.company_subscription_payments WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.company_usage WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.company_subscriptions WHERE company_id = $1
+                """, company_id)
+
+                await conn.execute("""
+                    UPDATE core_tables.ai_usage_log SET company_id = NULL WHERE company_id = $1
+                """, company_id)
+
+            # ── clean up ALL company users' sessions etc. before company cascade ──
+            # companies_other CASCADE deletes ALL auth_user rows for this company,
+            # so we must clear every dependent table for every company user first.
+            if company_id:
+                for user_table in (
+                    "core_tables.user_research_preferences",
+                    "core_tables.data_export_requests",
+                    "core_auth_table.email_verification_tokens",
+                    "core_auth_table.user_permissions_groups",
+                    "core_auth_table.auth_sessions",
+                ):
+                    await conn.execute(f"""
+                        DELETE FROM {user_table}
+                        WHERE user_id IN (
+                            SELECT user_id FROM core_auth_table.auth_user
+                            WHERE companies_other_id = $1
+                        )
+                    """, company_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.auth_user WHERE companies_other_id = $1
+                """, company_id)
+            else:
+                # No company — just clean up the single user
+                for user_table in (
+                    "core_tables.user_research_preferences",
+                    "core_tables.data_export_requests",
+                    "core_auth_table.email_verification_tokens",
+                    "core_auth_table.user_permissions_groups",
+                    "core_auth_table.auth_sessions",
+                ):
+                    await conn.execute(f"""
+                        DELETE FROM {user_table} WHERE user_id = $1
+                    """, target_user_id)
+
+                await conn.execute("""
+                    DELETE FROM core_auth_table.auth_user WHERE user_id = $1
+                """, target_user_id)
+
+            if company_id:
+                await conn.execute("""
+                    DELETE FROM core_tables.companies_other WHERE id = $1
+                """, company_id)
 
         return {
             "success": True,
             "message": f"Account and all associated data deleted for user {target_user_id}",
-            "deleted_products": len(pid_list),
+            "deleted_products": product_count,
         }
 
     except Exception as e:

@@ -518,54 +518,58 @@ async def insert_selected_products_v2(conn, user_id, company_id, rows, job_id):
             $11,$12,$13,$14,$15,$16,$17,$18,$19,
             $20,$21,$22,$23
         )
-        ON CONFLICT (company_id, product_name, created_by) DO UPDATE
-            SET job_id = EXCLUDED.job_id, updated_at = NOW()
+        ON CONFLICT (company_id, product_name, created_by) DO NOTHING
     """
 
     inserted_count = 0
 
     for r in rows:
-        try:
-            raw = r["product_data"]
+        raw = r["product_data"]
+        p = json.loads(raw) if isinstance(raw, str) else raw
+        base_name = p.get("product_name") or "Untitled Product"
 
-            # ✅ parse JSON safely
-            p = json.loads(raw) if isinstance(raw, str) else raw
+        # Make product_name unique within this company+user scope
+        product_name = base_name
+        counter = 1
+        while True:
+            exists = await conn.fetchval("""
+                SELECT 1 FROM product_info.product_master
+                WHERE company_id = $1 AND product_name = $2 AND created_by = $3
+                LIMIT 1
+            """, company_id, product_name, user_id)
+            if not exists:
+                break
+            counter += 1
+            product_name = f"{base_name} ({counter})"
 
-            # ✅ fallback for product name
-            product_name = p.get("product_name") or "Untitled Product"
+        await conn.execute(
+            query,
+            company_id,                          # $1
+            product_name,                        # $2
+            p.get("category"),                   # $3
+            p.get("subcategory"),                # $4
+            p.get("description"),                # $5
+            p.get("packaging"),                  # $6
+            p.get("certifications", []),         # $7
+            p.get("moq"),                        # $8
+            p.get("hs_code"),                    # $9
+            json.dumps(p.get("ingredients")) if p.get("ingredients") else None,  # $10
+            json.dumps(p.get("specifications") or {}),  # $11
+            p.get("variants", []),               # $12
+            p.get("images", []),                 # $13
+            p.get("monthly_capacity"),           # $14
+            p.get("source_url"),                 # $15
+            p.get("confidence_score"),           # $16
+            p.get("confidence_tier"),            # $17
+            p.get("extraction_notes"),           # $18
+            True,                                # $19 → is_ready
+            True,                                # $20 → is_selected
+            user_id,                             # $21 → created_by
+            "pipeline",                          # $22 → data_source
+            job_id                               # $23 → job_id
+        )
 
-            await conn.execute(
-                query,
-                company_id,                          # $1
-                product_name,                        # $2
-                p.get("category"),                   # $3
-                p.get("subcategory"),                # $4
-                p.get("description"),                # $5
-                p.get("packaging"),                  # $6
-                p.get("certifications", []),         # $7
-                p.get("moq"),                        # $8
-                p.get("hs_code"),                    # $9
-                json.dumps(p.get("ingredients")) if p.get("ingredients") else None,  # $10
-                json.dumps(p.get("specifications") or {}),  # $11
-                p.get("variants", []),               # $12
-                p.get("images", []),                 # $13
-                p.get("monthly_capacity"),           # $14
-                p.get("source_url"),                 # $15
-                p.get("confidence_score"),           # $16
-                p.get("confidence_tier"),            # $17
-                p.get("extraction_notes"),           # $18
-                True,                                # $19 → is_ready
-                True,                                # $20 → is_selected
-                user_id,                             # $21 → created_by
-                "pipeline",                          # $22 → data_source
-                job_id                               # $23 → job_id ✅
-            )
-
-            inserted_count += 1
-
-        except Exception as e:
-            print("❌ Error inserting product:", str(e))
-            print("Problematic data:", r)
+        inserted_count += 1
 
     return inserted_count
 
