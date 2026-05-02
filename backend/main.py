@@ -21,18 +21,17 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "http://localhost:3000",
         "http://172.16.31.72:5173",
-        "http://172.16.31.233:5173",
         "http://192.168.0.100:5173",
         "http://192.168.0.100:8000",
         "https://product-insight.integerstech.com",
-        "null",          # file:// local HTML files
+        "https://product-insight-backend.integermarket.com",  # ✅ add this
+        "null",
     ],
     allow_origin_regex=r"https://.*\.trycloudflare\.com",
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=False,  # must be False when allow_origins includes "null"
+    allow_credentials=True,
 )
 
 # =====================================================
