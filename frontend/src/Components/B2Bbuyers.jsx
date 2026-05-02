@@ -1,5 +1,6 @@
 import { FunnelIcon } from "@heroicons/react/24/outline";
 import InitialText from "./InitialText";
+import Flag from "./Flag";
 
 const listCardData = [
   {
@@ -173,21 +174,24 @@ const B2Bbuyers = ({ b2b }) => {
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-2">
                     <p className="text-base font-medium text-[#000000]">
-                      {item?.name}
+                      {item?.name ?? "--"}
                     </p>
                     <button className="bg-[#F1FEF2] text-[#2E7D32] text-xs font-medium px-2 py-0.5 rounded-2xl">
                       Active RFQ
                     </button>
-                    <button className="bg-[#EDF9FF] text-[#008ACB] text-xs font-medium px-2 py-0.5 rounded-2xl">
-                      {item?.country}
-                    </button>
+                    {/* <button className="bg-[#EDF9FF] text-[#008ACB] text-xs font-medium px-2 py-0.5 rounded-2xl">
+                      {item?.country ?? "--"}hj
+                    </button> */}
+                    <span className="border">
+                      <Flag country={item?.country} />
+                    </span>
                   </div>
                   <div className="text-xs font-light text-[#5F6368] flex gap-5">
-                    <p>{item?.contact}</p>
-                    <p>{item?.type}</p>
+                    <p>{item?.contact ?? "--"}</p>
+                    <p>{item?.type ?? "--"}</p>
                   </div>
                   <p className="text-sm font-regular text-[#5F6368]">
-                    {item?.notes}
+                    {item?.notes ?? "--"}
                   </p>
                 </div>
               </div>
@@ -209,7 +213,7 @@ const B2Bbuyers = ({ b2b }) => {
             >
               <div className="flex gap-3 items-center">
                 <div className="blur-sm">
-                  <InitialText text={"A S"} />
+                  <InitialText text={"A B"} />
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-2 blur-sm">

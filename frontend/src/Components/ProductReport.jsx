@@ -13,7 +13,7 @@ import Overview from "./Overview";
 import Markets from "./Markets";
 import Trade from "./Trade";
 import Variants from "./Variants";
-import Kpis from "./Kpis";
+// import Kpis from "./Kpis";
 import Buyer from "./Buyer";
 import Competitors from "./Competitors";
 import Marketingkit from "./Marketingkit";
@@ -53,7 +53,10 @@ const ProductReport = ({
   actions_data,
   market_data,
   trade_data,
-  buyers_data
+  buyers_data,
+  variants_data,
+  competitor_data,
+  marketing_kit_data
 }) => {
   const [activeTab, setActiveTab] = useState("Overview");
   // const [value, setValue] = useState(80);
@@ -77,10 +80,12 @@ const ProductReport = ({
           <p className="text-xs font-light">INDIVIDUAL PRODUCT REPORT</p>
           <h1 className="text-[28px] font-semibold mt-1">
             {/* {console.log("banner_product_name: ",banner_product_name)} */}
-            {banner_product_name || ""}
+            {banner_product_name || "--"}
           </h1>
           <div className="flex gap-9 items-center mt-3">
-            <div className="text-xs font-light">HS {banner_hs_code || ""}</div>
+            <div className="text-xs font-light">
+              HS {banner_hs_code || "--"}
+            </div>
             <div className="flex gap-1.5">
               {banner_certifications?.slice(0, 3).map((val, i) => {
                 return (
@@ -130,11 +135,11 @@ const ProductReport = ({
               </div>
             </div>
             <div className="text-sm font-medium">
-              <span>{banner_buyer_type || ""}</span>
+              <span>{banner_buyer_type ?? "--"}</span>
               <span>・</span>
-              <span>{banner_price_positioning || ""} </span>
+              <span>{banner_price_positioning ?? "--"} </span>
               <span>・</span>
-              <span>{banner_monthly_supply_capacity || ""}</span>
+              <span>{banner_monthly_supply_capacity ?? "--"}</span>
             </div>
           </div>
 
@@ -142,7 +147,7 @@ const ProductReport = ({
             <div className="flex justify-between">
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {banner_total_buyers || 0}
+                  {banner_total_buyers ?? 0}
                 </h2>
                 <p className="text-xs font-light">BUYERS FOUND</p>
               </div>
@@ -151,7 +156,7 @@ const ProductReport = ({
             <div className="flex justify-between">
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {banner_easy_win || 0}
+                  {banner_easy_win ?? 0}
                 </h2>
                 <p className="text-xs font-light">EASY WIN MARKETS</p>
               </div>
@@ -160,7 +165,12 @@ const ProductReport = ({
             <div className="flex justify-between">
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {banner_global_trade || ""}
+                  {/* {banner_global_trade ?? "0"} */}
+                  {banner_global_trade !== null &&
+                  banner_global_trade !== undefined &&
+                  banner_global_trade !== ""
+                    ? banner_global_trade
+                    : "--"}
                 </h2>
                 <p className="text-xs font-light">AVG YOY DEMAND</p>
               </div>
@@ -176,7 +186,7 @@ const ProductReport = ({
             <div className="flex justify-between">
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {banner_keywords || 0}
+                  {banner_keywords ?? 0}
                 </h2>
                 <p className="text-xs font-light">TOTAL KEYWORDS</p>
               </div>
@@ -185,7 +195,12 @@ const ProductReport = ({
             <div>
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {banner_market_range || ""}
+                  {/* {banner_market_range ?? "0"} */}
+                  {banner_market_range !== null &&
+                  banner_market_range !== undefined &&
+                  banner_market_range !== ""
+                    ? banner_market_range
+                    : "--"}
                 </h2>
                 <p className="text-xs font-light">PRICE RANGE</p>
               </div>
@@ -283,12 +298,12 @@ const ProductReport = ({
               onClick={() => setActiveTab("Marketing Kit")}
               icon={MegaphoneIcon}
             />
-            <Tab
+            {/* <Tab
               label="Kpis & Actions"
               isActive={activeTab === "Kpis & Actions"}
               onClick={() => setActiveTab("Kpis & Actions")}
               icon={TrophyIcon}
-            />
+            /> */}
 
             {/*  */}
             {/* <Tab
@@ -331,10 +346,10 @@ const ProductReport = ({
         {activeTab === "Trade" && <Trade trade_data={trade_data} />}
         {activeTab === "Buyers" && <Buyer buyers_data={buyers_data} />}
         {activeTab === "Price Analysis" && <PriceAnalysis />}
-        {activeTab === "Variants & Formats" && <Variants />}
-        {activeTab === "Competitors" && <Competitors />}
-        {activeTab === "Marketing Kit" && <Marketingkit />}
-        {activeTab === "Kpis & Actions" && <Kpis />}
+        {activeTab === "Variants & Formats" && <Variants variants_data={variants_data} />}
+        {activeTab === "Competitors" && <Competitors competitor_data={competitor_data} />}
+        {activeTab === "Marketing Kit" && <Marketingkit marketing_kit_data={marketing_kit_data} />}
+        {/* {activeTab === "Kpis & Actions" && <Kpis />} */}
       </div>
     </>
   );

@@ -1,9 +1,9 @@
 import { LuChevronDown } from "react-icons/lu";
 import Int_Logo from "../assets/Int_Logo_Main_Fav.png";
 import login_img from "../assets/login.jpg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { base_url1 } from "../URL";
 import toast from "react-hot-toast";
 
@@ -107,6 +107,13 @@ const UserLogin = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+    if (authToken) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div className="h-screen">
@@ -228,6 +235,7 @@ const UserLogin = () => {
                 </button> */}
               </form>
             </div>
+            <p className="text-center mt-3 text-sm font-medium text-gray-500">Don't have an account? <Link to={"/signup"} style={{color:"blue",textDecoration:"underline"}}>SignUp</Link></p>
           </div>
         </div>
 

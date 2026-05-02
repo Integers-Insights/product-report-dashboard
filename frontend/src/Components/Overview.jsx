@@ -78,6 +78,7 @@ const icons = [
 const icon = [ClockIcon, CalendarIcon, CalendarDaysIcon];
 
 const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
+  console.log("u: ",urgent_note_data);
   return (
     <>
       <div className="flex justify-between items-center">
@@ -135,14 +136,13 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
           </div>
         </div>
         <div className="text-[#5F6368] text-13 font-regular">
-          {urgent_note_data || ""}
+          {urgent_note_data?.message || ""}
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6 mt-6">
         {actions_data?.map((item, index) => {
           const Icon = icon[index];
-
           return (
             <div
               className="card-hover border border-[#A5F7A9] flex flex-col gap-1.5 rounded-lg p-3 bg-[#F1FEF2]"

@@ -1,11 +1,11 @@
 import { LuChevronDown } from "react-icons/lu";
 import Int_Logo from "../assets/Int_Logo_Main_Fav.png";
 import signup_img from "../assets/signup.jpg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoEyeOffOutline } from "react-icons/io5";
 import { IoEyeOutline } from "react-icons/io5";
 import { base_url1 } from "../URL";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const countries = [
@@ -140,6 +140,9 @@ const UserSignup = () => {
       company_name: trimmedCompany,
       password: trimmedPassword,
       phone: `${country}${phone || ""}`,
+      // gdpr_consent: true,
+      // marketing_consent: true,
+      gdpr_consent: formData.gdpr_consent ?? true,  // this is new payload
     };
 
     try {
@@ -154,12 +157,14 @@ const UserSignup = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.detail || "Signup failed");
+        toast.error(data?.detail?.message || "Signup failed");  // this is new (data.detail.message)
         return;
       }
 
-      if (data.success) {
-        toast.success(data.message || "Signup successful. Verify your email.");
+      console.log("data: ", data);
+
+      if (data?.success) {
+        toast.success(data?.message || "Signup successful. Verify your email.");
         setFormData({
           name: "",
           email: "",
@@ -171,7 +176,7 @@ const UserSignup = () => {
 
         // navigate("/user-login");
       } else {
-        toast.error(data.detail || "Signup failed.");
+        toast.error(data?.detail || "Signup failed.");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -180,6 +185,13 @@ const UserSignup = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+    if (authToken) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div className="h-screen">
@@ -381,6 +393,7 @@ const UserSignup = () => {
                   </div>
                 </form>
               </div>
+              <p className="text-center mt-3 text-sm font-medium text-gray-500">Already have an account? <Link to={"/login"} style={{color:"blue",textDecoration:"underline"}}>Login here</Link></p>
 
               <div className="mt-10">
                 <div className="relative">
@@ -446,9 +459,11 @@ const UserSignup = () => {
                     <span className="text-sm/6 font-semibold">GitHub</span>
                   </a>
                 </div>
+                
               </div>
             </div>
           </div>
+          
         </div>
         <div className="relative hidden w-0 flex-1 lg:block">
           <img

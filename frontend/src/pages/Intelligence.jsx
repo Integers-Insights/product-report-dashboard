@@ -6,9 +6,11 @@ import { base_url1 } from "../URL";
 
 const IntelligenceReports = () => {
   const [allReportData, setAllReportData] = useState([]);
+  const [intelligenceReportLoading, setIntelligenceReportLoading] = useState(false);
 
   const getReportData = async () => {
     try {
+      setIntelligenceReportLoading(true);
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
 
       const response = await fetch(`${base_url1}/reports`, {
@@ -30,6 +32,8 @@ const IntelligenceReports = () => {
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
+    }finally{
+      setIntelligenceReportLoading(false);
     }
   };
 
@@ -55,7 +59,7 @@ const IntelligenceReports = () => {
           {/* Scrollable content */}
           <div className="flex-1 p-6">
             {/* Example long content */}
-            <IntelligenceReportsComponent allReportData={allReportData} />
+            <IntelligenceReportsComponent allReportData={allReportData} intelligenceReportLoading={intelligenceReportLoading} />
           </div>
         </div>
       </div>
