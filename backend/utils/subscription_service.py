@@ -193,19 +193,20 @@ async def assign_trial_plan_if_needed(conn, company_id: str, trial_days: Optiona
     if not trial_plan:
         return  # trial plan not configured in DB
 
-    start_date = _utcnow()
-    end_date   = (start_date + timedelta(days=trial_days)) if trial_days else None
-
     await conn.execute("""
         INSERT INTO core_auth_table.company_subscriptions
         (subscription_id, company_id, plan_id, billing_cycle, status, start_date, end_date, source, created_at)
-        VALUES ($1, $2, $3, NULL, 'active', $4, $5, 'auto_trial', NOW())
+        VALUES (
+            $1, $2, $3, NULL, 'active',
+            NOW(),
+            CASE WHEN $4::int IS NOT NULL THEN NOW() + ($4 * INTERVAL '1 day') ELSE NULL END,
+            'auto_trial', NOW()
+        )
     """,
         str(uuid.uuid4()),
         company_id,
         str(trial_plan["plan_id"]),
-        start_date,
-        end_date,
+        trial_days,
     )
 
 

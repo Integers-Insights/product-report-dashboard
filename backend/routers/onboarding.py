@@ -461,6 +461,15 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 
         # ==============================
 
+        debug = await conn.fetchrow("""
+            SELECT user_id, expires_at, expires_at > NOW() AS valid
+            FROM core_auth_table.email_verification_tokens
+            WHERE token = $1
+        """, token)
+        print(f"[VERIFY] token={token[:8]}... found={debug is not None} "
+              f"expires_at={debug['expires_at'] if debug else 'N/A'} "
+              f"valid={debug['valid'] if debug else 'N/A'}")
+
         row = await conn.fetchrow("""
 
             SELECT user_id
@@ -472,8 +481,26 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
             AND expires_at > NOW()
 
         """, token)
- 
+
         if not row:
+            # Token gone or expired — check if user already verified via scanner
+            used_row = await conn.fetchrow("""
+                SELECT u.user_id, u.status, u.companies_other_id
+                FROM core_auth_table.email_verification_tokens t
+                JOIN core_auth_table.auth_user u ON u.user_id = t.user_id
+                WHERE t.token = $1
+            """, token)
+
+            if used_row and used_row["status"] == "active":
+                # Already verified — generate a fresh access token and redirect to success
+                uid = str(used_row["user_id"])
+                cid = str(used_row["companies_other_id"]) if used_row["companies_other_id"] else None
+                perms = await get_user_permissions(conn, uid)
+                fresh_token = create_access_token(uid, cid, perms)
+                return RedirectResponse(
+                    url=f"{FRONTEND_URL}verify-email?verified=true&token={fresh_token}",
+                    status_code=302
+                )
 
             return RedirectResponse(
 
@@ -631,19 +658,8 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 
         )
  
-        # ==============================
-
-        # 🔹 DELETE USED TOKEN
-
-        # ==============================
-
-        await conn.execute("""
-
-            DELETE FROM core_auth_table.email_verification_tokens
-
-            WHERE token = $1
-
-        """, token)
+        # Token left in DB — expires naturally after 48h.
+        # Deleting here would break Gmail link-scanner pre-fetch flow.
  
         # ==============================
 
@@ -653,7 +669,7 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 
         redirect = RedirectResponse(
 
-            url=f"{FRONTEND_URL}/verify-email?verified=true&token={access_token}",
+            url=f"{FRONTEND_URL}verify-email?verified=true&token={access_token}",
 
             status_code=302
 

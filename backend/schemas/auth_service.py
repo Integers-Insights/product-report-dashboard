@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Request,Response, Depends, Header
 from utils.security import hash_password, verify_password
 from utils.jwt_utils import create_access_token,get_user_permissions
@@ -393,12 +393,11 @@ async def signup_user(conn, data, request, background_tasks):
     await conn.execute("""
         INSERT INTO core_auth_table.email_verification_tokens
         (id, user_id, token, expires_at)
-        VALUES ($1,$2,$3,$4)
+        VALUES ($1, $2, $3, NOW() + INTERVAL '48 hours')
     """,
         str(uuid.uuid4()),
         user_id,
         token,
-        datetime.utcnow() + timedelta(hours=10)
     )
 
     background_tasks.add_task(
@@ -900,7 +899,7 @@ async def change_user_password(
 #             request.client.host,
 #             request.headers.get("user-agent"),
 #             refresh_token,
-#             datetime.utcnow() + timedelta(days=7)
+#             datetime.now(timezone.utc) + timedelta(days=7)
 #         )
 
 #         # ==========================================
@@ -1045,7 +1044,7 @@ async def google_signup_login(
             request.client.host,
             request.headers.get("user-agent"),
             #refresh_token,
-            datetime.utcnow() + timedelta(days=7)
+            datetime.now(timezone.utc) + timedelta(days=7)
         )
 
         # ==========================================
@@ -1396,12 +1395,11 @@ async def update_user_profile(data, conn, current_user):
                 """
                 INSERT INTO core_auth_table.email_verification_tokens
                 (id, user_id, token, expires_at)
-                VALUES ($1,$2,$3,$4)
+                VALUES ($1, $2, $3, NOW() + INTERVAL '48 hours')
                 """,
                 str(uuid.uuid4()),
                 user_id,
                 verification_token,
-                datetime.utcnow() + timedelta(hours=12)
             )
 
             # send email

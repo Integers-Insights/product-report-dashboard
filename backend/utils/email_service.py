@@ -14,12 +14,13 @@ async def send_verification_email(email: str, token: str):
         AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
         SMTP_USER = os.getenv("SMTP_USER")
         APP_DOMAIN = os.getenv("APP_DOMAIN", "http://localhost:8000")
+        FRONTEND_URL=os.getenv("FRONTEND_URL")
 
         if not all([AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, SMTP_USER]):
             print("EMAIL ERROR: Missing environment variables")
             return   # ❗ Don't raise → background task safe
 
-        verification_link = f"{APP_DOMAIN}/verify-email?token={token}"
+        verification_link = f"{FRONTEND_URL}/verify-email?token={token}"
 
         # ─────────────────────────────────────
         # 2️⃣ SES CLIENT
