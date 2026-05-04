@@ -324,10 +324,12 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
     try:
         price_data = []
         for row in price:
+            top_metrics = _parse(row["top_metrics"]) or {}
+            variant_table = _parse(row["variant_table"]) or []
             price_data.append({
-                "top_metrics": _parse(row["top_metrics"]),
-                "variant_table": _parse(row["variant_table"]),
-                "cert_premiums": _parse(row["cert_premiums"]),
+                **top_metrics,
+                "variants": variant_table,
+                #"cert_premiums": _parse(row["cert_premiums"]),
             })
 
         market_data = []
@@ -455,8 +457,8 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                     "easy_win":                easy_win_count,
                     "keywords":                len(marketing_data["high_volume_buyer_intent"])
                                             if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
-                    "market_range":            price_data[0]["top_metrics"].get("market_range")
-                                            if price_data and price_data[0].get("top_metrics") else None,
+                    "market_range": price_data[0].get("market_range")
+                                            if price_data else None,
                     "global_trade":            trade_data["global_trade_value"].get("yoy_growth")
                                             if trade_data and trade_data.get("global_trade_value") else None,
                    

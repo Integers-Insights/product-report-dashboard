@@ -10,12 +10,12 @@ from typing import Optional
 PLAN_MODULE_LIMITS = {
     "trial": {
         "buyers_intelligence": {"buyers": 1},
-        "price_intelligence":{"variant_table":2},
+        "price_intelligence":{"variants":2},
         "market_intelligence":{"market_info":1}
     },
     "basic": {
-        "buyers_intelligence": {"buyers": 5},
-        "price_intelligence":{"variant_table":4},
+        "buyers_intelligence": {"buyers": 2},
+        "price_intelligence":{"variants":4},
         "market_intelligence":{"market_info":4},
         "trade_intelligence":{"top_exporters":2,"top_importers":2}
     },
@@ -23,6 +23,22 @@ PLAN_MODULE_LIMITS = {
 }
 
 MASK_PLACEHOLDER = {"masked": True, "message": "Upgrade your plan to see more"}
+
+MODULE_LOCK_MESSAGE = "Upgrade your plan to unlock this intelligence"
+
+# When a module is not included in a plan, return this structure instead of a
+# flat {"masked": True} so the frontend can still access the expected keys.
+MODULE_LOCKED_STRUCTURE = {
+    "competitor_intelligence": {
+        "competitors": [{"masked": True, "message": MODULE_LOCK_MESSAGE}],
+    },
+    "trade_intelligence": {
+        "trade_info": {"masked": True, "message": MODULE_LOCK_MESSAGE},
+    },
+    "marketing_intelligence": {
+        "marketing_info": {"masked": True, "message": MODULE_LOCK_MESSAGE},
+    },
+}
 
 # Fields to hide (replace with FIELD_MASK_PLACEHOLDER) inside each item of a list.
 # Structure: { plan: { module_key: { list_field: [fields_to_mask] } } }
@@ -282,30 +298,40 @@ def _mask_module_data(module_key: str, module_data: dict, plan_name: str) -> dic
     # ── 1. List-item masking ─────────────────────────────────────────────────
     limits = PLAN_MODULE_LIMITS.get(plan_name, {}).get(module_key)
     if limits:
-        for field, max_visible in limits.items():
-            # Top-level list field
-            if field in result:
-                if isinstance(result[field], list):
-                    result[field] = _apply_list_mask(result[field], max_visible)
-                continue
-            # Nested inside a top-level dict value (e.g. trade_info → top_exporters)
-            for top_key, top_value in result.items():
-                if isinstance(top_value, dict) and field in top_value:
-                    if isinstance(top_value[field], list):
-                        top_value = dict(top_value)
-                        top_value[field] = _apply_list_mask(top_value[field], max_visible)
-                        result[top_key] = top_value
+        # ── buyers_intelligence: buyers live at b2b.buyers (2 levels deep) ──
+        if module_key == "buyers_intelligence":
+            max_buyers = limits.get("buyers", -1)
+            if max_buyers != -1:
+                b2b = result.get("b2b")
+                if isinstance(b2b, dict) and isinstance(b2b.get("buyers"), list):
+                    b2b_copy = dict(b2b)
+                    b2b_copy["buyers"] = _apply_list_mask(b2b_copy["buyers"], max_buyers)
+                    result["b2b"] = b2b_copy
+        else:
+            for field, max_visible in limits.items():
+                # Top-level list field
+                if field in result:
+                    if isinstance(result[field], list):
+                        result[field] = _apply_list_mask(result[field], max_visible)
                     continue
-                # Nested inside a top-level list of dicts
-                if not isinstance(top_value, list):
-                    continue
-                updated_rows = []
-                for row in top_value:
-                    if isinstance(row, dict) and field in row and isinstance(row[field], list):
-                        row = dict(row)
-                        row[field] = _apply_list_mask(row[field], max_visible)
-                    updated_rows.append(row)
-                result[top_key] = updated_rows
+                # Nested inside a top-level dict value (e.g. trade_info → top_exporters)
+                for top_key, top_value in list(result.items()):
+                    if isinstance(top_value, dict) and field in top_value:
+                        if isinstance(top_value[field], list):
+                            top_value = dict(top_value)
+                            top_value[field] = _apply_list_mask(top_value[field], max_visible)
+                            result[top_key] = top_value
+                        continue
+                    # Nested inside a top-level list of dicts
+                    if not isinstance(top_value, list):
+                        continue
+                    updated_rows = []
+                    for row in top_value:
+                        if isinstance(row, dict) and field in row and isinstance(row[field], list):
+                            row = dict(row)
+                            row[field] = _apply_list_mask(row[field], max_visible)
+                        updated_rows.append(row)
+                    result[top_key] = updated_rows
 
     # ── 2. Field-level masking ───────────────────────────────────────────────
     field_masks = PLAN_MODULE_FIELD_MASKS.get(plan_name, {}).get(module_key)
@@ -404,9 +430,12 @@ def apply_plan_visibility(response_data: dict, plan_name: str) -> dict:
         if key in allowed_modules:
             filtered[key] = _mask_module_data(key, value, plan_name)
         else:
-            filtered[key] = {
-                "locked": True,
-                "message": "Upgrade your plan to unlock this intelligence",
+            # Use module-specific locked structure so the frontend still gets
+            # the expected keys (e.g. competitors: [{masked: true}] instead of
+            # a flat masked object at the module level).
+            filtered[key] = MODULE_LOCKED_STRUCTURE.get(key) or {
+                "masked": True,
+                "message": MODULE_LOCK_MESSAGE,
             }
 
     return filtered
@@ -427,13 +456,13 @@ def apply_trial_visibility(products: list, plan_name: str) -> list:
     for index, product in enumerate(products):
         if index < limit:
             item = dict(product)
-            item["locked"] = False
+            item["masked"] = False
             result.append(item)
         else:
             result.append({
                 "product_id":   product.get("product_id"),
                 "product_name": product.get("product_name"),
-                "locked":       True,
+                "masked":       True,
                 "message":      "Upgrade your plan to unlock more products",
             })
 

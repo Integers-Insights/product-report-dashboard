@@ -25,6 +25,8 @@ from utils.subscription_service import (
     check_concurrent_job_limit,
     validate_coupon,
     increment_coupon_usage,
+    PLAN_MODULE_LIMITS,
+    MASK_PLACEHOLDER,
 )
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
@@ -2749,7 +2751,26 @@ async def get_buyer_list_api(
     user_id = current_user.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return await get_buyer_list(conn, user_id)
+    data = await get_buyer_list(conn, user_id)
+
+    company_id = current_user.get("company_id")
+    plan_name  = await get_company_plan(conn, str(company_id) if company_id else None)
+
+    max_buyers = (
+        PLAN_MODULE_LIMITS
+        .get(plan_name or "", {})
+        .get("buyers_intelligence", {})
+        .get("buyers", -1)
+    )
+
+    if max_buyers != -1 and isinstance(data.get("b2b"), list):
+        b2b     = data["b2b"]
+        visible = b2b[:max_buyers]
+        masked  = [MASK_PLACEHOLDER] * max(0, len(b2b) - max_buyers)
+        data["b2b"] = visible + masked
+
+    data["plan"] = plan_name
+    return data
 
 @router.get("/reports")
 async def get_reports_api(
