@@ -64,7 +64,7 @@ const product_data = [
   },
 ];
 
-const ProductComponent = ({ productData }) => {
+const ProductComponent = ({ productData, productLoading }) => {
   const [view_com, setView_com] = useState("List");
 
   return (
@@ -145,52 +145,191 @@ const ProductComponent = ({ productData }) => {
 
       {view_com === "List" && (
         <div className="flex flex-col gap-6 mt-6">
-          {productData?.map((item, i) => {
-            return (
-              <div
-                className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover"
-                key={i}
-              >
-                <div className="flex items-center gap-5">
-                  {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
+          {productLoading ? (
+            <div className="h-86.5 flex justify-center items-center">
+              <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <>
+              {productData.length ? (
+                productData?.map((item, i) => {
+                  return (
+                    <div
+                      className="border border-[#E6E6E6] bg-white p-3 rounded-lg flex justify-between card-hover"
+                      key={i}
+                    >
+                      <div className="flex items-center gap-5">
+                        {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                     <Squares2X2Icon className="h-6 w-6" />
                   </div> */}
-                  {/* <div className="h-10 w-10 rounded-lg flex justify-center items-center font-bold text-[#0284C7] bg-[#E0F5FF]">
+                        {/* <div className="h-10 w-10 rounded-lg flex justify-center items-center font-bold text-[#0284C7] bg-[#E0F5FF]">
                     {getInitials(item.txt1)}
                   </div> */}
-                  <InitialText text={item.name} />
-                  <div className="flex flex-col gap-1">
-                    <p className="flex gap-3">
-                      <span className="text-base font-medium text-[#000000]">
-                        {item.name}
-                      </span>
-                      <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                        {item.industry}
-                      </span>
-                      {/* <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]"> */}
-                      <span
-                        className={`font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32] ${Number(item.score) >= 71 ? "bg-[#CCFFCF] text-[#2E7D32]" : Number(item.score) >= 31 ? "bg-[#FFE9C5] text-[#D48C15]" : "bg-[#FFC4C4] text-[#C62828]"}`}
-                      >
-                        {item?.confidence_label}
-                      </span>
-                    </p>
-                    <p className="flex gap-2 text-xs font-regular text-[#5F6368]">
-                      <span>{item.monthly_supply_capacity || 0} pouches ·</span>
+                        <InitialText text={item.name} />
+                        <div className="flex flex-col gap-1">
+                          <p className="flex gap-3">
+                            <span className="text-base font-medium text-[#000000]">
+                              {item.name}
+                            </span>
+                            <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
+                              {item.industry}
+                            </span>
+                            {/* <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]"> */}
+                            <span
+                              className={`font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32] ${Number(item.score) >= 71 ? "bg-[#CCFFCF] text-[#2E7D32]" : Number(item.score) >= 31 ? "bg-[#FFE9C5] text-[#D48C15]" : "bg-[#FFC4C4] text-[#C62828]"}`}
+                            >
+                              {item?.confidence_label}
+                            </span>
+                          </p>
+                          <p className="flex gap-2 text-xs font-regular text-[#5F6368]">
+                            <span>
+                              {item.monthly_supply_capacity || 0} pouches ·
+                            </span>
 
-                      <span>
-                        {item.price_positioning
-                          .slice(0, 2)
-                          ?.map((itm, index) => {
-                            return (
-                              <span key={index}>
-                                {itm},{" "}
-                                {/* {i !== itm.price_positioning.length - 1 && ", "} */}
-                              </span>
-                            );
-                          })}
-                      </span>
+                            <span>
+                              {item.price_positioning
+                                .slice(0, 2)
+                                ?.map((itm, index) => {
+                                  return (
+                                    <span key={index}>
+                                      {itm},{" "}
+                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
+                                    </span>
+                                  );
+                                })}
+                            </span>
 
-                      <span className="flex gap-2">
+                            <span className="flex gap-2">
+                              {item.country_and_score
+                                .slice(0, 5)
+                                ?.map((itm, index) => {
+                                  return (
+                                    <span
+                                      key={index}
+                                      className="flex gap-2 items-center"
+                                    >
+                                      <span>
+                                        <Flag country={itm.country} />
+                                      </span>
+
+                                      <span>{itm.score}, </span>
+                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
+                                    </span>
+                                  );
+                                })}
+                            </span>
+                          </p>
+                          <p className="flex gap-1 text-xs font-regular text-[#5F6368] mt-2">
+                            <span className="font-medium">Last analyzed:</span>
+                            <span>
+                              {item.last_analyzed_at
+                                ? new Date(
+                                    item.last_analyzed_at,
+                                  ).toLocaleDateString("en-GB", {
+                                    weekday: "long",
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-5">
+                        <div>
+                          {/* <p className="text-2xl font-bold text-center text-[#2E7D32]"> */}
+                          <p
+                            className={`text-2xl font-bold text-center text-[#2E7D32] ${Number(item.score) >= 71 ? "text-[#2E7D32]" : Number(item.score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
+                          >
+                            {item.score}
+                          </p>
+                          <p className="text-sm font-regular text-[#5F6368]">
+                            Score
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer">
+                            ↻ Re-run −0.5Q
+                          </button>
+                          <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 whitespace-nowrap cursor-pointer">
+                            View Report →
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <h1 className="text-center font-medium text-xl">
+                  Data not found
+                </h1>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {view_com === "Grid" && (
+        <div className="mt-6 grid grid-cols-4 gap-6">
+          {productLoading ? (
+            <div className="h-86.5 flex justify-center items-center col-span-4">
+              <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <>
+              {productData.length ? (
+                productData?.map((item, index) => {
+                  return (
+                    <div
+                      className="border border-t-4 border-[#009A3F] p-3 rounded-lg bg-white card-hover"
+                      key={index}
+                    >
+                      {/* <div className="border border-gray-500 h-10 w-10 flex justify-center items-center rounded-lg">
+                  <Squares2X2Icon className="h-6 w-6" />
+                </div> */}
+                      {/* <div className="h-10 w-10 flex justify-center items-center rounded-lg font-bold text-[#0284C7] bg-[#E0F5FF]">
+                  {getInitials(item.txt1)}
+                </div> */}
+                      <InitialText text={item.name} />
+                      <div className="mt-4 flex justify-between">
+                        <div>
+                          <p className="text-base text-[#000000] font-medium">
+                            {item.name}
+                          </p>
+                          <p className="text-xs font-regular text-[#5F6368] flex gap-2">
+                            <span className="whitespace-nowrap">
+                              {item.monthly_supply_capacity || 0} pouches
+                            </span>
+                            {/* <span>{item.price_positioning}</span> */}
+                            <span>
+                              {item.price_positioning
+                                .slice(0, 2)
+                                ?.map((itm, index) => {
+                                  return (
+                                    <span key={index}>
+                                      {itm},{" "}
+                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
+                                    </span>
+                                  );
+                                })}
+                            </span>
+                            {/* <span>{item.txt6}</span> */}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`text-2xl font-bold text-center text-[#2E7D32]  ${Number(item.score) >= 71 ? "text-[#2E7D32]" : Number(item.score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
+                          >
+                            {item.score}
+                          </p>
+                          <p className="text-sm font-regular text-[#5F6368]">
+                            Score
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs font-regular text-[#5F6368] flex flex-wrap gap-2 mt-4">
+                        {/* <span className="flex gap-3"> */}
                         {item.country_and_score
                           .slice(0, 5)
                           ?.map((itm, index) => {
@@ -208,11 +347,16 @@ const ProductComponent = ({ productData }) => {
                               </span>
                             );
                           })}
-                      </span>
-                    </p>
-                    <p className="flex gap-1 text-xs font-regular text-[#5F6368] mt-2">
-                      <span className="font-medium">Last analyzed:</span>
-                      <span>
+                        {/* </span> */}
+                      </p>
+                      <div className="w-full h-1 bg-gray-300 rounded my-1">
+                        <div
+                          className={`h-1 rounded  ${Number(item.score) >= 71 ? "bg-[#2E7D32]" : Number(item.score) >= 31 ? "bg-[#D48C15]" : "bg-[#C62828]"}`}
+                          style={{ width: `${Number(item.score)}%` }}
+                        ></div>
+                      </div>
+
+                      <p className="text-xs font-regular text-[#5F6368] flex gap-2 mt-3">
                         {item.last_analyzed_at
                           ? new Date(item.last_analyzed_at).toLocaleDateString(
                               "en-GB",
@@ -224,134 +368,25 @@ const ProductComponent = ({ productData }) => {
                               },
                             )
                           : ""}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-5">
-                  <div>
-                    {/* <p className="text-2xl font-bold text-center text-[#2E7D32]"> */}
-                    <p
-                      className={`text-2xl font-bold text-center text-[#2E7D32] ${Number(item.score) >= 71 ? "text-[#2E7D32]" : Number(item.score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
-                    >
-                      {item.score}
-                    </p>
-                    <p className="text-sm font-regular text-[#5F6368]">Score</p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer">
-                      ↻ Re-run −0.5Q
-                    </button>
-                    <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 whitespace-nowrap cursor-pointer">
-                      View Report →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {view_com === "Grid" && (
-        <div className="mt-6 grid grid-cols-4 gap-6">
-          {productData?.map((item, index) => {
-            return (
-              <div
-                className="border border-t-4 border-[#009A3F] p-3 rounded-lg bg-white card-hover"
-                key={index}
-              >
-                {/* <div className="border border-gray-500 h-10 w-10 flex justify-center items-center rounded-lg">
-                  <Squares2X2Icon className="h-6 w-6" />
-                </div> */}
-                {/* <div className="h-10 w-10 flex justify-center items-center rounded-lg font-bold text-[#0284C7] bg-[#E0F5FF]">
-                  {getInitials(item.txt1)}
-                </div> */}
-                <InitialText text={item.name} />
-                <div className="mt-4 flex justify-between">
-                  <div>
-                    <p className="text-base text-[#000000] font-medium">
-                      {item.name}
-                    </p>
-                    <p className="text-xs font-regular text-[#5F6368] flex gap-2">
-                      <span className="whitespace-nowrap">{item.monthly_supply_capacity || 0} pouches</span>
-                      {/* <span>{item.price_positioning}</span> */}
-                      <span>
-                        {item.price_positioning
-                          .slice(0, 2)
-                          ?.map((itm, index) => {
-                            return (
-                              <span key={index}>
-                                {itm},{" "}
-                                {/* {i !== itm.price_positioning.length - 1 && ", "} */}
-                              </span>
-                            );
-                          })}
-                      </span>
-                      {/* <span>{item.txt6}</span> */}
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      className={`text-2xl font-bold text-center text-[#2E7D32]  ${Number(item.score) >= 71 ? "text-[#2E7D32]" : Number(item.score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
-                    >
-                      {item.score}
-                    </p>
-                    <p className="text-sm font-regular text-[#5F6368]">Score</p>
-                  </div>
-                </div>
-                <p className="text-xs font-regular text-[#5F6368] flex flex-wrap gap-2 mt-4">
-                  {/* <span className="flex gap-3"> */}
-                        {item.country_and_score
-                          .slice(0, 5)
-                          ?.map((itm, index) => {
-                            return (
-                              <span
-                                key={index}
-                                className="flex gap-2 items-center"
-                              >
-                                <span>
-                                  <Flag country={itm.country} />
-                                </span>
-
-                                <span>{itm.score}, </span>
-                                {/* {i !== itm.price_positioning.length - 1 && ", "} */}
-                              </span>
-                            );
-                          })}
-                      {/* </span> */}
-                </p>
-                <div className="w-full h-1 bg-gray-300 rounded my-1">
-                  <div
-                    className={`h-1 rounded  ${Number(item.score) >= 71 ? "bg-[#2E7D32]" : Number(item.score) >= 31 ? "bg-[#D48C15]" : "bg-[#C62828]"}`}
-                    style={{ width: `${Number(item.score)}%` }}
-                  ></div>
-                </div>
-
-                <p className="text-xs font-regular text-[#5F6368] flex gap-2 mt-3">
-                  {item.last_analyzed_at
-                    ? new Date(item.last_analyzed_at).toLocaleDateString(
-                        "en-GB",
-                        {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        },
-                      )
-                    : ""}
-                </p>
-                <div className="grid grid-cols-2 gap-5 mt-4">
-                  <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
-                    ↻ Re-run
-                  </button>
-                  <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer">
-                    Report →
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                      </p>
+                      <div className="grid grid-cols-2 gap-5 mt-4">
+                        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
+                          ↻ Re-run
+                        </button>
+                        <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer">
+                          Report →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <h1 className="text-center font-medium text-xl col-span-4">
+                  Data not found
+                </h1>
+              )}
+            </>
+          )}
         </div>
       )}
     </>

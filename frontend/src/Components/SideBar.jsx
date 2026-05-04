@@ -153,10 +153,6 @@ const SideBar = () => {
     }
   };
 
-  useEffect(() => {
-    getProfileData();
-  }, []);
-
   const handleProfile1 = async () => {
     // alert("api called for update profile");
     try {
@@ -302,16 +298,19 @@ const SideBar = () => {
       }
 
       let data = await response.json();
-      // console.log("billing data: ", data);
+      console.log("billing data: ", data);
       if (data?.success) {
         setUsage_date(data?.end_date);
 
         if (data?.billing_cycle === "monthly") {
           setUserData1(data?.usage?.monthly_limit || 0);
           setUserData2(data?.usage?.monthly_remaining || 0);
-        } else {
+        } else if (data?.billing_cycle === "yearly") {
           setUserData1(data?.usage?.yearly_limit || 0);
           setUserData2(data?.usage?.yearly_remaining || 0);
+        } else {
+          setUserData1(data?.usage?.daily_limit || 0);
+          setUserData2(data?.usage?.free_remaining || 0);
         }
       }
     } catch (err) {
@@ -321,7 +320,25 @@ const SideBar = () => {
 
   useEffect(() => {
     getScoutPlan();
+    getProfileData();
   }, []);
+
+  let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+  let name = "";
+  try {
+    const parsed = userProfile ? JSON.parse(userProfile) : null;
+    name = parsed?.name || "";
+  } catch (e) {
+    console.log("Invalid localStorage data");
+  }
+
+  const total = usage_data1;
+  const remaining = usage_data2;
+  const used = total - remaining;
+
+  const percentage = total
+    ? Math.min(100, Math.max(0, (used / total) * 100))
+    : 0;
 
   return (
     // <div className="sticky top-0 left-0 flex grow flex-col gap-y-3 overflow-y-auto bg-[#FFF] px-6 w-62 h-screen">
@@ -429,11 +446,9 @@ const SideBar = () => {
                       <span className="text-[13px]">Scout Plan</span>
                     </div>
                     <div>
-                      <span className="text-xl font-semibold">
-                        {usage_data2}
-                      </span>
+                      <span className="text-xl font-semibold">{used}</span>
                       <span className="text-[#5F6368] text-[14px]">
-                        /{usage_data1}
+                        /{total}
                       </span>
                     </div>
                   </div>
@@ -441,12 +456,12 @@ const SideBar = () => {
                   <div className="h-2 my-2 bg-[#A9B3B1] rounded">
                     <div
                       className="h-full bg-[#0284C7] rounded"
-                      style={{ width: "73%" }}
+                      style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
                   <p>
                     <span className="text-[#5F6368] text-[11px]">
-                      27 queries used: Resets in{" "}
+                      {used} queries used: Resets in{" "}
                     </span>
                     <span className="text-[14px] font-medium text-[#0284C7]">
                       {!usage_date || isNaN(new Date(usage_date).getTime())
@@ -466,7 +481,7 @@ const SideBar = () => {
                     </span>
                   </p>
 
-                  <div className="bg-[#0284C7] hover:bg-[#0369A1] rounded mt-2">
+                  <div className="bg-[#0284C7] hover:bg-[#0369A1] rounded mt-2 transition-all duration-300">
                     <button className="flex justify-center gap-2.5 items-center h-full w-full py-1.5 text-white rounded cursor-pointer">
                       <span>
                         <ArrowUpCircleIcon className="h-5 w-5" />
@@ -488,7 +503,7 @@ const SideBar = () => {
                 />
                 <span>
                   <span aria-hidden="true" className="text-black">
-                    Harry Potter
+                    {name || ""}
                   </span>
                   <br />
                   <span

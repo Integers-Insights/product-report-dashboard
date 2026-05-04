@@ -295,6 +295,12 @@ class B2BBuyersModule(BaseModule):
         Returns:
             BuyerDiscoveryResult with real Apollo company data
         """
+        # target_country can be a list or None — normalise to a plain non-empty string
+        tc = inp.target_country
+        if isinstance(tc, list):
+            tc = tc[0] if tc else None
+        inp.target_country = str(tc) if tc and str(tc) not in ("None", "none", "null") else ""
+
         print(f"\n  🏭 [b2b_buyers] {inp.product_name} → {inp.target_country}")
 
         # Step 1 — GPT generates keyword sets
@@ -325,13 +331,20 @@ class B2BBuyersModule(BaseModule):
         # Step 3 — GPT enriches + ranks
         ranked = await self._enrich_and_rank(orgs, inp)
 
+        def _clean_country(val: str | None, fallback: str) -> str:
+            """Return val if it's a real country string, else fallback."""
+            if val and str(val) not in ("None", "none", "null"):
+                return str(val)
+            return fallback
+
         entries = [
             BuyerEntry(
-                name=       b.get("name", ""),
-                country=    b.get("country", inp.target_country),
-                website=    b.get("website"),
-                buyer_type= b.get("buyer_type"),
-                notes=      b.get("notes"),
+                name=            b.get("name", ""),
+                country=         _clean_country(b.get("country"), inp.target_country),
+                website=         b.get("website"),
+                buyer_type=      b.get("buyer_type"),
+                notes=           b.get("notes"),
+                relevance_score= b.get("relevance_score"),
             )
             for b in ranked
             if b.get("name")

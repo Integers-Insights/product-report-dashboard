@@ -20,19 +20,21 @@ from typing import Optional
 @dataclass
 class BuyerEntry:
     """One B2B buyer company."""
-    name:       str
-    country:    str
-    website:    Optional[str] = None
-    buyer_type: Optional[str] = None   # supplement_brand | food_manufacturer | etc.
-    notes:      Optional[str] = None   # sourcing volume, frequency, product use
+    name:            str
+    country:         str
+    website:         Optional[str] = None
+    buyer_type:      Optional[str] = None   # supplement_brand | food_manufacturer | etc.
+    notes:           Optional[str] = None   # sourcing volume, frequency, product use
+    relevance_score: Optional[int] = None   # 1-10 from GPT ranking
 
     def to_dict(self) -> dict:
         return {
-            "name":       self.name,
-            "country":    self.country,
-            "website":    self.website,
-            "buyer_type": self.buyer_type,
-            "notes":      self.notes,
+            "name":            self.name,
+            "country":         self.country,
+            "website":         self.website,
+            "buyer_type":      self.buyer_type,
+            "notes":           self.notes,
+            "relevance_score": self.relevance_score,
         }
 
 

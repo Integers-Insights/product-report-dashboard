@@ -2,6 +2,8 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 import { useState } from "react";
+import { base_url1 } from "../URL";
+import { useNavigate } from "react-router-dom";
 const Profile = ({
   setOpen_profile,
   full_name,
@@ -32,7 +34,11 @@ const Profile = ({
   const [active_tab, setActive_tab] = useState("Personal Info");
   const [editBussinessType, setEditBussinessType] = useState(false);
 
+  const [deleting, setDeleting] = useState(false);
+
   // console.log("edit: ", editBussinessType);
+
+  const navigate = useNavigate();
 
   const tab_btn = [
     "Personal Info",
@@ -40,6 +46,65 @@ const Profile = ({
     "Business Profile",
     "Plan & Billing",
   ];
+
+  // const handleDeleteProfile = () => {
+  //   let user_data = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+  //   console.log(user_data);
+  //   alert("del profile");
+  // };
+
+  const handleDeleteProfile = async () => {
+    let confirmDelete = confirm("Are you sure?");
+    if (confirmDelete) {
+      try {
+        setDeleting(true);
+        let user_data = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+        const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+
+        if (!user_data) {
+          alert("No user data found");
+          return;
+        }
+
+        const parsedData = JSON.parse(user_data);
+
+        const userId = parsedData?.user_id;
+
+        if (!userId) {
+          alert("User ID not found");
+          return;
+        }
+
+        const response = await fetch(`${base_url1}/account/${userId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Delete response:", data);
+        if (data.success) {
+          localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+          localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+          navigate("/signup");
+          alert("Profile deleted successfully");
+        }
+      } catch (error) {
+        console.log("Error deleting profile:", error);
+        alert("Failed to delete profile");
+      } finally {
+        setDeleting(false);
+      }
+    } else {
+      alert("Profile not delete.");
+    }
+  };
 
   return (
     <>
@@ -73,13 +138,22 @@ const Profile = ({
 
         <p className="mt-12 px-4 text-xl">{full_name}</p>
 
-        <p className="px-4 flex gap-3 text-sm font-regular text-[#5F6368] text-sm mt-2">
-          <span>{email}</span>
-          <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium">
-            Scout Plan
-          </span>
-          <span>Member since March 2026</span>
-        </p>
+        <div className="px-4 flex justify-between items-center text-sm font-regular text-[#5F6368] mt-2">
+          <p className="flex gap-3 items-center">
+            <span>{email}</span>
+            <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium">
+              Scout Plan
+            </span>
+            <span>Member since March 2026</span>
+          </p>
+          <button
+            className="border ml-10 px-3 py-1 rounded-lg cursor-pointer disabled:cursor-not-allowed text-white font-medium bg-red-500 hover:bg-red-600"
+            onClick={handleDeleteProfile}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete Profile"}
+          </button>
+        </div>
 
         <div className="mt-4 flex gap-8 text-[#5F6368] px-4">
           {tab_btn?.map((itm, i) => {

@@ -380,13 +380,15 @@ async def upsert_b2b_buyer_intelligence(conn, data: dict, user_id: str):
     for b in buyers:
         if not isinstance(b, dict):
             continue
+        raw_country = str(b.get("country") or "")
         cleaned.append({
-            "name":    str(b.get("name")                          or ""),
-            "type":    str(b.get("buyer_type") or b.get("type")   or ""),
-            "country": str(b.get("country")                       or ""),
-            "contact": str(b.get("website")  or b.get("contact")  or ""),
-            "notes":   str(b.get("notes")                         or ""),
-            "sources": b.get("sources") if isinstance(b.get("sources"), list) else [],
+            "name":            str(b.get("name")                          or ""),
+            "type":            str(b.get("buyer_type") or b.get("type")   or ""),
+            "country":         "" if raw_country in ("None", "none", "null") else raw_country,
+            "contact":         str(b.get("website")  or b.get("contact")  or ""),
+            "notes":           str(b.get("notes")                         or ""),
+            "sources":         b.get("sources") if isinstance(b.get("sources"), list) else [],
+            "relevance_score": b.get("relevance_score"),
         })
 
     buyers_json        = json.dumps(cleaned,                    ensure_ascii=False)

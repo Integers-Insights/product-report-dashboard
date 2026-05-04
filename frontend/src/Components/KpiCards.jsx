@@ -152,7 +152,7 @@ const KpiCards = ({ statsData, currentDate, fullName }) => {
     <>
       <div>
         <h1 className="text-[#000000] text-[28px] font-semibold">
-          Good Morning, {fullName || ""} 👋
+          Hello, {fullName || ""} 👋
         </h1>
         <p className="text-[#5F6368] text-13">
           Here's your export intelligence dashboard -{" "}

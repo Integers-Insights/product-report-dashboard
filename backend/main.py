@@ -25,6 +25,7 @@ app.add_middleware(
         "http://192.168.0.100:5173",
         "http://192.168.0.100:8000",
         "https://product-insight.integerstech.com",
+        "https://product-insight-backend.integermarket.com",  # ✅ add this
         "null",
     ],
     allow_origin_regex=r"https://.*\.trycloudflare\.com",

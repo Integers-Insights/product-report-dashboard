@@ -48,8 +48,10 @@ const intelligenceReports_data = [
   },
 ];
 
-const IntelligenceReportsComponent = ({allReportData}) => {
-
+const IntelligenceReportsComponent = ({
+  allReportData,
+  intelligenceReportLoading,
+}) => {
   return (
     <>
       <div className="flex items-center justify-between">
@@ -76,88 +78,103 @@ const IntelligenceReportsComponent = ({allReportData}) => {
       </p>
 
       <div className="flex flex-col gap-6 mt-6">
-        {allReportData?.map((item, index) => {
-          return (
-            <div
-              className="border border-l-4 border-[#2E7D32] bg-white p-3 rounded-lg flex justify-between gap-5 card-hover"
-              key={index}
-            >
-              <div className="flex gap-3 items-center">
-                {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
+        {intelligenceReportLoading ? (
+          <div className="h-86.5 flex justify-center items-center col-span-4">
+            <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <>
+            {allReportData.length ? (
+              allReportData?.map((item, index) => {
+                return (
+                  <div
+                    className="border border-l-4 border-[#2E7D32] bg-white p-3 rounded-lg flex justify-between gap-5 card-hover"
+                    key={index}
+                  >
+                    <div className="flex gap-3 items-center">
+                      {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
                   <Squares2X2Icon className="h-6 w-6" />
                 </div> */}
-                <InitialText text={item.title} />
-                <div>
-                  <p className="text-base font-medium text-[#000000]">
-                    {item.title}
-                  </p>
-                  <p className="flex items-center gap-2 text-xs font-regular text-[#5F6368] mt-2">
-                    <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                      {item.status}
-                    </span>
-                    <span><Flag country={item.target_country} /></span>
-                    <span>{item.report_type}</span>
-                    {/* <span>{item.last_analyzed_at}</span> */}
+                      <InitialText text={item.title} />
+                      <div>
+                        <p className="text-base font-medium text-[#000000]">
+                          {item.title}
+                        </p>
+                        <p className="flex items-center gap-2 text-xs font-regular text-[#5F6368] mt-2">
+                          <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
+                            {item.status}
+                          </span>
+                          <span>
+                            <Flag country={item.target_country} />
+                          </span>
+                          <span>{item.report_type}</span>
+                          {/* <span>{item.last_analyzed_at}</span> */}
 
-                    <span>
-                      {item.last_analyzed_at
-                        ? new Date(item.last_analyzed_at).toLocaleDateString(
-                            "en-GB",
-                            {
-                              weekday: "long",
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            },
-                          )
-                        : ""}
-                    </span>
-                  </p>
-                  <p className="flex gap-2 text-xs font-regular text-[#5F6368] mt-2">
-                    <span className="whitespace-nowrap">
-                      Score {item.score}/100
-                    </span>
-                    <span className="whitespace-nowrap">
-                      {item.keyword_count} keywords
-                    </span>
-                    <span className="whitespace-nowrap">
-                      {item.buyers_count} buyers
-                    </span>
-                    <span className="whitespace-nowrap">
-                      {item.segment_count} segments
-                    </span>
-                    <span>{item.summary_note}</span>
-                  </p>
-                  <p className="flex gap-2 mt-2">
-                    <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                      Score {item.score}/100
-                    </span>
-                    <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#E0F5FF] text-[#0284C7]">
-                      {item.keyword_count} keywords
-                    </span>
-                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
-                      {item.buyers_count} buyers
-                    </span>
-                    <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
-                      {item.segment_count} segments
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap">
-                  Open Report
-                </button>
-                <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
-                  ↓ PDF 🔒
-                </button>
-                <button className="hover:bg-gray-100 py-1 px-3 rounded-lg cursor-pointer font-medium text-sm">
-                  ↗ Share
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                          <span>
+                            {item.last_analyzed_at
+                              ? new Date(
+                                  item.last_analyzed_at,
+                                ).toLocaleDateString("en-GB", {
+                                  weekday: "long",
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                })
+                              : ""}
+                          </span>
+                        </p>
+                        <p className="flex gap-2 text-xs font-regular text-[#5F6368] mt-2">
+                          <span className="whitespace-nowrap">
+                            Score {item.score}/100
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {item.keyword_count} keywords
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {item.buyers_count} buyers
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {item.segment_count} segments
+                          </span>
+                          <span>{item.summary_note}</span>
+                        </p>
+                        <p className="flex gap-2 mt-2">
+                          <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
+                            Score {item.score}/100
+                          </span>
+                          <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#E0F5FF] text-[#0284C7]">
+                            {item.keyword_count} keywords
+                          </span>
+                          <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
+                            {item.buyers_count} buyers
+                          </span>
+                          <span className="font-medium text-xs pt-1 px-2 rounded-2xl bg-gray-100 text-[#5F6368]">
+                            {item.segment_count} segments
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap">
+                        Open Report
+                      </button>
+                      <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
+                        ↓ PDF 🔒
+                      </button>
+                      <button className="hover:bg-gray-100 py-1 px-3 rounded-lg cursor-pointer font-medium text-sm">
+                        ↗ Share
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <h1 className="text-center font-medium text-xl col-span-4">
+                Data not found
+              </h1>
+            )}
+          </>
+        )}
       </div>
 
       <div className="border border-dashed border-gray-300 bg-white rounded-lg mt-6 flex justify-center items-center py-8">

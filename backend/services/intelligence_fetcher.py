@@ -358,16 +358,14 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 "ad_concepts": _parse(marketing["ad_concepts"]),
                 "product_name": product["product_name"],
             }
-        export_volume_trend = _parse(trade["export_volume_trend"]) or []
-
-        # ✅ extract year range from trend data
-        years = [row["year"] for row in export_volume_trend if row.get("year")]
-        trend_period = f"{min(years)}-{max(years)}" if years else None
         trade_data = None
         if trade:
+            export_volume_trend = _parse(trade["export_volume_trend"]) or []
+            years = [row["year"] for row in export_volume_trend if row.get("year")]
+            trend_period = f"{min(years)}-{max(years)}" if years else None
             trade_data = {
                 "product_name":        product["product_name"],
-                "trend_period":        trend_period, 
+                "trend_period":        trend_period,
                 "global_trade_value": _parse(trade["global_trade_value"]),
                 "volume_traded_globally": _parse(trade["volume_traded_globally"]),
                 "avg_global_trade_price": _parse(trade["avg_global_trade_price"]),
@@ -449,7 +447,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                     "headquarters_country":    product["headquarters_country"],
                     "buyer_type":              product["buyer_type"],
                     "total_buyers":total_buyers,
-                    "price_positioning":       product["price_positioning"],
+                    "price_positioning":       _parse(product["price_positioning"]) if product["price_positioning"] else [],
                     "monthly_supply_capacity": product["monthly_supply_capacity"],
                     "certifications": certifications,  # ✅ ["ISO 27001", "FDA Registered", "ISO 9001"]
                     "market_country":          [row["country"] for row in market[:4]],
@@ -640,23 +638,23 @@ async def get_buyer_list(conn, user_id: str):
         # =====================================================
         # 🛍️ B2C BUYERS
         # =====================================================
-        b2c_rows = await conn.fetch("""
-            SELECT
-                bi.product_id,
-                bi.consumer_profile,
-                bi.purchase_channels,
-                bi.label_preferences,
-                bi.leading_brands,
-                bi.market_gap,
-                bi.target_country,
-                pm.product_name
-            FROM product_info.b2c_buyer_intelligence bi
-            JOIN product_info.product_master pm
-                ON pm.id = bi.product_id
-            WHERE pm.created_by = $1
-              AND pm.status != 'inactive'
-            ORDER BY pm.updated_at DESC
-        """, user_id)
+        # b2c_rows = await conn.fetch("""
+        #     SELECT
+        #         bi.product_id,
+        #         bi.consumer_profile,
+        #         bi.purchase_channels,
+        #         bi.label_preferences,
+        #         bi.leading_brands,
+        #         bi.market_gap,
+        #         bi.target_country,
+        #         pm.product_name
+        #     FROM product_info.b2c_buyer_intelligence bi
+        #     JOIN product_info.product_master pm
+        #         ON pm.id = bi.product_id
+        #     WHERE pm.created_by = $1
+        #       AND pm.status != 'inactive'
+        #     ORDER BY pm.updated_at DESC
+        # """, user_id)
 
     except Exception as e:
         traceback.print_exc()
@@ -669,7 +667,7 @@ async def get_buyer_list(conn, user_id: str):
 
     try:
         b2b_buyers = []
-        b2c_buyers = []
+        # b2c_buyers = []
 
         # =====================================================
         # 🔧 FLATTEN B2B
@@ -683,43 +681,46 @@ async def get_buyer_list(conn, user_id: str):
                 if not isinstance(buyer, dict):
                     continue
 
+                raw_country = buyer.get("country") or ""
+                country = raw_country if raw_country and raw_country not in ("None", "none", "null") else None
                 b2b_buyers.append({
-                    "product_id":    product_id,
-                    "product_name":  product_name,
-                    "company_name":  buyer.get("name"),
-                    "buyer_type":    buyer.get("type"),
-                    "country":       buyer.get("country") or _parse(row["target_country"]),
-                    "contact":       buyer.get("contact") or None,
-                    "notes":         buyer.get("notes"),
-                    "is_fallback":   row["is_fallback"],
+                    "product_id":      product_id,
+                    "product_name":    product_name,
+                    "company_name":    buyer.get("name"),
+                    "buyer_type":      buyer.get("type"),
+                    "country":         country or _parse(row["target_country"]),
+                    "contact":         buyer.get("contact") or None,
+                    "notes":           buyer.get("notes"),
+                    "relevance_score": buyer.get("relevance_score"),
+                    "is_fallback":     row["is_fallback"],
                 })
 
         # =====================================================
         # 🔧 FLATTEN B2C
         # =====================================================
-        for row in b2c_rows:
-            consumer_profile  = _parse(row["consumer_profile"])  or {}
-            purchase_channels = _parse(row["purchase_channels"]) or {}
-            label_preferences = _parse(row["label_preferences"]) or {}
-            leading_brands    = _parse(row["leading_brands"])    or []
+        # for row in b2c_rows:
+        #     consumer_profile  = _parse(row["consumer_profile"])  or {}
+        #     purchase_channels = _parse(row["purchase_channels"]) or {}
+        #     label_preferences = _parse(row["label_preferences"]) or {}
+        #     leading_brands    = _parse(row["leading_brands"])    or []
 
-            b2c_buyers.append({
-                "product_id":    row["product_id"],
-                "product_name":  row["product_name"],
-                "target_country": _parse(row["target_country"]),
-                "consumer_profile":  consumer_profile,
-                "purchase_channels": purchase_channels,
-                "label_preferences": label_preferences,
-                "leading_brands":    leading_brands,
-                "market_gap":        row["market_gap"],
-            })
+        #     b2c_buyers.append({
+        #         "product_id":    row["product_id"],
+        #         "product_name":  row["product_name"],
+        #         "target_country": _parse(row["target_country"]),
+        #         "consumer_profile":  consumer_profile,
+        #         "purchase_channels": purchase_channels,
+        #         "label_preferences": label_preferences,
+        #         "leading_brands":    leading_brands,
+        #         "market_gap":        row["market_gap"],
+        #     })
 
         return {
             "success":          True,
             "total_b2b_buyers": len(b2b_buyers),
-            "total_b2c_buyers": len(b2c_buyers),
+            # "total_b2c_buyers": len(b2c_buyers),
             "b2b":              b2b_buyers,
-            "b2c":              b2c_buyers,
+            # "b2c":              b2c_buyers,
         }
 
     except Exception as e:

@@ -28,6 +28,11 @@ const FullReport = () => {
   const [market_data,setMarket_data] = useState([]);
   const [trade_data,setTrade_data] = useState({});
   const [buyers_data,setBuyers_data] = useState({});
+  const [variants_data,setVariants_data] = useState([]);
+
+  const [marketing_kit_data,setMarketing_kit_data] = useState({});
+  const [competitor_data,setCompetitor_data] = useState([]);
+ 
 
   const param = useParams();
   // console.log("param: ",param);
@@ -64,18 +69,18 @@ const FullReport = () => {
         setBanner_certifications(
           Array.isArray(allProductData?.product?.certifications)
             ? allProductData?.product?.certifications
-            : [],
+            : []
         );
         setBanner_single_country(allProductData?.product?.headquarters_country || "");
         setBanner_multiple_country(
           Array.isArray(allProductData?.product?.market_country)
             ? allProductData?.product?.market_country
-            : [],
+            : []
         );
         setBanner_buyer_type(allProductData?.product?.buyer_type || "");
         setBanner_price_positioning(allProductData?.product?.price_positioning || "");
         setBanner_monthly_supply_capacity(
-          allProductData?.product?.monthly_supply_capacity || "",
+          allProductData?.product?.monthly_supply_capacity || ""
         );
         setBanner_total_buyers(allProductData?.product?.total_buyers || 0);
         setBanner_easy_win(allProductData?.product?.easy_win || 0);
@@ -87,22 +92,36 @@ const FullReport = () => {
         setOverview_data(
           Array.isArray(allProductData?.overview)
             ? allProductData?.overview
-            : [],
+            : []
         );
         setUrgent_note_data(allProductData?.urgent_note || "");
         setActions_data(
           Array.isArray(allProductData?.actions)
             ? allProductData?.actions
-            : [],
+            : []
         );
 
         setMarket_data(
           Array.isArray(allProductData?.market_intelligence?.market_info)
             ? allProductData?.market_intelligence?.market_info
-            : [],
+            : []
         );
         setTrade_data(allProductData?.trade_intelligence?.trade_info);
         setBuyers_data(allProductData?.buyers_intelligence);
+
+        setVariants_data(
+          Array.isArray(allProductData?.variants?.variants_info)
+            ? allProductData?.variants?.variants_info
+            : []
+        );
+
+        setCompetitor_data(
+          Array.isArray(allProductData?.competitor_intelligence?.competitors)
+            ? allProductData?.competitor_intelligence?.competitors
+            : []
+        );
+
+        setMarketing_kit_data(allProductData?.marketing_intelligence?.marketing_info);
       }
     } catch (err) {
       console.log("Something went wrong", err);
@@ -152,6 +171,9 @@ const FullReport = () => {
               market_data={market_data}
               trade_data={trade_data}
               buyers_data={buyers_data}
+              variants_data={variants_data}
+              competitor_data={competitor_data}
+              marketing_kit_data={marketing_kit_data}
             />
           </div>
         </div>

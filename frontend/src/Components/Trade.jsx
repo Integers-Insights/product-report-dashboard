@@ -88,21 +88,23 @@ const Trade = ({ trade_data }) => {
           </h2>
           <p className="text-[#5F6368] text-13 font-regular">
             HS Code {trade_data?.hs_code || ""} · Global customs records ·{" "}
-            {trade_data?.trend_period || ""}
+            {trade_data?.trend_period ?? "--"}
           </p>
         </div>
         <div className="bg-[#B6E7FF] text-[#008ACB] text-sm font-medium py-0.5 px-3 rounded-2xl">
-          {trade_data?.origin_country || ""}: #1 exporter ·{" "}
-          {trade_data?.country_export_share?.share_pct || ""} global share
+          {trade_data?.origin_country ?? "--"}: #1 exporter ·{" "}
+          {trade_data?.country_export_share?.share_pct ?? "--"} global share
         </div>
       </div>
 
       <div className="flex gap-9.5 items-center bg-[#ECF5FC] rounded-xl p-3 mt-6">
         <div className="text-[#000000] text-xl font-semibold">
-          HS {trade_data?.hs_code || ""}
+          HS {trade_data?.hs_code ?? "--"}
         </div>
         <div className="text-[#000000] text-13 font-regular">
-          <span className="font-bold">{trade_data?.product_name || ""} — </span>
+          <span className="font-bold">
+            {trade_data?.product_name ?? "--"} —{" "}
+          </span>
           dried, crushed or ground · Classified under Spices, Chapter 09 <br />{" "}
           Sub-codes: 0910.30.10 (whole), 0910.30.20 (powder), 0910.30.90 (other
           preparations)
@@ -154,47 +156,47 @@ const Trade = ({ trade_data }) => {
 
         <div className="p-3 flex flex-col gap-1 items-center">
           <p className="text-xl font-semibold text-[#008ACB]">
-            {trade_data?.global_trade_value?.value_usd || ""}
+            {trade_data?.global_trade_value?.value_usd ?? "--"}
           </p>
           <p className="text-[#5F6368] font-light text-xs">
-            Global trade value {trade_data?.global_trade_value?.year || 0}
+            Global trade value {trade_data?.global_trade_value?.year ?? 0}
           </p>
           <p className="text-[#2E7D32] font-medium text-sm">
-            {trade_data?.global_trade_value?.yoy_growth || ""}
+            {trade_data?.global_trade_value?.yoy_growth ?? "--"}
           </p>
         </div>
         <div className="p-3 flex flex-col gap-1 items-center">
           <p className="text-xl font-semibold text-[#008ACB]">
-            {trade_data?.volume_traded_globally?.value_mt || ""}
+            {trade_data?.volume_traded_globally?.value_mt ?? "--"}
           </p>
           <p className="text-[#5F6368] font-light text-xs">
             Volume traded globally{" "}
-            {trade_data?.volume_traded_globally?.year || 0}
+            {trade_data?.volume_traded_globally?.year ?? 0}
           </p>
           <p className="text-[#2E7D32] font-medium text-sm">
-            {trade_data?.volume_traded_globally?.yoy_growth || ""}
+            {trade_data?.volume_traded_globally?.yoy_growth ?? "--"}
           </p>
         </div>
         <div className="p-3 flex flex-col gap-1 items-center">
           <p className="text-xl font-semibold text-[#008ACB]">
-            {trade_data?.avg_global_trade_price?.price_per_kg || ""}
+            {trade_data?.avg_global_trade_price?.price_per_kg ?? "--"}
           </p>
           <p className="text-[#5F6368] font-light text-xs">
             Avg global trade price
           </p>
           <p className="text-[#2E7D32] font-medium text-sm">
-            {trade_data?.avg_global_trade_price?.context || ""}
+            {trade_data?.avg_global_trade_price?.context ?? "--"}
           </p>
         </div>
         <div className="p-3 flex flex-col gap-1 items-center">
           <p className="text-xl font-semibold text-[#008ACB]">
-            {trade_data?.country_export_share?.share_pct || ""}
+            {trade_data?.country_export_share?.share_pct ?? "--"}
           </p>
           <p className="text-[#5F6368] font-light text-xs">
-            {trade_data?.country_export_share?.country || ""}'s export share
+            {trade_data?.country_export_share?.country ?? "--"}'s export share
           </p>
           <p className="text-[#2E7D32] font-medium text-sm">
-            {trade_data?.country_export_share?.trend || ""}
+            {trade_data?.country_export_share?.trend ?? "--"}
           </p>
         </div>
       </div>
@@ -208,26 +210,55 @@ const Trade = ({ trade_data }) => {
             <p className="text-xs font-light text-[#5F6368]">by volume 2024</p>
           </div>
           <div className="flex flex-col gap-2 mt-3">
-            {trade_data?.top_exporters?.map((item, i) => {
+            {/* {trade_data?.top_exporters?.map((item, i) => {
               return (
                 <div
-                  className="grid grid-cols-[90px_1fr_60px_20px] gap-2"
+                  className="grid grid-cols-3 gap-2 border"
                   key={i}
                 >
-                  <div className="text-xs text-[#000000] font-regular">
-                    {item?.country}
+                  <div className="text-xs text-[#000000] font-regular border">
+                    {item?.country ?? "--"}
                   </div>
-                  <div className="w-full h-1 bg-[#D6F0FF] rounded my-2">
+
+                  <div className="w-full h-1 bg-[#D6F0FF] rounded my-2 border">
                     <div
-                      className="h-1 bg-[#0284C7] rounded"
+                      className="h-1 bg-[#0284C7] rounded border"
                       style={{ width: "64%" }}
                     ></div>
                   </div>
-                  <div className="text-xs text-[#000000] font-regular">
-                    {item?.trad_value}
+
+                  <div className="text-xs text-[#000000] font-regular border">
+                    {item?.trad_value ?? "--"}
                   </div>
-                  <div className="text-sm text-[#000000] font-medium text-right">
-                    64%
+                </div>
+              );
+            })} */}
+
+            <div className="grid grid-cols-3 gap-8 border-b-[1px] border-gray-300">
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Country
+              </div>
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Volume
+              </div>
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Value
+              </div>
+            </div>
+            {trade_data?.top_exporters?.map((item, index) => {
+              return (
+                <div
+                  className=" border-b-[1px] border-gray-300 grid grid-cols-3 gap-8"
+                  key={index}
+                >
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.country ?? "--"}
+                  </div>
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.share_pct ?? "--"}
+                  </div>
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.trad_value ?? "--"}
                   </div>
                 </div>
               );
@@ -298,14 +329,14 @@ const Trade = ({ trade_data }) => {
             <p className="text-xs font-light text-[#5F6368]">by volume 2024</p>
           </div>
           <div className="flex flex-col gap-2 mt-3">
-            {trade_data?.top_importers?.map((item, i) => {
+            {/* {trade_data?.top_importers?.map((item, i) => {
               return (
                 <div
                   className="grid grid-cols-[90px_1fr_60px_20px] gap-2"
                   key={i}
                 >
                   <div className="text-xs text-[#000000] font-regular">
-                    {item?.country}
+                    {item?.country ?? "--"}
                   </div>
                   <div className="w-full h-1 bg-[#D6F0FF] rounded my-2">
                     <div
@@ -314,10 +345,40 @@ const Trade = ({ trade_data }) => {
                     ></div>
                   </div>
                   <div className="text-xs text-[#000000] font-regular">
-                    {item?.volume_mt}
+                    {item?.volume_mt ?? "--"}
                   </div>
                   <div className="text-sm text-[#000000] font-medium text-right">
                     64%
+                  </div>
+                </div>
+              );
+            })} */}
+
+            <div className="grid grid-cols-3 gap-8 border-b-[1px] border-gray-300">
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Country
+              </div>
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Volume
+              </div>
+              <div className="text-sm text-[#000000] font-medium text-center">
+                Value
+              </div>
+            </div>
+            {trade_data?.top_importers?.map((item, index) => {
+              return (
+                <div
+                  className="grid grid-cols-3 gap-8 border-b-[1px] border-gray-300"
+                  key={index}
+                >
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.country ?? "--"}
+                  </div>
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.volume_mt ?? "--"}
+                  </div>
+                  <div className="text-sm text-[#5F6368] text-center wrap-break-word">
+                    {item?.yoy_growth ?? "--"}
                   </div>
                 </div>
               );
@@ -397,10 +458,10 @@ const Trade = ({ trade_data }) => {
                 key={index}
               >
                 <p className="text-sm font-regular text-[#000000] text-center">
-                  {itm.year}
+                  {itm.year ?? 0}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-[#000000] text-center">
-                  {itm.volume_mt}
+                  {itm.volume_mt ?? "--"}
                 </p>
                 <p className="mt-1 text-sm font-medium text-[#000000] text-center">
                   {itm.yoy_growth === null ? itm.label : itm.yoy_growth}
@@ -446,7 +507,7 @@ const Trade = ({ trade_data }) => {
             </p>
             <p className="mt-1">
               <span className="text-[#000000] text-xl font-semibold">
-                {trade_data?.export_pricing_commod?.certified?.price_range ||
+                {trade_data?.export_pricing_commod?.certified?.price_range ??
                   ""}
               </span>
               <span className="text-[#5F6368] text-base font-medium">
@@ -454,7 +515,7 @@ const Trade = ({ trade_data }) => {
               </span>
             </p>
             <p className="text-[#5F6368] text-xs font-light mt-1">
-              {trade_data?.export_pricing_commod?.certified?.context || ""}
+              {trade_data?.export_pricing_commod?.certified?.context ?? ""}
             </p>
           </div>
 
@@ -464,7 +525,7 @@ const Trade = ({ trade_data }) => {
             </p>
             <p className="mt-1">
               <span className="text-[#000000] text-xl font-semibold">
-                {trade_data?.export_pricing_commod?.commodity?.price_range ||
+                {trade_data?.export_pricing_commod?.commodity?.price_range ??
                   ""}
               </span>
               <span className="text-[#5F6368] text-base font-medium">
@@ -472,7 +533,7 @@ const Trade = ({ trade_data }) => {
               </span>
             </p>
             <p className="text-[#5F6368] text-xs font-light mt-1">
-              {trade_data?.export_pricing_commod?.commodity?.context || ""}
+              {trade_data?.export_pricing_commod?.commodity?.context ?? ""}
             </p>
           </div>
         </div>
@@ -484,7 +545,7 @@ const Trade = ({ trade_data }) => {
           <span className="text-sm text-[#2E7D32] font-medium">
             What this means for you:
           </span>{" "}
-          {trade_data?.analysis_note || ""}
+          {trade_data?.analysis_note ?? ""}
         </p>
       </div>
     </>

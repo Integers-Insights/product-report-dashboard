@@ -1,1 +1,1 @@
-export const base_url1 = "https://telescope-appeals-mechanical-purple.trycloudflare.com";
+export const base_url1 = "http://172.16.31.191:8000";

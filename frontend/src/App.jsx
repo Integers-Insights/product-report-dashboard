@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./Components/ScrollToTop";
+import PrivateComponent from "./Components/PrivateComponent";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -50,24 +51,25 @@ const App = () => {
 
         <Suspense fallback={<Loader />}>
           <Routes>
-            <Route path="/" element={<OverViewPage />} />
+            <Route element={<PrivateComponent />}>
+              <Route path="/" element={<OverViewPage />} />
+
+              <Route path="/discover" element={<DiscoverProducts />} />
+              <Route path="/full-report/:id" element={<FullReport />} />
+
+              <Route path="/product" element={<MyProduct />} />
+              <Route path="/market" element={<MarketIntelligence />} />
+              <Route path="/buyer" element={<BuyerList />} />
+              <Route path="/intelligence-reports" element={<Intelligence />} />
+              <Route path="/help" element={<Help />} />
+            </Route>
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/discover" element={<DiscoverProducts />} />
-            <Route path="/full-report/:id" element={<FullReport />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route
               path="/failed-verification"
               element={<FailedVerification />}
             />
-            <Route path="/product" element={<MyProduct />} />
-            <Route path="/market" element={<MarketIntelligence />} />
-            <Route path="/buyer" element={<BuyerList />} />
-            <Route
-              path="/intelligence-reports"
-              element={<Intelligence />}
-            />
-            <Route path="/help" element={<Help />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
