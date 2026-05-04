@@ -681,15 +681,18 @@ async def get_buyer_list(conn, user_id: str):
                 if not isinstance(buyer, dict):
                     continue
 
+                raw_country = buyer.get("country") or ""
+                country = raw_country if raw_country and raw_country not in ("None", "none", "null") else None
                 b2b_buyers.append({
-                    "product_id":    product_id,
-                    "product_name":  product_name,
-                    "company_name":  buyer.get("name"),
-                    "buyer_type":    buyer.get("type"),
-                    "country":       buyer.get("country") or _parse(row["target_country"]),
-                    "contact":       buyer.get("contact") or None,
-                    "notes":         buyer.get("notes"),
-                    "is_fallback":   row["is_fallback"],
+                    "product_id":      product_id,
+                    "product_name":    product_name,
+                    "company_name":    buyer.get("name"),
+                    "buyer_type":      buyer.get("type"),
+                    "country":         country or _parse(row["target_country"]),
+                    "contact":         buyer.get("contact") or None,
+                    "notes":           buyer.get("notes"),
+                    "relevance_score": buyer.get("relevance_score"),
+                    "is_fallback":     row["is_fallback"],
                 })
 
         # =====================================================
