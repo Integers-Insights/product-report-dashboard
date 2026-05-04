@@ -1,4 +1,47 @@
 # ─────────────────────────────────────────────
+#  GPT FALLBACK — VARIANT NAME GENERATION
+#
+#  Runs when Sonar returns 0 or <3 variant names.
+#  Pure GPT training knowledge — no Sonar dependency.
+# ─────────────────────────────────────────────
+
+GPT_VARIANT_NAMES_PROMPT = """
+You are a B2B product specialist with deep knowledge of global export markets.
+
+Sonar real-time data returned no useful variant information.
+Use your training knowledge to generate 5-6 commercially relevant product
+variants and formats for the product below.
+
+Product        : {product_name}
+Category       : {category}
+Origin country : {origin_country}
+Target market  : {target_country}
+Already found  : {existing_names}
+
+Generate variants that B2B buyers in {target_country} actually source —
+include standard grades, certified formats, derivatives, and emerging variants.
+Do NOT repeat any names from "Already found".
+
+Return ONLY valid JSON:
+{{
+  "variant_names": [
+    "Variant Name 1",
+    "Variant Name 2",
+    "Variant Name 3",
+    "Variant Name 4",
+    "Variant Name 5"
+  ]
+}}
+
+Rules:
+- Use clean, market-ready names (e.g. "Water-Soluble Turmeric Extract 95%")
+- Always include "{product_name}" or its closest named equivalent as one entry
+- 5–6 names maximum, each distinct from the others
+- Names only — no specs, prices, or descriptions in this list
+"""
+
+
+# ─────────────────────────────────────────────
 #  SONAR CALL 1 — VARIANT DISCOVERY (names only)
 #
 #  Short, focused. Sonar finds what variants exist —
@@ -25,7 +68,7 @@ VARIANT_NAMES_EXTRACTION_PROMPT = """
 Extract the product variant and format names from the research below.
 
 Product: {product_name}
-
+if {sonar_response} is null and there are no such variants and formats mentioned , use your own knowledge and give a list of variants or formats that could exist for the {product_name}.
 Research:
 ---
 {sonar_response}
@@ -157,28 +200,34 @@ GPT_FALLBACK_PROMPT = """
 You are a B2B trade specialist with deep knowledge of global commodity,
 ingredient, and manufactured goods markets.
 
-For each product variant below, fill in ONLY the fields that are null
-using your training knowledge. Do NOT fill "matched_buyers" — always leave it null.
+Sonar real-time data was unavailable. Use your training knowledge to fill
+ALL null fields for each variant below. Provide your best realistic estimate
+for every field — a confident estimate is far more useful than a null.
 
 Product: {product_name}
 Category: {category}
 Origin country: {origin_country}
 Target market: {target_country}
 
-Variants (null = missing, needs filling):
+Variants to fill:
 {variants_json}
 
-Rules:
-- price_range : realistic FOB USD range for this variant from {origin_country} e.g. '$8–$16/kg'
-- moq         : typical B2B minimum order quantity e.g. 'x kg' or '1 MT'
-- key_spec    : most commonly required spec by B2B buyers, use · separator
-- buyer_demand: one of exactly — High | Medium | Emerging | Low
-- lead_time   : typical production + shipping from {origin_country} e.g. 'x-x days'
+Field rules:
+- price_range   : realistic FOB USD export range from {origin_country} e.g. '$4–$8/kg'
+- moq           : typical B2B minimum order e.g. '500 kg' or '1 MT'
+- key_spec      : the 2–3 technical specs B2B buyers most commonly require,
+                  use · separator e.g. 'Curcuminoids ≥95% · moisture <8% · mesh 60'
+- buyer_demand  : EXACTLY one of — High | Medium | Emerging | Low
+- lead_time     : typical production + shipping from {origin_country} e.g. '14–21 days'
 - matched_buyers: ALWAYS null — never fill this field
-- If you genuinely cannot estimate a field with reasonable confidence, keep it null
-- Never overwrite a field that already has a value
 
-Return ONLY valid JSON, no explanation:
+Critical:
+- Fill EVERY null field with a realistic estimate — do not leave fields null unless
+  you have genuinely no basis for an estimate
+- Never overwrite a field that already has a non-null value
+- base your estimates on actual market knowledge for {origin_country} exports
+
+Return ONLY valid JSON:
 {{
   "variants": [
     {{
@@ -186,7 +235,7 @@ Return ONLY valid JSON, no explanation:
       "key_spec": "string or null",
       "price_range": "string or null",
       "moq": "string or null",
-      "buyer_demand": "High | Medium | Emerging | Low or null",
+      "buyer_demand": "High | Medium | Emerging | Low",
       "matched_buyers": null,
       "lead_time": "string or null"
     }}

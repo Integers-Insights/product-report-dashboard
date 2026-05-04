@@ -33,16 +33,26 @@ st.set_page_config(
 def get_runner_class():
     return ModuleRunner
 
+def _parse_target_country(value) -> list:
+    """Normalises target_country to a list regardless of input type."""
+    if not value:
+        return ["United States"]
+    if isinstance(value, list):
+        return [v for v in value if v] or ["United States"]
+    # plain string — wrap in list
+    return [value.strip()]
+
+
 def build_module_input(form: dict):
     return ModuleInput(
-        product_id=      form.get("product_id") or "bb10883c-6b32-42e9-9fae-673cb7d7138c",
+        product_id=      form.get("product_id") or "5c107643-c5e6-4c26-9728-95df27d69762",
         product_name=    form["product_name"],
         category=        form.get("category") or "",
         hs_code=         form.get("hs_code") or "",
         description=     form.get("description") or "",
         certifications=  [c.strip() for c in (form.get("certifications") or "").split(",") if c.strip()],
         origin_country=  form.get("origin_country") or "India",
-        target_country=  form.get("target_country") or "United States",
+        target_country=  _parse_target_country(form.get("target_country")),
         company_name=    form.get("company_name") or "",
         business_type=   form.get("business_type") or "Manufacturer & Exporter",
         price_positioning= form.get("price_positioning") or "Standard",
@@ -89,18 +99,29 @@ with st.expander("📋 Product & Company Details", expanded=True):
 
     with col1:
         st.markdown("**Product**")
-        product_name    = st.text_input("Product Name *",        value="Organic Turmeric Powder")
-        category        = st.text_input("Category",              value="Spices & Botanicals")
-        hs_code         = st.text_input("HS Code",               value="091030")
+        product_name    = st.text_input("Product Name *",        value="Encapsulated Charcoal Dissolving Beads")
+        category        = st.text_input("Category",              value="")
+        hs_code         = st.text_input("HS Code",               value="380210")
         description     = st.text_area("Description",            value="Premium organic turmeric powder with 95% curcuminoids.", height=80)
         certifications  = st.text_input("Certifications (comma-separated)", value="USDA Organic, GMP, FSSAI, Kosher")
-        moq             = st.text_input("MOQ",                   value="500 kg")
+        moq             = st.text_input("MOQ",                   value="0 kg")
 
     with col2:
         st.markdown("**Company & Market**")
-        company_name    = st.text_input("Company Name",          value="GreenLeaf Exports")
+        company_name    = st.text_input("Company Name",          value="umang particle science")
         origin_country  = st.text_input("Origin Country",        value="India")
-        target_country  = st.text_input("Target Country",        value="United States")
+        target_country  = st.multiselect(
+            "Target Countries",
+            options=[
+                "United States", "Germany", "United Kingdom", "Netherlands",
+                "France", "Japan", "Canada", "Australia", "UAE",
+                "Saudi Arabia", "Singapore", "South Korea", "Italy",
+                "Spain", "Belgium", "Switzerland", "Sweden", "Brazil",
+                "Mexico", "China", "Hong Kong", "New Zealand", "Denmark",
+                "Poland", "South Africa",
+            ],
+            default=["United States"],
+        )
         business_type   = st.text_input("Business Type",         value="Manufacturer & Exporter")
         price_positioning = st.selectbox("Price Positioning",    ["Budget", "Standard", "Mid-range", "Premium"], index=3)
         buyer_type      = st.selectbox("Buyer Type",             ["B2B", "B2C", "Both"], index=0)

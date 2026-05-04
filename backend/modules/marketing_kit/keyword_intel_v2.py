@@ -355,12 +355,13 @@ class KeywordIntelModule(BaseModule):
         yaml_path   = GOOGLE_ADS["yaml_path"]
         customer_id = GOOGLE_ADS["customer_id"]
 
-        lang_info  = COUNTRY_LANGUAGE_MAP.get(inp.target_country, DEFAULT_LANGUAGE)
+        primary_target = inp.target_country[0] if isinstance(inp.target_country, list) else inp.target_country
+        lang_info  = COUNTRY_LANGUAGE_MAP.get(primary_target, DEFAULT_LANGUAGE)
         language   = lang_info["name"]
         lang_const = lang_info["constant"]
         en_const   = "languageConstants/1000"
 
-        print(f"  🔑 [keyword_intel_v2] {inp.product_name} → {inp.target_country} ({language})")
+        print(f"  🔑 [keyword_intel_v2] {inp.product_name} → {primary_target} ({language})")
 
         # ── Step 1: Generate all keyword lists in parallel (3 GPT calls) ─────
         buyer_kws, gap_kws, ml_kws = await asyncio.gather(

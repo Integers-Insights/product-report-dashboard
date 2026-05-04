@@ -35,6 +35,7 @@ from modules.variants_kit.variants_prompts import (
     SONAR_VARIANT_DISCOVERY_QUERY, VARIANT_NAMES_EXTRACTION_PROMPT,
     SONAR_MARKET_DATA_QUERY, SONAR_MARKET_DATA_RETRY_QUERY,
     SONAR_DEFLECTION_PHRASES, GPT_FALLBACK_PROMPT,
+    GPT_VARIANT_NAMES_PROMPT,
 )
 from modules.base_module import BaseModule, call_openai
 
@@ -152,6 +153,34 @@ class VariantsFormatsModule(BaseModule):
         print(f"     → {len(names)} variant names extracted: {', '.join(names)}")
         return names
 
+    # ── Step 1c: GPT — generate variant names when Sonar returns < 3 ────────
+
+    async def _gpt_generate_variant_names(self, existing: list[str], inp) -> list[str]:
+        """
+        GPT fallback for variant name generation.
+        Runs when Sonar discovery returns 0 or fewer than 3 names.
+        Merges with any names already found so there are no duplicates.
+        """
+        target = getattr(inp, "target_country", "global B2B markets")
+        if isinstance(target, list):
+            target = ", ".join(target)
+
+        prompt = GPT_VARIANT_NAMES_PROMPT.format(
+            product_name=inp.product_name,
+            category=inp.category,
+            origin_country=inp.origin_country,
+            target_country=target,
+            existing_names=", ".join(existing) if existing else "none",
+        )
+        data  = await self._extract_structured(prompt)
+        names = [n for n in (data or {}).get("variant_names", []) if isinstance(n, str) and n.strip()]
+
+        # Merge: existing first, then GPT additions (deduplicated)
+        existing_lower = {n.lower() for n in existing}
+        merged = list(existing) + [n for n in names if n.lower() not in existing_lower]
+        print(f"     → GPT generated {len(names)} variant names → total {len(merged)}: {', '.join(merged)}")
+        return merged[:6]
+
     # ── Step 2a: Sonar — market data for known variants ──────────────────────
 
     @staticmethod
@@ -203,16 +232,20 @@ class VariantsFormatsModule(BaseModule):
         GPT fallback for null fields — uses training data at temp=0.0.
         Runs ONE batch call covering all variants at once.
         matched_buyers is always kept null (requires real-time data).
-        Only executes if at least one fillable field is null.
+        Always runs — Sonar data is sparse enough that GPT fill is needed.
         """
-        FILLABLE = {"key_spec", "price_range", "moq", "buyer_demand", "lead_time"}
+        FILLABLE = ["key_spec", "price_range", "moq", "buyer_demand", "lead_time"]
 
         null_count = sum(
             sum(1 for f in FILLABLE if not v.get(f))
             for v in extracted
         )
         if null_count == 0:
-            return extracted  # all fields populated — skip the call
+            return extracted
+
+        target = getattr(inp, "target_country", "global B2B markets")
+        if isinstance(target, list):
+            target = ", ".join(target)
 
         print(f"     → GPT fallback: filling {null_count} null fields across {len(extracted)} variants")
 
@@ -220,7 +253,7 @@ class VariantsFormatsModule(BaseModule):
             product_name=inp.product_name,
             category=inp.category,
             origin_country=inp.origin_country,
-            target_country=getattr(inp, "target_country", "global B2B markets"),
+            target_country=target,
             variants_json=json.dumps(
                 [{k: v.get(k) for k in ["variant_name", *FILLABLE, "matched_buyers"]}
                  for v in extracted],
@@ -229,17 +262,21 @@ class VariantsFormatsModule(BaseModule):
         )
 
         try:
-            resp = await self._get_openai().chat.completions.create(
+            raw = await call_openai(
                 model="gpt-4o-mini",
-                temperature=0.0,
-                max_tokens=1000,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=1200,
+                temperature=0.0,
+                call_type="variants_gpt_fill",
+                module="variants_formats",
+                company_id=self._company_id,
+                report_id=self._report_id,
+                product_id=getattr(inp, "product_id", None),
                 response_format={"type": "json_object"},
             )
-            filled   = json.loads(resp.choices[0].message.content).get("variants", [])
+            filled   = json.loads(raw).get("variants", []) if raw else []
             fill_map = {v["variant_name"]: v for v in filled}
 
-            # Merge — only overwrite null slots, never replace Sonar data
             merged = []
             for v in extracted:
                 gpt_v  = fill_map.get(v["variant_name"], {})
@@ -247,7 +284,7 @@ class VariantsFormatsModule(BaseModule):
                 for f in FILLABLE:
                     if not result.get(f) and gpt_v.get(f):
                         result[f] = gpt_v[f]
-                result["matched_buyers"] = v.get("matched_buyers")  # always preserve original
+                result["matched_buyers"] = v.get("matched_buyers")
                 merged.append(result)
 
             for v in merged:
@@ -384,37 +421,43 @@ class VariantsFormatsModule(BaseModule):
 
         # Step 1a — Sonar discovers what variants exist
         discovery_text = await self._sonar_discover_variants(inp)
-        if not discovery_text:
-            return VariantsFormatsResult(
-                success=False, product_id=inp.product_id,
-                error="Sonar variant discovery returned no data"
-            )
 
-        # Step 1b — GPT extracts clean variant name list
-        variant_names = await self._extract_variant_names(discovery_text, inp)
+        # Step 1b — GPT extracts variant names from Sonar response (if any)
+        if discovery_text:
+            variant_names = await self._extract_variant_names(discovery_text, inp)
+        else:
+            print(f"  ⚠️  [variants] Sonar discovery returned nothing — GPT generating variants")
+            variant_names = []
+
+        # Step 1c — GPT generates variant names if Sonar returned fewer than 3
+        if len(variant_names) < 3:
+            print(f"  ⚠️  [variants] Only {len(variant_names)} names from Sonar — GPT generating variants")
+            variant_names = await self._gpt_generate_variant_names(variant_names, inp)
+
         if not variant_names:
             return VariantsFormatsResult(
                 success=False, product_id=inp.product_id,
-                error="Could not extract variant names"
+                error="Could not generate variant names"
             )
 
         # Step 2a — Sonar gets market data for the known variant list
         market_text = await self._sonar_get_market_data(variant_names, inp)
-        if not market_text:
-            return VariantsFormatsResult(
-                success=False, product_id=inp.product_id,
-                error="Sonar market data call returned no data"
-            )
 
-        # Step 2b — GPT structures the market data into 6×6 fields
-        extracted = await self._extract_all_variants(market_text, inp)
-        if not extracted:
-            return VariantsFormatsResult(
-                success=False, product_id=inp.product_id,
-                error="Extraction returned no variants"
-            )
+        # Step 2b — GPT structures Sonar response; if Sonar empty, start with empty list
+        if market_text:
+            extracted = await self._extract_all_variants(market_text, inp)
+        else:
+            print(f"  ⚠️  [variants] Sonar market data empty — GPT will generate all fields")
+            extracted = []
 
-        # Step 2c — GPT fills any null fields using training data (matched_buyers stays null)
+        # Pad: add empty stubs for any variant names Sonar didn't cover
+        extracted_names = {v["variant_name"].lower() for v in extracted}
+        for name in variant_names:
+            if name.lower() not in extracted_names:
+                extracted.append({"variant_name": name})
+        print(f"     → {len(extracted)} variants going into GPT fill ({len(extracted) - len(extracted_names)} stubs added)")
+
+        # Step 2c — GPT fills null fields using training knowledge (matched_buyers stays null)
         extracted = await self._gpt_fill_missing_fields(extracted, inp)
 
         # Step 3 — Fuzzy match to identify "your_product" (no LLM)
