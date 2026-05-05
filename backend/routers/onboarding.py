@@ -2630,8 +2630,13 @@ async def razorpay_webhook(
             hashlib.sha256,
         ).hexdigest()
         received = request.headers.get("x-razorpay-signature", "")
+        print(f"[WEBHOOK] received sig : {received}")
+        print(f"[WEBHOOK] expected sig : {expected}")
+        print(f"[WEBHOOK] secret set   : {'yes' if webhook_secret else 'no'}")
         if not hmac.compare_digest(expected, received):
-            raise HTTPException(status_code=400, detail="Invalid webhook signature")
+            raise HTTPException(status_code=400, detail="Invalid webhook signature — secret mismatch")
+    else:
+        print("[WEBHOOK] WARNING: RAZORPAY_WEBHOOK_SECRET not set, skipping signature check")
 
     payload = await request.json()
     event   = payload.get("event")
