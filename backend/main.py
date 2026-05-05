@@ -20,6 +20,7 @@ app.include_router(admin.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "* ",
         "http://localhost:5173",
         "http://172.16.31.72:5173",
         "http://192.168.0.100:5173",

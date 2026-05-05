@@ -335,17 +335,17 @@ async def logout(
     try:
         user_id = current_user["user_id"]
 
-        # ✅ Update last_login
+        # Revoke all tokens issued before now and mark sessions as revoked
         await conn.execute(
             """
             UPDATE core_auth_table.auth_user
-            SET last_login = NOW()
+            SET tokens_revoked_at = NOW(),
+                last_login = NOW()
             WHERE user_id = $1
             """,
             user_id
         )
 
-        # 🔒 Revoke all sessions for this user
         await conn.execute(
             """
             UPDATE core_auth_table.auth_sessions
@@ -355,7 +355,7 @@ async def logout(
             user_id
         )
 
-        return {"success": True, "message": "Logged out from current device"}
+        return {"success": True, "message": "Logged out successfully"}
 
     except Exception as e:
         print("LOGOUT ERROR:", str(e))
@@ -842,7 +842,7 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 #     current_user=Depends(get_current_user)
 # ):
 #     try:
-        user_id = current_user["user_id"]
+#        user_id = current_user["user_id"]
 
 #         # =========================================================
 #         # ✅ 1. SAVE PREFERENCES
@@ -3063,3 +3063,37 @@ async def send_user_data_export(
         "success": True,
         "message": f"Data export sent to {user['email']}"
     }
+
+
+# =========================================================
+# PUBLIC — Pricing Plans
+# =========================================================
+
+@router.get("/plans")
+async def get_plans(conn=Depends(get_db)):
+    try:
+        rows = await conn.fetch("""
+            SELECT plan_name, monthly_price, yearly_price
+            FROM core_auth_table.subscription_plans
+            WHERE status = 'active'
+            ORDER BY monthly_price ASC NULLS FIRST
+        """)
+
+        plans = [
+            {
+                "plan_name":     row["plan_name"],
+                "monthly_price": row["monthly_price"],
+                "yearly_price":  row["yearly_price"],
+               # "description":   row["description"],
+            }
+            for row in rows
+        ]
+
+        return {"success": True, "Plans": plans}
+
+    except Exception as e:
+        print("PLANS FETCH ERROR:", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail={"success": False, "error": "Failed to fetch plans"}
+        )
