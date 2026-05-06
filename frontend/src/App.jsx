@@ -3,6 +3,18 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./Components/ScrollToTop";
 import PrivateComponent from "./Components/PrivateComponent";
+import Pricing from "./pages/Pricing";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import HowItWorks from "./pages/HowItWorks";
+import Contact from "./pages/Contact";
+import Blog from "./pages/Blog";
+import Team from "./pages/Team";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import DataPolicy from "./pages/DataPolicy";
+import GDPR from "./pages/GDPR";
+import PaymentRefund from "./pages/PaymentRefund";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -24,6 +36,7 @@ const MarketIntelligence = lazy(() => import("./pages/MarketIntelligence"));
 const BuyerList = lazy(() => import("./pages/BuyerList"));
 const Intelligence = lazy(() => import("./pages/Intelligence"));
 const Help = lazy(() => import("./pages/Help"));
+const Error = lazy(() => import("./pages/Error"));
 
 const App = () => {
   const [mainLoader, setMainLoader] = useState(true);
@@ -52,7 +65,7 @@ const App = () => {
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route element={<PrivateComponent />}>
-              <Route path="/" element={<OverViewPage />} />
+              <Route path="/overview" element={<OverViewPage />} />
 
               <Route path="/discover" element={<DiscoverProducts />} />
               <Route path="/full-report/:id" element={<FullReport />} />
@@ -70,6 +83,22 @@ const App = () => {
               path="/failed-verification"
               element={<FailedVerification />}
             />
+            <Route path="*" element={<Error />} />
+
+            {/* web */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/data-policy" element={<DataPolicy />} />
+            <Route path="/gdpr" element={<GDPR />} />
+            <Route path="/payment-refund" element={<PaymentRefund />} />
+            {/*  */}
           </Routes>
         </Suspense>
       </BrowserRouter>

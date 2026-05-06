@@ -501,7 +501,7 @@ const Profile = ({
                     $49/month · 100 queries · 2 modules
                   </p>
                 </div>
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white">
+                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white" onClick={()=>alert("hii")}>
                   Upgrade →
                 </button>
               </div>

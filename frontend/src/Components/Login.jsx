@@ -81,7 +81,7 @@ const UserLogin = () => {
           email: "",
           password: "",
         });
-        navigate("/");
+        navigate("/overview");
       } else {
         toast.error(data.detail || "Invalid credentials");
       }

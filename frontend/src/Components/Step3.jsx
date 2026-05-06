@@ -1196,7 +1196,8 @@ import {
   ClipboardDocumentListIcon,
   LightBulbIcon,
 } from "@heroicons/react/24/outline";
-import { yourGoals, countries } from "./dummyTableData";
+// import { yourGoals, countries } from "./dummyTableData";
+import { yourGoals, countries } from "./Data";
 import { LuChevronDown } from "react-icons/lu";
 const icons = [
   ArrowRightStartOnRectangleIcon,

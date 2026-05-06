@@ -474,6 +474,7 @@ export default function Steps() {
 
   // step2 state
   const [products, setProducts] = useState([]);
+  const [usage_summary_data, setUsage_summary_data] = useState(0);
   const [selectedProducts, setSelectedProducts] = useState([]);
 
   console.log("selectedProducts: ", selectedProducts);
@@ -544,7 +545,7 @@ export default function Steps() {
       }
 
       const data = await response.json();
-      console.log("step1: ", data);
+      console.log("step1 job id: ", data);
       if (data.success) {
         setJobId(data?.job_id);
         alert(data?.message);
@@ -584,6 +585,7 @@ export default function Steps() {
       // console.log("data?????????: ", data);
       if (data?.success) {
         setProducts(Array.isArray(data?.products) ? data?.products : []);
+        setUsage_summary_data(data?.usage_summary?.queries_remaining || 0);
       }
       console.log("product data: ", data);
     } catch (error) {
@@ -680,16 +682,16 @@ export default function Steps() {
   };
 
   const researchGoals = async () => {
-    console.log("researchGoals api called");
-    console.log("payloadData: ", payloadData);
-    console.log("post api called");
+    // console.log("researchGoals api called");
+    // console.log("payloadData: ", payloadData);
+    // console.log("post api called");
     try {
       setLoading2(true);
 
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       // const response = await fetch(`${base_url1}/research-preferences?job_id=${joinId}`, {
       const response = await fetch(
-        `${base_url1}/research-preferences?job_id=a7857d1b-0fe0-4320-82ab-be61b690f99c`,
+        `${base_url1}/research-preferences?job_id=${joinId}`,
         {
           method: "POST",
           headers: {
@@ -705,7 +707,7 @@ export default function Steps() {
       }
 
       const data = await response.json();
-      console.log("post researchGoals data:", data);
+      // console.log("post researchGoals data:", data);
     } catch (error) {
       console.log("Something went wrong:", error.message);
       throw error; // to prevent nextStep
@@ -890,6 +892,7 @@ export default function Steps() {
               products={products}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
+              usage_summary_data={usage_summary_data}
             />
           </div>
         )}

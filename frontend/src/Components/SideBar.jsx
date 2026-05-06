@@ -31,7 +31,7 @@ import { base_url1 } from "../URL";
 const navigation = [
   {
     name: "Overview",
-    href: "/",
+    href: "/overview",
     icon: CubeTransparentIcon,
     current: true,
   },
@@ -110,13 +110,39 @@ const SideBar = () => {
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // try {
+    //   localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+    //   localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+    //   navigate("/login");
+    // } catch (err) {
+    //   console.log("Something went wrong");
+    // }
+
     try {
-      localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
-      localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
-      navigate("/login");
+      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+      let response = await fetch(`${base_url1}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      let data = await response.json();
+
+      if (data?.success) {
+        alert(data?.message || "Logged out successfully");
+        localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+        localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+        navigate("/login");
+      }
     } catch (err) {
-      console.log("Something went wrong");
+      console.log("Something went wrong.", err);
     }
   };
 
@@ -351,13 +377,13 @@ const SideBar = () => {
             className="h-10 w-auto"
           />
         </div>
-        <div className="py-3 rounded-lg bg-gradient-to-r from-[#0284c7] via-[#29a5e9] to-[#0980c3] cursor-pointer">
-          <button className="h-full w-full flex justify-center items-center gap-2 font-medium text-white cursor-pointer">
+        <div className="py-3 rounded-lg bg-gradient-to-r from-[#0284c7] via-[#29a5e9] to-[#0980c3] cursor-pointer flex justify-center items-center gap-2 font-medium text-white transition-all duration-300 hover:scale-[1.03]" onClick={()=>navigate("/discover")}>
+          {/* <button className="border h-full w-full flex justify-center items-center gap-2 font-medium text-white cursor-pointer"> */}
             <span>
               <SparklesIcon className="w-6 h-6" />
             </span>
             <span>New Intelligence</span>
-          </button>
+          {/* </button> */}
         </div>
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-1">
@@ -482,7 +508,7 @@ const SideBar = () => {
                   </p>
 
                   <div className="bg-[#0284C7] hover:bg-[#0369A1] rounded mt-2 transition-all duration-300">
-                    <button className="flex justify-center gap-2.5 items-center h-full w-full py-1.5 text-white rounded cursor-pointer">
+                    <button className="flex justify-center gap-2.5 items-center h-full w-full py-1.5 text-white rounded cursor-pointer" onClick={()=>navigate("/pricing")}>
                       <span>
                         <ArrowUpCircleIcon className="h-5 w-5" />
                       </span>

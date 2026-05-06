@@ -1,41 +1,41 @@
-const emailData1 = [
-  {
-    txt1: "Email 1 · Send Day 0 · Introduction",
-    txt2: "Introduce your product — value-first, no pitch",
-    txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
-    txt4: "Hi [First Name],",
-    txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
-    txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
-    txt7: "Open rate: 28–35%",
-    txt8: "Keep under 120 words",
-    txt9: "Send: Tue–Thu · 9–11am local",
-  },
-  {
-    txt1: "Email 1 · Send Day 0 · Introduction",
-    txt2: "Introduce your product — value-first, no pitch",
-    txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
-    txt4: "Hi [First Name],",
-    txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
-    txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
-    txt7: "Open rate: 28–35%",
-    txt8: "Keep under 120 words",
-    txt9: "Send: Tue–Thu · 9–11am local",
-  },
-  {
-    txt1: "Email 1 · Send Day 0 · Introduction",
-    txt2: "Introduce your product — value-first, no pitch",
-    txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
-    txt4: "Hi [First Name],",
-    txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
-    txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
-    txt7: "Open rate: 28–35%",
-    txt8: "Keep under 120 words",
-    txt9: "Send: Tue–Thu · 9–11am local",
-  },
-];
+// const emailData1 = [
+//   {
+//     txt1: "Email 1 · Send Day 0 · Introduction",
+//     txt2: "Introduce your product — value-first, no pitch",
+//     txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
+//     txt4: "Hi [First Name],",
+//     txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
+//     txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
+//     txt7: "Open rate: 28–35%",
+//     txt8: "Keep under 120 words",
+//     txt9: "Send: Tue–Thu · 9–11am local",
+//   },
+//   {
+//     txt1: "Email 1 · Send Day 0 · Introduction",
+//     txt2: "Introduce your product — value-first, no pitch",
+//     txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
+//     txt4: "Hi [First Name],",
+//     txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
+//     txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
+//     txt7: "Open rate: 28–35%",
+//     txt8: "Keep under 120 words",
+//     txt9: "Send: Tue–Thu · 9–11am local",
+//   },
+//   {
+//     txt1: "Email 1 · Send Day 0 · Introduction",
+//     txt2: "Introduce your product — value-first, no pitch",
+//     txt3: "Subject: Organic Turmeric 95% Curcuminoids — GMP + USDA Certified, India Origin",
+//     txt4: "Hi [First Name],",
+//     txt5: "I came across [Company Name] and noticed you source certified botanical ingredients. We're GreenLeaf Exports — a GMP and USDA Organic certified manufacturer in India producing Organic Turmeric Powder with guaranteed 95% curcuminoids.",
+//     txt6: "We supply supplement brands in the US and Germany and have capacity for new partnerships. Would a COA and sample kit be useful for your upcoming sourcing cycle?",
+//     txt7: "Open rate: 28–35%",
+//     txt8: "Keep under 120 words",
+//     txt9: "Send: Tue–Thu · 9–11am local",
+//   },
+// ];
 
 const EmailSequence = ({ emailData,sequence_note_data }) => {
-  console.log("emailData: ", emailData);
+  // console.log("emailData: ", emailData);
 
   return (
     <>

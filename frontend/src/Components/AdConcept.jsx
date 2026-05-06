@@ -1,56 +1,5 @@
-const cardData = [
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-  {
-    txt1: "🇺🇸 US Market · Trust angle",
-    txt2: "From Indian farms to your formula — USDA Organic certified.",
-    txt3: "Leads with origin + certification. US supplement buyers trust Indian turmeric but need the organic proof. Pre-empts the first objection before the buyer even asks.",
-    txt4: "LinkedIn",
-    txt5: "Cold outreach",
-    txt6: "Hero headline",
-  },
-];
-
 const AdConcept = ({ adConceptsData }) => {
-  console.log("adConceptsData: ", adConceptsData);
+  // console.log("adConceptsData: ", adConceptsData);
 
   return (
     <>

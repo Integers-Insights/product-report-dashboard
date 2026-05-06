@@ -28,7 +28,12 @@ const IntelligenceReports = () => {
       const reportData = await response.json();
       if (reportData.success) {
         // console.log("reportData", reportData);
-        setAllReportData(reportData?.reports);
+        setAllReportData(
+          Array.isArray(reportData?.reports)
+            ? reportData?.reports
+            : []
+        );
+        // setAllReportData(reportData?.reports);
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);

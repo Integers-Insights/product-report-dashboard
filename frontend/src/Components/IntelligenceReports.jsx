@@ -10,48 +10,51 @@ import InitialText from "./InitialText";
 import { useEffect, useState } from "react";
 import { base_url1 } from "../URL";
 import Flag from "./Flag";
+import { useNavigate } from "react-router-dom";
 
-const intelligenceReports_data = [
-  {
-    txt1: "Organic Turmeric Powder — USA Market Intelligence",
-    txt2: "✓ Complete",
-    txt3: "🇺🇸 USA",
-    txt4: "Market Demand + Keywords",
-    txt5: "March 11, 2026 · 2 hrs ago",
-    txt6: "91/100",
-    txt7: "34 keywords",
-    txt8: "5 buyer segments",
-    txt9: "Demand up 18% YoY",
-    txt10:
-      "Strong Q2 opportunity for contract manufacturers in California and Texas.",
-    txt11: "Score 91",
-    txt12: "34 keywords",
-    txt13: "200+ buyers",
-    txt14: "8 segments",
-  },
-  {
-    txt1: "Organic Turmeric Powder — USA Market Intelligence",
-    txt2: "✓ Complete",
-    txt3: "🇺🇸 USA",
-    txt4: "Market Demand + Keywords",
-    txt5: "March 11, 2026 · 2 hrs ago",
-    txt6: "91/100",
-    txt7: "34 keywords",
-    txt8: "5 buyer segments",
-    txt9: "Demand up 18% YoY",
-    txt10:
-      "Strong Q2 opportunity for contract manufacturers in California and Texas.",
-    txt11: "Score 91",
-    txt12: "34 keywords",
-    txt13: "200+ buyers",
-    txt14: "8 segments",
-  },
-];
+// const intelligenceReports_data = [
+//   {
+//     txt1: "Organic Turmeric Powder — USA Market Intelligence",
+//     txt2: "✓ Complete",
+//     txt3: "🇺🇸 USA",
+//     txt4: "Market Demand + Keywords",
+//     txt5: "March 11, 2026 · 2 hrs ago",
+//     txt6: "91/100",
+//     txt7: "34 keywords",
+//     txt8: "5 buyer segments",
+//     txt9: "Demand up 18% YoY",
+//     txt10:
+//       "Strong Q2 opportunity for contract manufacturers in California and Texas.",
+//     txt11: "Score 91",
+//     txt12: "34 keywords",
+//     txt13: "200+ buyers",
+//     txt14: "8 segments",
+//   },
+//   {
+//     txt1: "Organic Turmeric Powder — USA Market Intelligence",
+//     txt2: "✓ Complete",
+//     txt3: "🇺🇸 USA",
+//     txt4: "Market Demand + Keywords",
+//     txt5: "March 11, 2026 · 2 hrs ago",
+//     txt6: "91/100",
+//     txt7: "34 keywords",
+//     txt8: "5 buyer segments",
+//     txt9: "Demand up 18% YoY",
+//     txt10:
+//       "Strong Q2 opportunity for contract manufacturers in California and Texas.",
+//     txt11: "Score 91",
+//     txt12: "34 keywords",
+//     txt13: "200+ buyers",
+//     txt14: "8 segments",
+//   },
+// ];
 
 const IntelligenceReportsComponent = ({
   allReportData,
   intelligenceReportLoading,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -155,7 +158,13 @@ const IntelligenceReportsComponent = ({
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap">
+                      <button
+                        className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap"
+                        onClick={() => {
+                          if (!item?.product_id) return;
+                          navigate(`/full-report/${item.product_id}`);
+                        }}
+                      >
                         Open Report
                       </button>
                       <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">

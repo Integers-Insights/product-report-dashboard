@@ -1,4 +1,3 @@
-import BuyerListComponent from "../Components/BuyerList";
 import Header from "../Components/Header";
 import HelpComponent from "../Components/Help";
 import SideBar from "../Components/SideBar";

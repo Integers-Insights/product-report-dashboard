@@ -62,26 +62,26 @@ const market_data = [
   }
 ];
 
-const product_data = [
-  {
-    txt1: "Organic Turmeric · Market Demand",
-    txt2: "🇺🇸 USA · 2 hours ago · Complete",
-    txt3: "Done",
-    txt4: "91",
-  },
-  {
-    txt1: "Ashwagandha· Keyword Intel",
-    txt2: "🇩🇪 Germany · Yesterday · Complete",
-    txt3: "Done",
-    txt4: "87",
-  },
-  {
-    txt1: "Black Pepper · Market Demand",
-    txt2: "🇯🇵 Japan · 3 days ago · Complete",
-    txt3: "Stale",
-    txt4: "55",
-  },
-];
+// const product_data = [
+//   {
+//     txt1: "Organic Turmeric · Market Demand",
+//     txt2: "🇺🇸 USA · 2 hours ago · Complete",
+//     txt3: "Done",
+//     txt4: "91",
+//   },
+//   {
+//     txt1: "Ashwagandha· Keyword Intel",
+//     txt2: "🇩🇪 Germany · Yesterday · Complete",
+//     txt3: "Done",
+//     txt4: "87",
+//   },
+//   {
+//     txt1: "Black Pepper · Market Demand",
+//     txt2: "🇯🇵 Japan · 3 days ago · Complete",
+//     txt3: "Stale",
+//     txt4: "55",
+//   },
+// ];
 
 const MarketComponent = () => {
   return (

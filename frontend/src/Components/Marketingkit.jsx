@@ -8,11 +8,14 @@ import { useState } from "react";
 import Keywords from "./Keywords";
 import EmailSequence from "./EmailSequence";
 import AdConcept from "./AdConcept";
+import { useNavigate } from "react-router-dom";
 
 const Marketingkit = ({ marketing_kit_data }) => {
   const [tab, setTab] = useState("Keywords");
 
   console.log("marketingkit: ", marketing_kit_data);
+
+  const navigate = useNavigate();
 
   let high_volume_buyer_intent_data =
     marketing_kit_data?.high_volume_buyer_intent;
@@ -36,7 +39,8 @@ const Marketingkit = ({ marketing_kit_data }) => {
             Marketing Kit
           </h2>
           <p className="text-[#5F6368] text-13 font-regular">
-            Keywords · Email sequence · Ad concepts — all tuned for {product_name_data ?? "--"} {buyer_type_data ?? "--"} buyers
+            Keywords · Email sequence · Ad concepts — all tuned for{" "}
+            {product_name_data ?? "--"} {buyer_type_data ?? "--"} buyers
           </p>
         </div>
         <div className="border bg-[#0284C7] text-white text-sm font-medium py-0.5 px-3 rounded-2xl">
@@ -66,15 +70,37 @@ const Marketingkit = ({ marketing_kit_data }) => {
       </div>
 
       <div>
-        {tab === "Keywords" && (
-          <Keywords
-            high_volume_buyer_intent_data={high_volume_buyer_intent_data}
-            low_competition_gaps_data={low_competition_gaps_data}
-            multilingual_data={multilingual_data}
-          />
+        {marketing_kit_data?.masked ? (
+          <div className="border border-[#E6E6E6] rounded-lg p-3 mt-3 text-center flex justify-between">
+            <p className="blur-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat blanditiis facilis ipsam corrupti modi asperiores?</p>
+            {/* <div className="blur-sm">$5–$9/kg</div>
+            <div className="blur-sm pl-10">30–38%</div> */}
+            <div className="text-sm font-medium">
+              <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap" onClick={()=>navigate("/pricing")}>
+                🔒 {marketing_kit_data?.message || "Upgrade to unlock"} +
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {tab === "Keywords" && (
+              <Keywords
+                high_volume_buyer_intent_data={high_volume_buyer_intent_data}
+                low_competition_gaps_data={low_competition_gaps_data}
+                multilingual_data={multilingual_data}
+              />
+            )}
+            {tab === "Email Sequence" && (
+              <EmailSequence
+                emailData={emailData}
+                sequence_note_data={sequence_note_data}
+              />
+            )}
+            {tab === "Ad Concept" && (
+              <AdConcept adConceptsData={adConceptsData} />
+            )}
+          </>
         )}
-        {tab === "Email Sequence" && <EmailSequence emailData={emailData} sequence_note_data={sequence_note_data} />}
-        {tab === "Ad Concept" && <AdConcept adConceptsData={adConceptsData} />}
       </div>
     </>
   );

@@ -7,72 +7,72 @@ import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/20/solid";
 import ellipse_3 from "../assets/Ellipse 3.svg";
 import ellipse_4 from "../assets/Ellipse 4.svg";
 
-const stats = [
-  {
-    stat: "$840M",
-    txt: "GLOBAL TRADE VALUE 2025",
-    previousStat: "28.62%",
-    change: "14% YoY",
-    changeType: "increase",
-  },
-  {
-    stat: "320K MT",
-    txt: "VOLUME TRADED GLOBALLY",
-    previousStat: "70,946",
-    change: "8% YoY",
-    changeType: "increase",
-  },
-  {
-    stat: "$2.63/KG",
-    txt: "AVG GLOBAL TRADE PRICE",
-    previousStat: "56.14%",
-    change: "Commodity avg (non-organic)",
-    changeType: "increase",
-  },
-  {
-    stat: "64%",
-    txt: "INDIA’S EXPORT SHARE",
-    previousStat: "28.62%",
-    change: "from 58% in 2021",
-    changeType: "increase",
-  },
-];
+// const stats = [
+//   {
+//     stat: "$840M",
+//     txt: "GLOBAL TRADE VALUE 2025",
+//     previousStat: "28.62%",
+//     change: "14% YoY",
+//     changeType: "increase",
+//   },
+//   {
+//     stat: "320K MT",
+//     txt: "VOLUME TRADED GLOBALLY",
+//     previousStat: "70,946",
+//     change: "8% YoY",
+//     changeType: "increase",
+//   },
+//   {
+//     stat: "$2.63/KG",
+//     txt: "AVG GLOBAL TRADE PRICE",
+//     previousStat: "56.14%",
+//     change: "Commodity avg (non-organic)",
+//     changeType: "increase",
+//   },
+//   {
+//     stat: "64%",
+//     txt: "INDIA’S EXPORT SHARE",
+//     previousStat: "28.62%",
+//     change: "from 58% in 2021",
+//     changeType: "increase",
+//   },
+// ];
 
-const kpis = [
-  {
-    year: "2021",
-    txt1: "148K",
-    txt2: "Baseline",
-  },
-  {
-    year: "2022",
-    txt1: "169K",
-    txt2: "↑14%",
-  },
-  {
-    year: "2023",
-    txt1: "190K",
-    txt2: "↑12%",
-  },
-  {
-    year: "2024",
-    txt1: "205K",
-    txt2: "↑8%",
-  },
-];
+// const kpis = [
+//   {
+//     year: "2021",
+//     txt1: "148K",
+//     txt2: "Baseline",
+//   },
+//   {
+//     year: "2022",
+//     txt1: "169K",
+//     txt2: "↑14%",
+//   },
+//   {
+//     year: "2023",
+//     txt1: "190K",
+//     txt2: "↑12%",
+//   },
+//   {
+//     year: "2024",
+//     txt1: "205K",
+//     txt2: "↑8%",
+//   },
+// ];
 
-const kpis1 = [
-  {
-    txt1: "Commodity (non-organic)",
-    txt2: "$1.20–$2.80",
-    txt3: "High volume, race-to-bottom pricing · Vietnam + Bangladesh undercutting India on cost",
-  },
-  {
-    txt1: "Organic certified (your tier)",
-    txt2: "$8–$16",
-    txt3: "5–7× commodity floor · India is only large-scale organic certified supplier globally · Protected from commodity price pressure",
-  },
-];
+// const kpis1 = [
+//   {
+//     txt1: "Commodity (non-organic)",
+//     txt2: "$1.20–$2.80",
+//     txt3: "High volume, race-to-bottom pricing · Vietnam + Bangladesh undercutting India on cost",
+//   },
+//   {
+//     txt1: "Organic certified (your tier)",
+//     txt2: "$8–$16",
+//     txt3: "5–7× commodity floor · India is only large-scale organic certified supplier globally · Protected from commodity price pressure",
+//   },
+// ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -528,9 +528,9 @@ const Trade = ({ trade_data }) => {
                 {trade_data?.export_pricing_commod?.commodity?.price_range ??
                   ""}
               </span>
-              <span className="text-[#5F6368] text-base font-medium">
+              {/* <span className="text-[#5F6368] text-base font-medium">
                 /kg FOB
-              </span>
+              </span> */}
             </p>
             <p className="text-[#5F6368] text-xs font-light mt-1">
               {trade_data?.export_pricing_commod?.commodity?.context ?? ""}

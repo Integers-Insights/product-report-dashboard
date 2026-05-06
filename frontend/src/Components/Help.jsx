@@ -8,21 +8,22 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { useState } from "react";
+import { faq_data } from "./Data";
 
-const faq_data = [
-  {
-    que: "What counts as one query?",
-    ans: "One query = one intelligence run for a product × country pair. Re-analyzing an existing product uses 0.5 queries. Browsing reports or buyer lists never uses queries.",
-  },
-  {
-    que: "Why are buyer contacts locked?",
-    ans: "Direct contact info (email, phone, LinkedIn) is available on Venture and Apex plans. All plans can see company names and profiles.",
-  },
-  {
-    que: "How do I switch active modules?",
-    ans: "Scout users can swap their 2 active modules once per billing cycle from Settings. Venture has 4 slots, Apex has all 6.",
-  },
-];
+// const faq_data = [
+//   {
+//     que: "What counts as one query?",
+//     ans: "One query = one intelligence run for a product × country pair. Re-analyzing an existing product uses 0.5 queries. Browsing reports or buyer lists never uses queries.",
+//   },
+//   {
+//     que: "Why are buyer contacts locked?",
+//     ans: "Direct contact info (email, phone, LinkedIn) is available on Venture and Apex plans. All plans can see company names and profiles.",
+//   },
+//   {
+//     que: "How do I switch active modules?",
+//     ans: "Scout users can swap their 2 active modules once per billing cycle from Settings. Venture has 4 slots, Apex has all 6.",
+//   },
+// ];
 
 const HelpComponent = () => {
   const [open_Faq, setOpen_Faq] = useState([]);
@@ -134,4 +135,4 @@ const HelpComponent = () => {
 };
 export default HelpComponent;
 
-// latest changes _2
+// latest changes _3

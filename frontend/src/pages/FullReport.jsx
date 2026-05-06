@@ -24,12 +24,12 @@ const FullReport = () => {
   const [banner_score, setBanner_score] = useState(0);
   const [overview_data,setOverview_data] = useState([]);
   const [urgent_note_data, setUrgent_note_data] = useState("");
-  const [actions_data,setActions_data] = useState([]);
+  const [actions_data,setActions_data] = useState(null);
   const [market_data,setMarket_data] = useState([]);
   const [trade_data,setTrade_data] = useState({});
   const [buyers_data,setBuyers_data] = useState({});
   const [variants_data,setVariants_data] = useState([]);
-
+  const [price_intelligence_data,setPrice_intelligence_data] = useState([]);
   const [marketing_kit_data,setMarketing_kit_data] = useState({});
   const [competitor_data,setCompetitor_data] = useState([]);
  
@@ -95,11 +95,13 @@ const FullReport = () => {
             : []
         );
         setUrgent_note_data(allProductData?.urgent_note || "");
-        setActions_data(
-          Array.isArray(allProductData?.actions)
-            ? allProductData?.actions
-            : []
-        );
+        // setActions_data(
+        //   Array.isArray(allProductData?.actions)
+        //     ? allProductData?.actions
+        //     : []
+        // );
+
+        setActions_data(allProductData?.actions);
 
         setMarket_data(
           Array.isArray(allProductData?.market_intelligence?.market_info)
@@ -108,6 +110,12 @@ const FullReport = () => {
         );
         setTrade_data(allProductData?.trade_intelligence?.trade_info);
         setBuyers_data(allProductData?.buyers_intelligence);
+
+        setPrice_intelligence_data(
+          Array.isArray(allProductData?.price_intelligence?.price_info)
+            ? allProductData?.price_intelligence?.price_info
+            : []
+        );
 
         setVariants_data(
           Array.isArray(allProductData?.variants?.variants_info)
@@ -120,6 +128,8 @@ const FullReport = () => {
             ? allProductData?.competitor_intelligence?.competitors
             : []
         );
+
+        // setCompetitor_data(allProductData?.competitor_intelligence?.competitors);
 
         setMarketing_kit_data(allProductData?.marketing_intelligence?.marketing_info);
       }
@@ -174,6 +184,7 @@ const FullReport = () => {
               variants_data={variants_data}
               competitor_data={competitor_data}
               marketing_kit_data={marketing_kit_data}
+              price_intelligence_data={price_intelligence_data}
             />
           </div>
         </div>

@@ -490,7 +490,6 @@ import {
   LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import { useLayoutEffect, useRef, useState } from "react";
-import { people } from "./dummyTableData";
 import List from "./List";
 import Grid from "./Grid";
 
@@ -498,7 +497,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const Step2 = ({ fetching_allProducts, products,selectedProducts,setSelectedProducts }) => {
+const Step2 = ({ fetching_allProducts, products,selectedProducts,setSelectedProducts,usage_summary_data }) => {
   const checkbox = useRef();
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
@@ -671,7 +670,7 @@ const Step2 = ({ fetching_allProducts, products,selectedProducts,setSelectedProd
                 <span className="text-[#5F6368] text-13">queries</span>
               </div>
               <div className="text-right text-base font-medium text-[#000000] content-center">
-                70
+                {usage_summary_data || 0}
               </div>
               <div className="text-[#5F6368] font-light text-xs">
                 1 per product selected

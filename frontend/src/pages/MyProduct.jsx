@@ -26,9 +26,10 @@ const MyProduct = () => {
       }
 
       const productData = await response.json();
+
       if (productData.success) {
         setProductData(productData?.products);
-        // console.log("product data", productData);
+        console.log("product data", productData);
       }
     } catch (err) {
       console.log("Something went wrong", err);

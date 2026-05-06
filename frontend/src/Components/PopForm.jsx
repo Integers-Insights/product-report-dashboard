@@ -11,16 +11,18 @@ import { IoChevronDown } from "react-icons/io5";
 import AccordionCheckBox from "./AccordianCheckBox";
 import { countries } from "./Data";
 import { base_url1 } from "../URL";
-import {
-  companyType,
-  productType,
-  notificationMethod1,
-  notificationMethod2,
-  primaryGoal,
-  yearsInIndustry,
-  platforms,
-  ind,
-} from "./dummyTableData";
+// import {
+//   companyType,
+//   productType,
+//   notificationMethod1,
+//   notificationMethod2,
+//   primaryGoal,
+//   yearsInIndustry,
+//   platforms,
+//   ind,
+// } from "./dummyTableData";
+
+import { companyType,ind,yearsInIndustry,productType,notificationMethod1,notificationMethod2,primaryGoal,platforms } from "./Data";
 import NeedHelp from "./NeedHelp";
 
 function classNames(...classes) {

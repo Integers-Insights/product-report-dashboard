@@ -8,64 +8,67 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
 import InitialText from "./InitialText";
 import Flag from "./Flag";
+import { useNavigate } from "react-router-dom";
 
-const product_data = [
-  {
-    txt1: "Organic Turmeric Powder",
-    txt2: "Nutraceutical",
-    txt3: "High confidence",
-    txt4: "500g pouches",
-    txt5: "GMP",
-    txt6: "USDA Organic",
-    txt7: "🇺🇸 91",
-    txt8: "🇩🇪 82",
-    txt9: "🇬🇧 79",
-    txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-    txt11: "82",
-  },
-  {
-    txt1: "Organic Turmeric Powder",
-    txt2: "Nutraceutical",
-    txt3: "High confidence",
-    txt4: "500g pouches",
-    txt5: "GMP",
-    txt6: "USDA Organic",
-    txt7: "🇺🇸 91",
-    txt8: "🇩🇪 82",
-    txt9: "🇬🇧 79",
-    txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-    txt11: "82",
-  },
-  {
-    txt1: "Organic Turmeric Powder",
-    txt2: "Nutraceutical",
-    txt3: "High confidence",
-    txt4: "500g pouches",
-    txt5: "GMP",
-    txt6: "USDA Organic",
-    txt7: "🇺🇸 91",
-    txt8: "🇩🇪 82",
-    txt9: "🇬🇧 79",
-    txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-    txt11: "82",
-  },
-  {
-    txt1: "Organic Turmeric Powder",
-    txt2: "Nutraceutical",
-    txt3: "High confidence",
-    txt4: "500g pouches",
-    txt5: "GMP",
-    txt6: "USDA Organic",
-    txt7: "🇺🇸 91",
-    txt8: "🇩🇪 82",
-    txt9: "🇬🇧 79",
-    txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-    txt11: "82",
-  },
-];
+// const product_data = [
+//   {
+//     txt1: "Organic Turmeric Powder",
+//     txt2: "Nutraceutical",
+//     txt3: "High confidence",
+//     txt4: "500g pouches",
+//     txt5: "GMP",
+//     txt6: "USDA Organic",
+//     txt7: "🇺🇸 91",
+//     txt8: "🇩🇪 82",
+//     txt9: "🇬🇧 79",
+//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
+//     txt11: "82",
+//   },
+//   {
+//     txt1: "Organic Turmeric Powder",
+//     txt2: "Nutraceutical",
+//     txt3: "High confidence",
+//     txt4: "500g pouches",
+//     txt5: "GMP",
+//     txt6: "USDA Organic",
+//     txt7: "🇺🇸 91",
+//     txt8: "🇩🇪 82",
+//     txt9: "🇬🇧 79",
+//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
+//     txt11: "82",
+//   },
+//   {
+//     txt1: "Organic Turmeric Powder",
+//     txt2: "Nutraceutical",
+//     txt3: "High confidence",
+//     txt4: "500g pouches",
+//     txt5: "GMP",
+//     txt6: "USDA Organic",
+//     txt7: "🇺🇸 91",
+//     txt8: "🇩🇪 82",
+//     txt9: "🇬🇧 79",
+//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
+//     txt11: "82",
+//   },
+//   {
+//     txt1: "Organic Turmeric Powder",
+//     txt2: "Nutraceutical",
+//     txt3: "High confidence",
+//     txt4: "500g pouches",
+//     txt5: "GMP",
+//     txt6: "USDA Organic",
+//     txt7: "🇺🇸 91",
+//     txt8: "🇩🇪 82",
+//     txt9: "🇬🇧 79",
+//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
+//     txt11: "82",
+//   },
+// ];
 
 const ProductComponent = ({ productData, productLoading }) => {
   const [view_com, setView_com] = useState("List");
+
+  const navigate = useNavigate();
 
   return (
     <>
@@ -249,10 +252,16 @@ const ProductComponent = ({ productData, productLoading }) => {
                           </p>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer">
+                          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={true}>
                             ↻ Re-run −0.5Q
                           </button>
-                          <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 whitespace-nowrap cursor-pointer">
+                          <button
+                            className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 whitespace-nowrap cursor-pointer"
+                            onClick={() => {
+                              if (!item?.product_id) return;
+                              navigate(`/full-report/${item.product_id}`);
+                            }}
+                          >
                             View Report →
                           </button>
                         </div>
@@ -370,10 +379,14 @@ const ProductComponent = ({ productData, productLoading }) => {
                           : ""}
                       </p>
                       <div className="grid grid-cols-2 gap-5 mt-4">
-                        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
+                        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={true}>
                           ↻ Re-run
                         </button>
-                        <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer">
+                        <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer"
+                         onClick={() => {
+                              if (!item?.product_id) return;
+                              navigate(`/full-report/${item.product_id}`);
+                            }}>
                           Report →
                         </button>
                       </div>
