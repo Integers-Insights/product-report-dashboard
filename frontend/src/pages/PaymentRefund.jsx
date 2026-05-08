@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { CreditCard } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Section({ title, children }) {
   return (
@@ -35,7 +35,7 @@ export default function PaymentRefund() {
               <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">
                 Payment & Refund Policy
               </h1>
-              <p className="text-slate-400 text-sm">Last updated: 1 May 2026</p>
+              <p className="text-slate-400 text-sm">Last updated: 7 May 2026</p>
             </motion.div>
           </div>
         </section>
@@ -134,7 +134,7 @@ export default function PaymentRefund() {
 
             <Section title="9. Contact">
               <p>
-                For billing queries: billing@integermarket.com
+                For billing queries: info@integersinsights.com
                 <br />
                 Response time: within 1 business day.
               </p>

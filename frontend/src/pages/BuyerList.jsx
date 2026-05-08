@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import BuyerListComponent from "../Components/BuyerListComponent";
-import Header from "../Components/Header";
-import SideBar from "../Components/SideBar";
+import BuyerListComponent from "../components/BuyerListComponent";
+import Header from "../components/Header";
+import SideBar from "../components/SideBar";
 import { base_url1 } from "../URL";
 
 const BuyerList = () => {

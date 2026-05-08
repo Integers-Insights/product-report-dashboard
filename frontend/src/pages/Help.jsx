@@ -1,6 +1,6 @@
-import Header from "../Components/Header";
-import HelpComponent from "../Components/Help";
-import SideBar from "../Components/SideBar";
+import Header from "../components/Header";
+import HelpComponent from "../components/HelpComponent";
+import SideBar from "../components/SideBar";
 
 const Help = () => {
   return (

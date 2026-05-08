@@ -20,9 +20,11 @@ import {
   DollarSign,
   Award,
 } from "lucide-react";
+// import PageWrapper from "../components/PageWrapper";
+// import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
 
 /* ── Scroll reveal wrapper ── */
 function Reveal({ children, delay = 0, className = "" }) {
@@ -899,7 +901,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/")}
                 className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold text-base px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 Create free account <ArrowRight size={16} />

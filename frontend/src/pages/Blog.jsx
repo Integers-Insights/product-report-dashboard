@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { BookOpen, Clock, ArrowRight, Tag } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);

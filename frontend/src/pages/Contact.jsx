@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -35,7 +35,7 @@ const channels = [
     icon: Mail,
     title: "Email Us",
     desc: "For general inquiries and support",
-    value: "hello@integermarket.com",
+    value: "info@integersinsights.com",
     color: "bg-brand-50",
     iconColor: "text-brand-500",
   },
@@ -257,9 +257,9 @@ export default function Contact() {
                     className="text-brand-500 shrink-0 mt-0.5"
                   />
                   <span>
-                    Integers Insights Private Limited
-                    <br />
-                    Ahmedabad, Gujarat, India
+                    Integers Insights Private Limited Unit No 28, 2nd Floor, Vicino Building, New Link Road, 
+                    {/* <br /> */}
+                    Goregaon (Mumbai), Goregaon West, Maharashtra, 400104, India
                   </span>
                 </div>
               </div>

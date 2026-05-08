@@ -1,6 +1,6 @@
-import Header from "../Components/Header";
-import MarketComponent from "../Components/Market";
-import SideBar from "../Components/SideBar";
+import Header from "../components/Header";
+import MarketComponent from "../components/Market";
+import SideBar from "../components/SideBar";
 
 const MarketIntelligence = () => {
   return (

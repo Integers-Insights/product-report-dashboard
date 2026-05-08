@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
-import Header from "../Components/Header";
-import ProductReport from "../Components/ProductReport";
-import SideBar from "../Components/SideBar";
+import Header from "../components/Header";
+import ProductReport from "../components/ProductReport";
+import SideBar from "../components/SideBar";
 import { useEffect, useState } from "react";
 import { base_url1 } from "../URL";
 

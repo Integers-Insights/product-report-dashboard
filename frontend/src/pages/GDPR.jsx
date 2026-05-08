@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Globe } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Section({ title, children }) {
   return (
@@ -35,7 +35,7 @@ export default function GDPR() {
               <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">
                 GDPR Compliance
               </h1>
-              <p className="text-slate-400 text-sm">Last updated: 1 May 2026</p>
+              <p className="text-slate-400 text-sm">Last updated: 7 May 2026</p>
             </motion.div>
           </div>
         </section>
@@ -129,9 +129,9 @@ export default function GDPR() {
 
             <Section title="6. Data Protection Officer">
               <p>
-                Our Data Protection contact: gdpr@integermarket.com
+                Our Data Protection contact: info@integersinsights.com
                 <br />
-                Integers Insights Private Limited, Ahmedabad, Gujarat, India.
+                Integers Insights Private Limited, Mumbai, Maharashtra, India.
               </p>
               <p>
                 You also have the right to lodge a complaint with your local

@@ -473,11 +473,13 @@ import {
   Zap,
   Shield,
 } from "lucide-react";
-import PageWrapper from "../components/PageWrapper";
-import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+// import PageWrapper from "../components/PageWrapper";
+// import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 import { base_url1 } from "../URL";
 import { useRazorpay } from "../hooks/useRazorpay";
+import PageWrapper from "../components/PageWrapper";
+import Footer from "../components/Footer";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);

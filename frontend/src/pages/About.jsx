@@ -17,9 +17,11 @@ import {
   Award,
   Users2,
 } from "lucide-react";
+// import PageWrapper from "../components/PageWrapper";
+// import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -39,8 +41,8 @@ function Reveal({ children, delay = 0, className = "" }) {
 
 const team = [
   {
-    initials: "AK",
-    name: "Aryan Kapoor",
+    initials: "NR",
+    name: "Nikhil Raut",
     role: "Co-founder & CEO",
     bio: "10 years in international trade consulting. Helped 200+ Indian manufacturers break into European and US markets.",
     color: "bg-brand-100 text-brand-700",
@@ -200,11 +202,11 @@ export default function About() {
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold font-mono">
-                    AK
+                    NR
                   </div>
                   <div className="text-left">
                     <div className="text-sm font-semibold text-slate-800">
-                      Aryan Kapoor
+                      Nikhil Raut
                     </div>
                     <div className="text-xs text-slate-400">
                       Co-founder & CEO

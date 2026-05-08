@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Section({ title, children }) {
   return (
@@ -35,7 +35,7 @@ export default function Terms() {
               <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">
                 Terms of Service
               </h1>
-              <p className="text-slate-400 text-sm">Last updated: 1 May 2026</p>
+              <p className="text-slate-400 text-sm">Last updated: 7 May 2026</p>
             </motion.div>
           </div>
         </section>
@@ -65,7 +65,7 @@ export default function Terms() {
                 You must provide accurate and complete information when creating
                 an account. You are responsible for maintaining the security of
                 your account credentials. You must not share your account with
-                others. Notify us immediately at support@integermarket.com if
+                others. Notify us immediately at info@integersinsights.com if
                 you suspect unauthorised access.
               </p>
             </Section>
@@ -113,12 +113,12 @@ export default function Terms() {
               <p>
                 These terms are governed by the laws of India. Any disputes
                 shall be subject to the exclusive jurisdiction of the courts of
-                Ahmedabad, Gujarat, India.
+                Mumbai, Maharashtra, India.
               </p>
             </Section>
 
             <Section title="9. Contact">
-              <p>For terms-related queries: legal@integermarket.com</p>
+              <p>For terms-related queries: info@integersinsights.com</p>
             </Section>
           </div>
         </article>

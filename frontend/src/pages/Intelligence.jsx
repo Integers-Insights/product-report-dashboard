@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Header from "../Components/Header";
-import IntelligenceReportsComponent from "../Components/IntelligenceReports";
-import SideBar from "../Components/SideBar";
+import Header from "../components/Header";
+import IntelligenceReportsComponent from "../components/IntelligenceReports";
+import SideBar from "../components/SideBar";
 import { base_url1 } from "../URL";
 
 const IntelligenceReports = () => {

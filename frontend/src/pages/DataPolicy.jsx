@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Database } from 'lucide-react'
 import PageWrapper from '../components/PageWrapper'
 import Footer from '../components/Footer'
-import Navbar from '../Components/Navbar'
+import Navbar from '../components/Navbar'
 
 function Section({ title, children }) {
   return (
@@ -24,7 +24,7 @@ export default function DataPolicy() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <span className="sec-label justify-center"><Database size={12} />Legal</span>
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">Data Policy</h1>
-            <p className="text-slate-400 text-sm">Last updated: 1 May 2026</p>
+            <p className="text-slate-400 text-sm">Last updated: 7 May 2026</p>
           </motion.div>
         </div>
       </section>
@@ -58,7 +58,7 @@ export default function DataPolicy() {
           </Section>
 
           <Section title="7. Contact">
-            <p>For data policy queries: data@integermarket.com</p>
+            <p>For data policy queries: info@integersinsights.com</p>
           </Section>
         </div>
       </article>

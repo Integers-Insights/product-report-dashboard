@@ -1,20 +1,20 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
-import ScrollToTop from "./Components/ScrollToTop";
-import PrivateComponent from "./Components/PrivateComponent";
-import Pricing from "./pages/Pricing";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import HowItWorks from "./pages/HowItWorks";
-import Contact from "./pages/Contact";
-import Blog from "./pages/Blog";
-import Team from "./pages/Team";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
-import DataPolicy from "./pages/DataPolicy";
-import GDPR from "./pages/GDPR";
-import PaymentRefund from "./pages/PaymentRefund";
+import ScrollToTop from "./components/ScrollToTop";
+import PrivateComponent from "./components/PrivateComponent";
+// import Pricing from "./pages/Pricing";
+// import Home from "./pages/Home";
+// import About from "./pages/About";
+// import HowItWorks from "./pages/HowItWorks";
+// import Contact from "./pages/Contact";
+// import Blog from "./pages/Blog";
+// import Team from "./pages/Team";
+// import PrivacyPolicy from "./pages/PrivacyPolicy";
+// import Terms from "./pages/Terms";
+// import DataPolicy from "./pages/DataPolicy";
+// import GDPR from "./pages/GDPR";
+// import PaymentRefund from "./pages/PaymentRefund";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -22,14 +22,14 @@ const Loader = () => (
   </div>
 );
 
-const Signup = lazy(() => import("./Components/Signup"));
-const Login = lazy(() => import("./Components/Login"));
+const Signup = lazy(() => import("./components/Signup"));
+const Login = lazy(() => import("./components/Login"));
 const OverViewPage = lazy(() => import("./pages/OverviewPage"));
 const DiscoverProducts = lazy(() => import("./pages/DiscoverProducts"));
 const FullReport = lazy(() => import("./pages/FullReport"));
-const VerifyEmail = lazy(() => import("./Components/VerifyEmail"));
+const VerifyEmail = lazy(() => import("./components/VerifyEmail"));
 const FailedVerification = lazy(
-  () => import("./Components/FailedVerification"),
+  () => import("./components/FailedVerification"),
 );
 const MyProduct = lazy(() => import("./pages/MyProduct"));
 const MarketIntelligence = lazy(() => import("./pages/MarketIntelligence"));
@@ -37,6 +37,34 @@ const BuyerList = lazy(() => import("./pages/BuyerList"));
 const Intelligence = lazy(() => import("./pages/Intelligence"));
 const Help = lazy(() => import("./pages/Help"));
 const Error = lazy(() => import("./pages/Error"));
+
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Team = lazy(() => import("./pages/Team"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const DataPolicy = lazy(() => import("./pages/DataPolicy"));
+const GDPR = lazy(() => import("./pages/GDPR"));
+const PaymentRefund = lazy(() => import("./pages/PaymentRefund"));
+
+
+// import Pricing from "./pages/Pricing";
+// import Home from "./pages/Home";
+// import About from "./pages/About";
+// import HowItWorks from "./pages/HowItWorks";
+// import Contact from "./pages/Contact";
+// import Blog from "./pages/Blog";
+// import Team from "./pages/Team";
+// import PrivacyPolicy from "./pages/PrivacyPolicy";
+// import Terms from "./pages/Terms";
+// import DataPolicy from "./pages/DataPolicy";
+// import GDPR from "./pages/GDPR";
+// import PaymentRefund from "./pages/PaymentRefund";
+
 
 const App = () => {
   const [mainLoader, setMainLoader] = useState(true);

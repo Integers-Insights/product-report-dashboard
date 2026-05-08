@@ -1,6 +1,6 @@
-import Header from "../Components/Header";
-import SideBar from "../Components/SideBar";
-import Steps from "../Components/Steps";
+import Header from "../components/Header";
+import SideBar from "../components/SideBar";
+import Steps from "../components/Steps";
 
 const DiscoverProducts = () => {
 

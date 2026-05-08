@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Header from "../Components/Header";
-import Product from "../Components/Product";
-import SideBar from "../Components/SideBar";
+import Header from "../components/Header";
+import Product from "../components/Product";
+import SideBar from "../components/SideBar";
 import { base_url1 } from "../URL";
 
 const MyProduct = () => {

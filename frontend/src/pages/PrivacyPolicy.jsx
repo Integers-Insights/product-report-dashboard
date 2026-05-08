@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import Navbar from "../Components/Navbar";
+import Navbar from "../components/Navbar";
 
 function Section({ title, children }) {
   return (
@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
               <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">
                 Privacy Policy
               </h1>
-              <p className="text-slate-400 text-sm">Last updated: 1 May 2026</p>
+              <p className="text-slate-400 text-sm">Last updated: 7 May 2026</p>
             </motion.div>
           </div>
         </section>
@@ -46,7 +46,7 @@ export default function PrivacyPolicy() {
               <p>
                 Integer Market is a product of Integers Insights Private
                 Limited, a company incorporated under the laws of India. Our
-                registered address is in Ahmedabad, Gujarat, India. We operate
+                registered address is in Mumbai, Maharashtra, India. We operate
                 the website integermarket.com and related services.
               </p>
             </Section>
@@ -98,7 +98,7 @@ export default function PrivacyPolicy() {
               </p>
               <p>
                 To exercise any of these rights, email us at
-                privacy@integermarket.com.
+                info@integersinsights.com
               </p>
             </Section>
 
@@ -122,9 +122,9 @@ export default function PrivacyPolicy() {
 
             <Section title="8. Contact">
               <p>
-                For privacy-related queries: privacy@integermarket.com
+                For privacy-related queries: info@integersinsights.com
                 <br />
-                Integers Insights Private Limited, Ahmedabad, Gujarat, India.
+                Integers Insights Private Limited, Mumbai, Maharashtra, India.
               </p>
             </Section>
           </div>
