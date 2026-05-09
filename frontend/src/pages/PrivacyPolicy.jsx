@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
 
             <Section title="2. Information We Collect">
               <p>
-                We collect information you provide directly — such as your name,
+                We collect information you provide directly - such as your name,
                 email address, company name, and payment details when you
                 register or subscribe.
               </p>

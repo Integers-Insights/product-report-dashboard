@@ -36,7 +36,7 @@ const posts = [
     tag: "Trade Intelligence",
     title: "Understanding HS Codes: The Backbone of Global Trade Data",
     excerpt:
-      "HS codes aren't just a customs formality — they're the key to unlocking buyer discovery, competitor tracking, and demand forecasting.",
+      "HS codes aren't just a customs formality - they're the key to unlocking buyer discovery, competitor tracking, and demand forecasting.",
     date: "Apr 20, 2026",
     readTime: "5 min read",
     color: "bg-sky-50 text-sky-600",
@@ -54,7 +54,7 @@ const posts = [
     tag: "Data & AI",
     title: 'What Does "Confidence Score" Really Mean in Trade Data?',
     excerpt:
-      "Not all trade data is equal. We explain how Integer Market scores every data point — and why you should always check the confidence label before acting.",
+      "Not all trade data is equal. We explain how Integer Market scores every data point - and why you should always check the confidence label before acting.",
     date: "Apr 8, 2026",
     readTime: "7 min read",
     color: "bg-amber-50 text-amber-600",
@@ -72,7 +72,7 @@ const posts = [
     tag: "Export Strategy",
     title: "Top 5 Mistakes Indian Exporters Make When Entering New Markets",
     excerpt:
-      "Based on data from 2,400+ exporters on our platform, here are the most common and costly mistakes — and exactly how to avoid them.",
+      "Based on data from 2,400+ exporters on our platform, here are the most common and costly mistakes - and exactly how to avoid them.",
     date: "Mar 22, 2026",
     readTime: "8 min read",
     color: "bg-rose-50 text-rose-600",

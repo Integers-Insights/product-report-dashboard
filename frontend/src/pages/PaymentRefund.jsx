@@ -81,7 +81,7 @@ export default function PaymentRefund() {
               </p>
             </Section>
 
-            <Section title="4. Refund Policy — Monthly Plans">
+            <Section title="4. Refund Policy - Monthly Plans">
               <p>
                 Monthly subscriptions are billed at the start of each billing
                 period. We do not offer pro-rated refunds for unused days within
@@ -90,7 +90,7 @@ export default function PaymentRefund() {
               </p>
             </Section>
 
-            <Section title="5. Refund Policy — Annual Plans">
+            <Section title="5. Refund Policy - Annual Plans">
               <p>
                 Annual subscriptions come with a{" "}
                 <strong className="text-slate-800">

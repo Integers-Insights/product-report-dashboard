@@ -26,7 +26,8 @@ const countries = [
   { name: "Mexico", code: "+52", flag: "🇲🇽" },
 ];
 
-const UserSignup = () => {
+const Signup = () => {
+
   const [eyeButton, setEyeButton] = useState(false);
 
   const [error, setError] = useState(false);
@@ -476,4 +477,4 @@ const UserSignup = () => {
     </div>
   );
 };
-export default UserSignup;
+export default Signup;

@@ -582,7 +582,7 @@ const faqs = [
   },
   {
     q: "Can I change my plan anytime?",
-    a: "Yes — upgrade or downgrade whenever you like. Upgrades are immediate. Downgrades apply from the next billing date. No cancellation fees, no lock-in.",
+    a: "Yes - upgrade or downgrade whenever you like. Upgrades are immediate. Downgrades apply from the next billing date. No cancellation fees, no lock-in.",
   },
   {
     q: "How accurate is the data?",
@@ -590,11 +590,11 @@ const faqs = [
   },
   {
     q: "Is there a real free trial?",
-    a: "The Explorer plan is permanently free and gives you 3 full intelligence reports with real data. No watered-down previews — you see exactly what you're buying before you pay.",
+    a: "The Explorer plan is permanently free and gives you 3 full intelligence reports with real data. No watered-down previews - you see exactly what you're buying before you pay.",
   },
   {
     q: "What if I want to leave a yearly plan?",
-    a: "Full refund within the first 14 days of any yearly plan — no questions asked. After that, the remaining months are non-refundable but you can use the platform until the period ends.",
+    a: "Full refund within the first 14 days of any yearly plan - no questions asked. After that, the remaining months are non-refundable but you can use the platform until the period ends.",
   },
   {
     q: "How does Command pricing work?",
@@ -763,7 +763,7 @@ export default function Pricing() {
                 Research that fits your budget
               </h1>
               <p className="text-lg text-slate-500 font-light mb-10">
-                Same data quality that large enterprises use — at a price for
+                Same data quality that large enterprises use - at a price for
                 growing exporters. Start free.
               </p>
 

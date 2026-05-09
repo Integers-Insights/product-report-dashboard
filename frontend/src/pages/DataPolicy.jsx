@@ -33,7 +33,7 @@ export default function DataPolicy() {
         <div className="bg-white rounded-3xl border border-slate-200 shadow-card p-8 md:p-12">
           <Section title="1. Our Data Sources">
             <p>Integer Market aggregates trade intelligence from multiple authoritative sources, including: government customs databases (DGFT, US CBP, HMRC, EU TARIC); verified global business directories and import license registries; bill of lading and shipment records from major ports; aggregated and anonymised search demand signals; and real-time trade news and regulatory publications.</p>
-            <p>Every data point in a report includes its source, last updated date, and a confidence score (0–100).</p>
+            <p>Every data point in a report includes its source, last updated date, and a confidence score (0-100).</p>
           </Section>
 
           <Section title="2. Data Freshness">
@@ -41,7 +41,7 @@ export default function DataPolicy() {
           </Section>
 
           <Section title="3. Data Accuracy and Confidence Scores">
-            <p>No dataset is perfect. We apply a multi-layer verification process — cross-referencing sources, flagging anomalies, and assigning confidence scores — to give you a clear picture of data reliability. We recommend acting on insights with a confidence score of 75 or above.</p>
+            <p>No dataset is perfect. We apply a multi-layer verification process - cross-referencing sources, flagging anomalies, and assigning confidence scores - to give you a clear picture of data reliability. We recommend acting on insights with a confidence score of 75 or above.</p>
             <p>Integer Market does not guarantee the accuracy of third-party source data. We are not liable for decisions based on platform data.</p>
           </Section>
 
