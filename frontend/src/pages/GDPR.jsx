@@ -53,11 +53,11 @@ export default function GDPR() {
             <Section title="1. Lawful Basis for Processing">
               <p>
                 We process your personal data on the following lawful bases:{" "}
-                <strong className="text-slate-800">Contract</strong> - to
+                <strong className="text-slate-800">Contract</strong> — to
                 provide the service you have subscribed to;{" "}
                 <strong className="text-slate-800">Legitimate interests</strong>{" "}
-                - to improve our platform, prevent fraud, and maintain security;{" "}
-                <strong className="text-slate-800">Consent</strong> - for
+                — to improve our platform, prevent fraud, and maintain security;{" "}
+                <strong className="text-slate-800">Consent</strong> — for
                 marketing communications and optional analytics cookies.
               </p>
             </Section>
@@ -66,31 +66,31 @@ export default function GDPR() {
               <p>Under GDPR, you have the right to:</p>
               <ul className="list-disc ml-5 space-y-1">
                 <li>
-                  <strong className="text-slate-800">Access</strong> - request a
+                  <strong className="text-slate-800">Access</strong> — request a
                   copy of all personal data we hold about you
                 </li>
                 <li>
-                  <strong className="text-slate-800">Rectification</strong> -
+                  <strong className="text-slate-800">Rectification</strong> —
                   correct inaccurate or incomplete data
                 </li>
                 <li>
-                  <strong className="text-slate-800">Erasure</strong> - request
+                  <strong className="text-slate-800">Erasure</strong> — request
                   deletion of your data ("right to be forgotten")
                 </li>
                 <li>
-                  <strong className="text-slate-800">Restriction</strong> -
+                  <strong className="text-slate-800">Restriction</strong> —
                   limit how we process your data
                 </li>
                 <li>
-                  <strong className="text-slate-800">Portability</strong> -
+                  <strong className="text-slate-800">Portability</strong> —
                   receive your data in a machine-readable format
                 </li>
                 <li>
-                  <strong className="text-slate-800">Object</strong> - opt out
+                  <strong className="text-slate-800">Object</strong> — opt out
                   of processing based on legitimate interests
                 </li>
                 <li>
-                  <strong className="text-slate-800">Withdraw consent</strong> -
+                  <strong className="text-slate-800">Withdraw consent</strong> —
                   for any processing based on consent
                 </li>
               </ul>

@@ -118,7 +118,7 @@ export default function Team() {
                 <span className="gradient-text">your intelligence</span>
               </h1>
               <p className="text-lg text-slate-500 font-light max-w-2xl mx-auto">
-                International trade, data engineering, and AI expertise -
+                International trade, data engineering, and AI expertise —
                 because solving this problem requires all three. We're a team of
                 builders who've lived the exporter's pain firsthand.
               </p>

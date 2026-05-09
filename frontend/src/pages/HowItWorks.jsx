@@ -59,7 +59,7 @@ const steps = [
     n: "03",
     icon: BarChart3,
     title: "Get a scored report",
-    desc: "A clear, structured report with 0-100 opportunity scores, pricing benchmarks, and ranked buyer lists - ready in minutes.",
+    desc: "A clear, structured report with 0–100 opportunity scores, pricing benchmarks, and ranked buyer lists — ready in minutes.",
     color: "bg-violet-500",
   },
   {
@@ -75,12 +75,12 @@ const features = [
   {
     icon: Zap,
     title: "Always live data",
-    desc: "Data refreshes continuously - you're never working with last year's numbers.",
+    desc: "Data refreshes continuously — you're never working with last year's numbers.",
   },
   {
     icon: Target,
     title: "Opportunity scoring",
-    desc: "Every country & buyer gets a 0-100 score so you know exactly where to focus.",
+    desc: "Every country & buyer gets a 0–100 score so you know exactly where to focus.",
   },
   {
     icon: Globe,
@@ -95,7 +95,7 @@ const features = [
   {
     icon: CheckCircle2,
     title: "Verified buyer contacts",
-    desc: "Real emails, LinkedIn profiles - verified so your outreach actually reaches someone.",
+    desc: "Real emails, LinkedIn profiles — verified so your outreach actually reaches someone.",
   },
   {
     icon: Box,
@@ -105,7 +105,7 @@ const features = [
   {
     icon: Lightbulb,
     title: "Confidence scores",
-    desc: "Every data point tells you how reliable it is - act on what matters.",
+    desc: "Every data point tells you how reliable it is — act on what matters.",
   },
   {
     icon: Bell,
@@ -124,7 +124,7 @@ const modules = [
     icon: BarChart3,
     title: "Market Demand",
     pills: ["Opportunity score", "YoY growth", "Seasonal trends"],
-    desc: "Find how much demand really exists for your product in any country - with growth trends and a clear opportunity score.",
+    desc: "Find how much demand really exists for your product in any country — with growth trends and a clear opportunity score.",
     color: "border-brand-200 bg-brand-50/50",
     iconBg: "bg-brand-100",
     iconColor: "text-brand-600",
@@ -133,7 +133,7 @@ const modules = [
     icon: Search,
     title: "Keyword Intelligence",
     pills: ["Search volume", "Local languages", "Ad keywords"],
-    desc: "See exactly what terms buyers use globally - by country and language, ready for ads and content.",
+    desc: "See exactly what terms buyers use globally — by country and language, ready for ads and content.",
     color: "border-sky-200 bg-sky-50/50",
     iconBg: "bg-sky-100",
     iconColor: "text-sky-600",
@@ -142,7 +142,7 @@ const modules = [
     icon: Users,
     title: "Buyer Discovery",
     pills: ["Verified emails", "LinkedIn", "Buyer scores"],
-    desc: "Find importers actively sourcing your product - with verified contacts and sourcing history.",
+    desc: "Find importers actively sourcing your product — with verified contacts and sourcing history.",
     color: "border-violet-200 bg-violet-50/50",
     iconBg: "bg-violet-100",
     iconColor: "text-violet-600",
@@ -160,7 +160,7 @@ const modules = [
     icon: Target,
     title: "Competitor Intel",
     pills: ["Competitor pricing", "Market share", "Origins"],
-    desc: "See who exports your product, their prices, and market share - find gaps and price competitively.",
+    desc: "See who exports your product, their prices, and market share — find gaps and price competitively.",
     color: "border-rose-200 bg-rose-50/50",
     iconBg: "bg-rose-100",
     iconColor: "text-rose-600",
@@ -169,7 +169,7 @@ const modules = [
     icon: Megaphone,
     title: "Marketing Blueprint",
     pills: ["Ad copy", "Email sequences", "Landing page"],
-    desc: "AI-written ad scripts and email sequences - tailored to your product and target country, ready to launch.",
+    desc: "AI-written ad scripts and email sequences — tailored to your product and target country, ready to launch.",
     color: "border-emerald-200 bg-emerald-50/50",
     iconBg: "bg-emerald-100",
     iconColor: "text-emerald-600",
@@ -204,12 +204,12 @@ export default function HowItWorks() {
                 How it works
               </span>
               <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-5 text-balance">
-                From product name to real buyers -{" "}
+                From product name to real buyers —{" "}
                 <span className="gradient-text">in minutes</span>
               </h1>
               <p className="text-lg text-slate-500 font-light max-w-2xl mx-auto">
                 You tell us your product. We scan trade records, buyer
-                directories, and demand signals across 180+ countries - so you
+                directories, and demand signals across 180+ countries — so you
                 don't spend weeks waiting for a market research agency.
               </p>
             </motion.div>

@@ -120,35 +120,35 @@ const modules = [
   {
     icon: Search,
     title: "Keyword Intelligence",
-    desc: "Exact search terms buyers use globally - by country and language, ready for ads.",
+    desc: "Exact search terms buyers use globally — by country and language, ready for ads.",
     color: "from-sky-400/20 to-sky-500/5",
     iconColor: "text-sky-500",
   },
   {
     icon: Users,
     title: "Buyer Discovery",
-    desc: "Verified importers actively sourcing your product - emails, LinkedIn, scored.",
+    desc: "Verified importers actively sourcing your product — emails, LinkedIn, scored.",
     color: "from-violet-400/20 to-violet-500/5",
     iconColor: "text-violet-500",
   },
   {
     icon: Globe,
     title: "Trade Intelligence",
-    desc: "Real customs records, HS codes, port volumes - market sizing with hard data.",
+    desc: "Real customs records, HS codes, port volumes — market sizing with hard data.",
     color: "from-amber-400/20 to-amber-500/5",
     iconColor: "text-amber-500",
   },
   {
     icon: Target,
     title: "Competitor Intel",
-    desc: "Who exports your product, what they charge, their market share - find the gaps.",
+    desc: "Who exports your product, what they charge, their market share — find the gaps.",
     color: "from-rose-400/20 to-rose-500/5",
     iconColor: "text-rose-500",
   },
   {
     icon: Megaphone,
     title: "Marketing Blueprint",
-    desc: "AI-written ad copy, email sequences, landing pages - tailored per country.",
+    desc: "AI-written ad copy, email sequences, landing pages — tailored per country.",
     color: "from-emerald-400/20 to-emerald-500/5",
     iconColor: "text-emerald-500",
   },
@@ -187,11 +187,11 @@ const testimonials = [
 
 /* ── Comparison data ── */
 const compare = [
-  ["Market demand data", "6-12 weeks", "8 minutes"],
-  ["Data freshness", "12-18 months old", "Live, always current"],
-  ["Cost per report", "₹40K-₹2L+", "From $49/mo unlimited"],
+  ["Market demand data", "6–12 weeks", "8 minutes"],
+  ["Data freshness", "12–18 months old", "Live, always current"],
+  ["Cost per report", "₹40K–₹2L+", "From $49/mo unlimited"],
   ["Buyer contacts", "Rarely included", "Yes, verified"],
-  ["Countries covered", "1-5 per report", "180+ simultaneously"],
+  ["Countries covered", "1–5 per report", "180+ simultaneously"],
 ];
 
 export default function Home() {
@@ -301,7 +301,7 @@ export default function Home() {
               className="text-lg sm:text-xl text-slate-500 font-light leading-relaxed max-w-[580px] mb-10"
             >
               Integer Market replaces expensive market research agencies with
-              live AI intelligence - supply demand analysis, global trade data,
+              live AI intelligence — supply demand analysis, global trade data,
               and verified buyer discovery in minutes, not weeks.
             </motion.p>
 
@@ -490,7 +490,7 @@ export default function Home() {
                 Six research engines. One platform.
               </h2>
               <p className="text-lg text-slate-500 font-light max-w-xl mx-auto">
-                From supply demand analysis to competitor pricing - your own
+                From supply demand analysis to competitor pricing — your own
                 market research firm, running 24/7.
               </p>
             </Reveal>
@@ -689,7 +689,7 @@ export default function Home() {
                     <span className="text-brand-600 font-semibold">
                       live sample
                     </span>{" "}
-                    - your report refreshes whenever underlying data changes
+                    — your report refreshes whenever underlying data changes
                   </p>
                   <motion.button
                     whileHover={{ scale: 1.04 }}
@@ -767,12 +767,12 @@ export default function Home() {
                     {
                       icon: Target,
                       title: "Scored, not guessed",
-                      desc: "Every country and buyer gets a 0-100 opportunity score so you always know where to focus first.",
+                      desc: "Every country and buyer gets a 0–100 opportunity score so you always know where to focus first.",
                     },
                     {
                       icon: ShieldCheck,
                       title: "94% data accuracy",
-                      desc: "Every data point shows its source, freshness date, and confidence score - full transparency.",
+                      desc: "Every data point shows its source, freshness date, and confidence score — full transparency.",
                     },
                     {
                       icon: DollarSign,
