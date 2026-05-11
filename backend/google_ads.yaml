@@ -1,0 +1,9 @@
+# Google Ads API configuration
+
+developer_token: BuH-CocbbwA-xHzDa2FNsg
+client_id: 186821146219-uat41cnd1031d7iouab3u7vmkck2bn5e.apps.googleusercontent.com
+client_secret: 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
+refresh_token: 1//04KX_NNgaD8YTCgYIARAAGAQSNwF-L9IraQ2yjvf3QpKGEcd59n9BpDyuqIMqXMcuPaC9-B2us39lE8eLUXzpD_meoJ3vd0Iv__I
+login_customer_id: 1143624949
+use_proto_plus: True
+api_version: v18 
