@@ -122,7 +122,7 @@ const UserLogin = () => {
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
               <img alt="Int_Logo" src={Int_Logo} className="h-10 w-auto" />
-              <h2 className="mt-8 text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="mt-8 text-2xl font-bold text-gray-900">
                 Sign in to your account
               </h2>
             </div>
@@ -132,7 +132,7 @@ const UserLogin = () => {
                 <div className="h-23">
                   <label
                     htmlFor="email"
-                    className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
+                    className="block text-sm/6 font-medium text-gray-900"
                   >
                     Email address <sup>*</sup>
                   </label>
@@ -162,7 +162,7 @@ const UserLogin = () => {
                 <div className="h-23">
                   <label
                     htmlFor="password"
-                    className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
+                    className="block text-sm/6 font-medium text-gray-900"
                   >
                     Password <sup>*</sup>
                   </label>
