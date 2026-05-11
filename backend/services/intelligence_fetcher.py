@@ -1169,7 +1169,7 @@ async def fetch_dashboard_data(conn, user_id: str) -> Dict[str, Any]:
         return {
             "success": True,
             "full_name": full_name,
-            "user_id":user_row["user_id"],
+            "user_id": user_row["user_id"] if user_row else user_id,
              "current_datetime": datetime.now(timezone.utc).isoformat(),
             "stats": [
                 {"key": "Products Tracked",  "total": products_total,   "this_week": products_this_week},
