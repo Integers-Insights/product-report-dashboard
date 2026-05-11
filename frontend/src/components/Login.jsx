@@ -197,7 +197,7 @@ const UserLogin = () => {
                   )}
                 </div>
                 {/* <div className="h-23">
-                                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <label className="block text-sm font-medium text-gray-900">
                                         Password <sup>*</sup>
                                     </label>
 
