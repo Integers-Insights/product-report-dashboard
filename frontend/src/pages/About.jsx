@@ -49,26 +49,26 @@ const team = [
     border: "border-brand-200",
   },
   {
-    initials: "PM",
-    name: "Priya Menon",
-    role: "Co-founder & CTO",
-    bio: "Former data engineer at a global trade intelligence firm. Built real-time pipelines processing 40M+ trade records daily.",
+    initials: "YM",
+    name: "Yukta Moolya",
+    role: "AI/ML Engineer",
+    bio: "Builds LLM-integrated SaaS platforms for real-world marketing intelligence. Shipped production AI systems spanning ML, CV, and cloud infrastructure.",
     color: "bg-sky-100 text-sky-700",
     border: "border-sky-200",
   },
   {
-    initials: "RS",
-    name: "Rohan Shah",
-    role: "Head of AI & Data",
-    bio: "PhD in computational linguistics. Designed the models that map buyer intent signals across 28 languages globally.",
+    initials: "NN",
+    name: "Neel Naik",
+    role: "Data Engineer",
+    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS — shipped and battle-tested.",
     color: "bg-violet-100 text-violet-700",
     border: "border-violet-200",
   },
   {
-    initials: "NJ",
-    name: "Neha Joshi",
-    role: "Head of Partnerships",
-    bio: "Formerly with FIEO and CII. Manages data access agreements with government trade bodies and chambers of commerce.",
+    initials: "AG",
+    name: "Amarjit Gupta",
+    role: "Full-Stack Developer",
+    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind — from pixel-perfect UI to production-ready databases.",
     color: "bg-amber-100 text-amber-700",
     border: "border-amber-200",
   },
@@ -141,7 +141,7 @@ const sources = [
 ];
 
 const statCells = [
-  { num: "2,418+", label: "Exporters on Integer Market" },
+  { num: "2,418+", label: "Exporters on Report InShort" },
   { num: "1.24M", label: "Reports generated" },
   { num: "48K+", label: "Verified buyers indexed" },
   { num: "94%", label: "Average data confidence" },
@@ -172,7 +172,7 @@ export default function About() {
             >
               <span className="sec-label justify-center">
                 <Award size={12} />
-                About Integer Market
+                About Report InShort
               </span>
               <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-5 text-balance">
                 We built the platform

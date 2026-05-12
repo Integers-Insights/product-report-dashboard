@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
-
+import report_inshort_logo1 from "../assets/Report_inshort_Logo (1).svg";
 const cols = [
   {
     title: "Product",
@@ -55,16 +55,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-                <TrendingUp
-                  size={15}
-                  className="text-white"
-                  strokeWidth={2.5}
+              <div className="h-10 w-30">
+                <img
+                  src={report_inshort_logo1}
+                  alt="logo"
+                  className="h-full w-full"
                 />
               </div>
-              <span className="font-extrabold text-[17px] text-white tracking-tight">
-                Integer Market
-              </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-[220px] mb-6">
               Live market intelligence for exporters and manufacturers. Know
@@ -91,7 +88,10 @@ export default function Footer() {
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                 </svg>
               </SocialIcon>
-              <SocialIcon href="https://www.linkedin.com/company/integersinsights" label="LinkedIn">
+              <SocialIcon
+                href="https://www.linkedin.com/company/integersinsights"
+                label="LinkedIn"
+              >
                 <svg
                   width="14"
                   height="14"
@@ -120,7 +120,10 @@ export default function Footer() {
                   />
                 </svg>
               </SocialIcon>
-              <SocialIcon href="https://www.facebook.com/profile.php?id=61585447392065" label="Facebook">
+              <SocialIcon
+                href="https://www.facebook.com/profile.php?id=61585447392065"
+                label="Facebook"
+              >
                 <svg
                   width="14"
                   height="14"
@@ -130,21 +133,34 @@ export default function Footer() {
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
               </SocialIcon>
-              <SocialIcon href="https://www.reddit.com/user/integers_insights/" label="Reddit">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <circle cx="12" cy="12" r="10" />
+              <SocialIcon
+                href="https://www.reddit.com/user/integers_insights/"
+                label="Reddit"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="currentColor" />
+                  <ellipse cx="12" cy="13" rx="6" ry="4.8" fill="#0f172a" />
+                  <circle cx="9.8" cy="12.8" r="0.75" fill="white" />
+                  <circle cx="14.2" cy="12.8" r="0.75" fill="white" />
                   <path
-                    fill="#0f172a"
-                    d="M17.56 12a1.5 1.5 0 0 0-1.5-1.5 1.48 1.48 0 0 0-.93.32A7.37 7.37 0 0 0 12 9.75a.25.25 0 0 0-.24.18l-.54 2.54a5.19 5.19 0 0 1 2.42.63 1 1 0 1 1 1.05 1.64 3.9 3.9 0 0 1 .06.5 2.27 2.27 0 0 1-2.5 2 2.27 2.27 0 0 1-2.5-2 3.9 3.9 0 0 1 .06-.5 1 1 0 1 1 1.05-1.64 5.19 5.19 0 0 1 2.42-.63l.49-2.28a3.77 3.77 0 0 0-1-.07l-.08-.38a7.43 7.43 0 0 0-2.72 1.07 1.48 1.48 0 0 0-.93-.32A1.5 1.5 0 0 0 6.44 12a1.52 1.52 0 0 0 .75 1.3 3.57 3.57 0 0 0 0 .45c0 2.27 2.24 4.1 5 4.1s5-1.83 5-4.1a3.57 3.57 0 0 0 0-.45 1.52 1.52 0 0 0 .37-1.3z"
+                    d="M9.5 15c.7.7 1.6 1.05 2.5 1.05s1.8-.35 2.5-1.05"
+                    stroke="white"
+                    strokeWidth="1"
+                    strokeLinecap="round"
                   />
+                  <path
+                    d="M12.8 8.7l1.1-2.8 2.2.5"
+                    stroke="#0f172a"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="16.8" cy="6.9" r="1.1" fill="#0f172a" />
                 </svg>
               </SocialIcon>
-              <SocialIcon href="https://x.com/integers71866" label="X (Twitter)">
+              <SocialIcon
+                href="https://x.com/integers71866"
+                label="X (Twitter)"
+              >
                 <svg
                   width="13"
                   height="13"

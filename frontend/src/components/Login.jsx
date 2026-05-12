@@ -1,6 +1,6 @@
 import { LuChevronDown } from "react-icons/lu";
 import Int_Logo from "../assets/Int_Logo_Main_Fav.png";
-import login_img from "../assets/login.jpg";
+import login_img from "../assets/login.png";
 import { useEffect, useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";

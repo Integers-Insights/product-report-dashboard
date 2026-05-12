@@ -45,7 +45,7 @@ const posts = [
     tag: "Case Study",
     title: "How Kapoor Exports Found Their First German Buyer in 6 Weeks",
     excerpt:
-      "A Gujarat-based nutraceuticals manufacturer used Integer Market to identify demand, shortlist buyers, and close their first export deal in Europe.",
+      "A Gujarat-based nutraceuticals manufacturer used Report InShort to identify demand, shortlist buyers, and close their first export deal in Europe.",
     date: "Apr 14, 2026",
     readTime: "4 min read",
     color: "bg-violet-50 text-violet-600",
@@ -54,7 +54,7 @@ const posts = [
     tag: "Data & AI",
     title: 'What Does "Confidence Score" Really Mean in Trade Data?',
     excerpt:
-      "Not all trade data is equal. We explain how Integer Market scores every data point — and why you should always check the confidence label before acting.",
+      "Not all trade data is equal. We explain how Report InShort scores every data point — and why you should always check the confidence label before acting.",
     date: "Apr 8, 2026",
     readTime: "7 min read",
     color: "bg-amber-50 text-amber-600",

@@ -1,6 +1,6 @@
 import { LuChevronDown } from "react-icons/lu";
 import Int_Logo from "../assets/Int_Logo_Main_Fav.png";
-import signup_img from "../assets/signup.jpg";
+import signup_img from "../assets/signup.png";
 import { useEffect, useState } from "react";
 import { IoEyeOffOutline } from "react-icons/io5";
 import { IoEyeOutline } from "react-icons/io5";

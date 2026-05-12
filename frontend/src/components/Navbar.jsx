@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, TrendingUp, ChevronRight } from "lucide-react";
+import report_inshort_logo from "../assets/Report_inshort_Logo.svg";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -57,12 +58,9 @@ export default function Navbar() {
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center shadow-glow-green-sm group-hover:scale-105 transition-transform">
-              <TrendingUp size={15} className="text-white" strokeWidth={2.5} />
+            <div className="h-10 w-30">
+              <img src={report_inshort_logo} alt="logo" className="h-full w-full" />
             </div>
-            <span className="font-extrabold text-[15px] tracking-tight text-slate-900 hidden sm:block">
-              Integer Market
-            </span>
           </Link>
 
           {/* Desktop links */}

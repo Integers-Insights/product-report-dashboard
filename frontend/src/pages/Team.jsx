@@ -24,52 +24,28 @@ function Reveal({ children, delay = 0, className = "" }) {
 
 const team = [
   {
-    initials: "AK",
-    name: "Aryan Kapoor",
-    role: "Co-founder & CEO",
-    bio: "10 years in international trade consulting. Helped 200+ Indian manufacturers break into European and US markets. Former director at a leading export promotion council.",
-    color: "bg-brand-100 text-brand-700",
-    border: "border-brand-200",
-  },
-  {
-    initials: "PM",
-    name: "Priya Menon",
-    role: "Co-founder & CTO",
-    bio: "Former data engineer at a global trade intelligence firm. Built real-time pipelines processing 40M+ trade records daily. IIT Bombay alumni.",
+    initials: "YM",
+    name: "Yukta Moolya",
+    role: "AI/ML Engineer",
+    bio: "Builds LLM-integrated SaaS platforms for real-world marketing intelligence. Shipped production AI systems spanning ML, CV, and cloud infrastructure.",
     color: "bg-sky-100 text-sky-700",
     border: "border-sky-200",
   },
   {
-    initials: "RS",
-    name: "Rohan Shah",
-    role: "Head of AI & Data",
-    bio: "PhD in computational linguistics. Designed the models that map buyer intent signals across 28 languages globally. Previously at Google Research.",
+    initials: "NN",
+    name: "Neel Naik",
+    role: "Data Engineer",
+    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS — shipped and battle-tested.",
     color: "bg-violet-100 text-violet-700",
     border: "border-violet-200",
   },
   {
-    initials: "NJ",
-    name: "Neha Joshi",
-    role: "Head of Partnerships",
-    bio: "Formerly with FIEO and CII. Manages data access agreements with government trade bodies and chambers of commerce across 40+ countries.",
+    initials: "AG",
+    name: "Amarjit Gupta",
+    role: "Full-Stack Developer",
+    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind — from pixel-perfect UI to production-ready databases.",
     color: "bg-amber-100 text-amber-700",
     border: "border-amber-200",
-  },
-  {
-    initials: "VR",
-    name: "Vikram Rao",
-    role: "Head of Product",
-    bio: "Ex-product lead at two B2B SaaS unicorns. Obsessed with reducing time-to-insight for exporter workflows. 8 years in product management.",
-    color: "bg-emerald-100 text-emerald-700",
-    border: "border-emerald-200",
-  },
-  {
-    initials: "SA",
-    name: "Shruti Agarwal",
-    role: "Head of Customer Success",
-    bio: "Built the onboarding and success programs from zero. Ensures every exporter gets their first international lead within 30 days of joining.",
-    color: "bg-rose-100 text-rose-700",
-    border: "border-rose-200",
   },
 ];
 
@@ -150,7 +126,7 @@ export default function Team() {
                     <div className="text-sm text-slate-500 leading-relaxed flex-1">
                       {bio}
                     </div>
-                    <a
+                    {/* <a
                       href="#"
                       className="mt-4 inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-brand-600 transition-colors"
                     >
@@ -165,7 +141,7 @@ export default function Team() {
                         <circle cx="4" cy="4" r="2" />
                       </svg>
                       LinkedIn
-                    </a>
+                    </a> */}
                   </motion.div>
                 </Reveal>
               ))}
