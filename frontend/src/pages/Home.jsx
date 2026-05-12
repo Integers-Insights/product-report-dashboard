@@ -158,7 +158,7 @@ const modules = [
 const testimonials = [
   {
     quote:
-      "Integer Market gave us a ranked list of 12 countries with scores in 8 minutes. We closed our first German buyer within 6 weeks.",
+      "Report InShort gave us a ranked list of 12 countries with scores in 8 minutes. We closed our first German buyer within 6 weeks.",
     name: "Rajiv Kapoor",
     role: "Director, Nutraceuticals · Gujarat",
     rating: 5,
@@ -176,7 +176,7 @@ const testimonials = [
   },
   {
     quote:
-      "We used to pay ₹80,000 per static report. Integer Market gives us live, updated intelligence every month for a fraction of that cost.",
+      "We used to pay ₹80,000 per static report. Report InShort gives us live, updated intelligence every month for a fraction of that cost.",
     name: "Aakash Patel",
     role: "Founder, Specialty Chemicals · Ahmedabad",
     rating: 5,
@@ -300,7 +300,7 @@ export default function Home() {
               }}
               className="text-lg sm:text-xl text-slate-500 font-light leading-relaxed max-w-[580px] mb-10"
             >
-              Integer Market replaces expensive market research agencies with
+              Report InShort replaces expensive market research agencies with
               live AI intelligence — supply demand analysis, global trade data,
               and verified buyer discovery in minutes, not weeks.
             </motion.p>
@@ -710,7 +710,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto">
             <Reveal className="text-center mb-14">
               <span className="sec-label">
-                <Clock size={12} /> Why Integer Market
+                <Clock size={12} /> Why Report InShort
               </span>
               <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
                 Built for speed, not spreadsheets
@@ -731,7 +731,7 @@ export default function Home() {
                           Agency / Report
                         </th>
                         <th className="text-center px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-brand-600 bg-brand-50 border-b border-brand-100">
-                          Integer Market
+                          Report InShort
                         </th>
                       </tr>
                     </thead>

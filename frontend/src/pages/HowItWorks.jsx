@@ -52,7 +52,7 @@ const steps = [
     n: "02",
     icon: Cpu,
     title: "AI pulls live data",
-    desc: "Integer Market scans 80+ government trade databases, buyer directories, and demand signals across 180+ countries simultaneously.",
+    desc: "Report InShort scans 80+ government trade databases, buyer directories, and demand signals across 180+ countries simultaneously.",
     color: "bg-sky-500",
   },
   {
