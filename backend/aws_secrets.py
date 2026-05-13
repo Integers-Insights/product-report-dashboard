@@ -10,7 +10,8 @@ def load_secrets(secret_name="intrade24/prod", region="eu-north-1"):
         secrets = json.loads(response["SecretString"])
 
         for key, value in secrets.items():
-            os.environ[key] = str(value)
+            if not os.environ.get(key):
+                os.environ[key] = str(value)
 
         print(f"✅ Secrets loaded from AWS Secrets Manager")
         return secrets
