@@ -93,9 +93,6 @@
   --text-15: 0.9375rem;
 
   --text-13: 0.8125rem;
-
-  /* latest web */
-  /* Brand color scale */
   --color-brand-50: #edfdf6;
   --color-brand-100: #d4f9e8;
   --color-brand-200: #adf1d4;
@@ -106,15 +103,7 @@
   --color-brand-700: #127347;
   --color-brand-800: #115c3a;
   --color-brand-900: #0f4c30;
-
-  /* Typography */
-  /* --font-sans: 'Plus Jakarta Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace; */
-
-  /* Blur (also covers backdrop-blur-xs) */
   --blur-xs: 2px;
-
-  /* Box shadows */
   --shadow-glow-green:
     0 0 20px rgba(26, 168, 102, 0.3), 0 0 60px rgba(26, 168, 102, 0.1);
   --shadow-glow-green-sm: 0 0 10px rgba(26, 168, 102, 0.2);
@@ -123,8 +112,6 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
   --shadow-card-hover:
     0 4px 6px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.1);
-
-  /* Named animations */
   --animate-spin-slow: spin 8s linear infinite;
   --animate-pulse-green: pulse-green 2s ease-in-out infinite;
   --animate-ticker: ticker 30s linear infinite;
@@ -708,7 +695,6 @@
   text-decoration: none;
 }
 
-/* ─── Keyframes ───────────────────────────────────────────────────────── */
 @keyframes pulse-green {
   0%,
   100% {
@@ -782,9 +768,7 @@
   }
 }
 
-/* ─── Components ──────────────────────────────────────────────────────── */
 @layer components {
-  /* Glassmorphism */
   .glass {
     @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass;
   }
@@ -792,7 +776,6 @@
     @apply bg-white/50 backdrop-blur-2xl border border-white/40;
   }
 
-  /* Gradient text */
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #1aa866 0%, #0ea5e9 100%);
@@ -807,7 +790,6 @@
     );
   }
 
-  /* Shimmer button */
   .btn-shimmer {
     @apply relative overflow-hidden;
   }
@@ -824,7 +806,6 @@
     animation: shimmer 2.5s linear infinite;
   }
 
-  /* Grid / dot patterns */
   .bg-grid {
     background-image:
       linear-gradient(rgba(26, 168, 102, 0.06) 1px, transparent 1px),
@@ -839,7 +820,6 @@
     background-size: 24px 24px;
   }
 
-  /* Glow ring */
   .glow-ring {
     box-shadow:
       0 0 0 1px rgba(26, 168, 102, 0.2),
@@ -847,13 +827,11 @@
       0 0 60px rgba(26, 168, 102, 0.05);
   }
 
-  /* Live dot */
   .live-dot {
     @apply w-2 h-2 rounded-full bg-brand-500 inline-block;
     animation: pulse-green 2s ease-in-out infinite;
   }
 
-  /* Bento card */
   .bento {
     @apply bg-white rounded-2xl border border-slate-100 shadow-card transition-all duration-300;
   }
@@ -861,12 +839,10 @@
     @apply shadow-card-hover border-brand-200 -translate-y-0.5;
   }
 
-  /* Section label */
   .sec-label {
     @apply inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-brand-600 mb-3;
   }
 
-  /* Noise texture overlay */
   .noise::before {
     content: "";
     position: absolute;
@@ -876,13 +852,3 @@
     border-radius: inherit;
   }
 }
-
-/* ─── Utilities ─────────────────────────────────────────────────────────
-@layer utilities {
-  .mask-radial {
-    mask-image: radial-gradient(ellipse at 50% 50%, black 40%, transparent 100%);
-  }
-  .mask-radial-top {
-    mask-image: radial-gradient(ellipse at 50% 20%, black 30%, transparent 100%);
-  }
-} */

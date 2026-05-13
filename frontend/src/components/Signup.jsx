@@ -4,7 +4,6 @@ import signup_img from "../assets/signup.png";
 import { useEffect, useState } from "react";
 import { IoEyeOffOutline } from "react-icons/io5";
 import { IoEyeOutline } from "react-icons/io5";
-import { base_url1 } from "../URL";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -45,6 +44,8 @@ const Signup = () => {
 
   const navigate = useNavigate();
 
+  const base_url = import.meta.env.VITE_BASE_URL;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -53,63 +54,6 @@ const Signup = () => {
       [name]: value,
     }));
   };
-
-  // const handleSubmit = async (e) => {
-  //     e.preventDefault();
-
-  //     if (!formData.name || !formData.email || !formData.company || !formData.password) {
-  //         setError(true);
-  //         return;
-  //     }
-  //     else if (formData.password.length < 6) {
-  //         toast.error("Password must be at least 6 characters")
-  //     }
-  //     else if (formData.name.trim() && formData.email.trim() && formData.company.trim() && formData.password.trim()) {
-  //         setError(false);
-  //         const payload = {
-  //             full_name: formData.name,
-  //             email: formData.email,
-  //             company_name: formData.company,
-  //             password: formData.password,
-  //             phone: `${formData.country}${formData.phone}`
-  //         };
-
-  //         console.log("Form Data:", payload);
-
-  //         setLoading(true);
-
-  //         try {
-  //             const response = await fetch(`${base_url1}/signup`, {
-  //                 method: "POST",
-  //                 headers: {
-  //                     "Content-Type": "application/json"
-  //                 },
-  //                 body: JSON.stringify(payload)
-  //             });
-
-  //             const data = await response.json();
-
-  //             console.log(data);
-
-  //             if(data.success){
-  //                 toast.success(data.message || "Signup successful. Verify your email.");
-  //                 navigate("/user-login");
-  //             }
-  //             else{
-  //                 toast.error(data.detail || "Signup failed.");
-  //             }
-
-  //         } catch (error) {
-  //             console.error("Error:", error);
-  //             toast.error("Server error");
-  //         }finally{
-  //             setLoading(false);
-  //         }
-  //     }
-  //     else {
-  //         toast.error("white space is not allowed.");
-  //     }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -147,7 +91,7 @@ const Signup = () => {
     };
 
     try {
-      const response = await fetch(`${base_url1}/signup`, {
+      const response = await fetch(`${base_url}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,8 +106,6 @@ const Signup = () => {
         return;
       }
 
-      console.log("data: ", data);
-
       if (data?.success) {
         toast.success(data?.message || "Signup successful. Verify your email.");
         setFormData({
@@ -174,8 +116,6 @@ const Signup = () => {
           country: "+91",
           phone: "",
         });
-
-        // navigate("/user-login");
       } else {
         toast.error(data?.detail || "Signup failed.");
       }

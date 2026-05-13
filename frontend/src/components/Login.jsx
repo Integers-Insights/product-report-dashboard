@@ -4,7 +4,6 @@ import login_img from "../assets/login.png";
 import { useEffect, useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
-import { base_url1 } from "../URL";
 import toast from "react-hot-toast";
 
 const UserLogin = () => {
@@ -18,6 +17,8 @@ const UserLogin = () => {
     email: "",
     password: "",
   });
+
+  const base_url = import.meta.env.VITE_BASE_URL;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +57,7 @@ const UserLogin = () => {
     };
 
     try {
-      const response = await fetch(`${base_url1}/login`, {
+      const response = await fetch(`${base_url}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,13 +66,6 @@ const UserLogin = () => {
       });
 
       const data = await response.json();
-
-      // if (!response.ok) {
-      //     toast.error(data.detail || "Login failed");
-      //     return;
-      // }
-
-      // console.log(data);
 
       if (data.success) {
         toast.success(data.message || "Login successful");
@@ -85,21 +79,6 @@ const UserLogin = () => {
       } else {
         toast.error(data.detail || "Invalid credentials");
       }
-
-      // if (data.success) {
-      //     toast.success(data.message || "Login successful");
-      //     if (data.token) {
-      //         localStorage.setItem("token", data.token);
-      //     }
-      //     setFormData({
-      //         email: "",
-      //         password: ""
-      //     });
-
-      //     navigate("/dashboard");
-      // } else {
-      //     toast.error(data.detail || "Invalid credentials");
-      // }
     } catch (error) {
       console.error("Error:", error);
       toast.error("Server error. Please try again.");
@@ -196,28 +175,6 @@ const UserLogin = () => {
                     </p>
                   )}
                 </div>
-                {/* <div className="h-23">
-                                    <label className="block text-sm font-medium text-gray-900">
-                                        Password <sup>*</sup>
-                                    </label>
-
-                                    <div className="relative mt-2">
-                                        <button type="button" className="absolute right-2 top-2.5 text-20" onClick={() => setEyeButton(!eyeButton)}>{eyeButton ? <IoEyeOutline /> : <IoEyeOffOutline />}</button>
-
-                                        <input
-                                            name="password"
-                                            type={eyeButton ? "text" : "password"}
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            className="w-full rounded-md px-3 py-2 outline border"
-                                        />
-                                    </div>
-
-                                    {error && !formData.password &&
-                                        <p className="text-red-500 text-sm">Enter Password</p>
-                                    }
-                                </div> */}
-
                 <button
                   type="submit"
                   className="flex w-full justify-center rounded-md bg-brand1 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-[var(--color-brand-primary1-hover)] cursor-pointer disabled:cursor-not-allowed"
@@ -225,14 +182,6 @@ const UserLogin = () => {
                 >
                   {loading ? "Signing in..." : "Sign In"}
                 </button>
-
-                {/* <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {loading ? "Signing in..." : "Sign In"}
-                </button> */}
               </form>
             </div>
             <p className="text-center mt-3 text-sm font-medium text-gray-500">Don't have an account? <Link to={"/signup"} style={{color:"blue",textDecoration:"underline"}}>SignUp</Link></p>

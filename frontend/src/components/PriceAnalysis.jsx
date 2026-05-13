@@ -72,7 +72,6 @@ const card = [
 ];
 
 const PriceAnalysis = ({ price_intelligence_data }) => {
-  console.log("price_intelligence_data: ", price_intelligence_data);
   return (
     <>
       <div className="flex justify-between items-center">
@@ -92,60 +91,30 @@ const PriceAnalysis = ({ price_intelligence_data }) => {
       <hr className="my-4 bg-[#E6E6E6] h-[1px] border-0" />
 
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
-        {/* {stats?.map((item, index) => {
-          const Icon = icons[index];
-
-          return (
-            <div
-              key={index}
-              className="overflow-hidden rounded-lg bg-white shadow-sm p-3 border border-[#E6E6E6] card-hover"
-            >
-              <div className="text-sm font-medium text-[#000000]">
-                {item.title}
-              </div>
-              <div className="text-xl font-semibold text-[#000000] mt-2">
-                {item.price}
-                <span className="text-sm font-regular text-[#5F6368]">/kg</span>
-              </div>
-              <div className="text-sm font-regular text-[#5F6368] mt-1">
-                {item.txt1}
-              </div>
-            </div>
-          );
-        })} */}
-
-        {/* 1 */}
         <div className="overflow-hidden rounded-lg bg-white shadow-sm p-3 border border-[#E6E6E6] card-hover">
           <div className="text-sm font-medium text-[#000000]">Market range</div>
           <div className="text-xl font-semibold text-[#000000] mt-2">
             {price_intelligence_data[0]?.market_range ?? "--"}
-            {/* <span className="text-sm font-regular text-[#5F6368]">/kg</span> */}
           </div>
           <div className="text-sm font-regular text-[#5F6368] mt-1">
             {price_intelligence_data[0]?.market_range_label ?? "--"}
           </div>
         </div>
-
-        {/* 2 */}
         <div className="overflow-hidden rounded-lg bg-white shadow-sm p-3 border border-[#E6E6E6] card-hover">
           <div className="text-sm font-medium text-[#000000]">
             Est. gross margin
           </div>
           <div className="text-xl font-semibold text-[#000000] mt-2">
             {price_intelligence_data[0]?.gross_margin ?? "--"}
-            {/* <span className="text-sm font-regular text-[#5F6368]">/kg</span> */}
           </div>
           <div className="text-sm font-regular text-[#5F6368] mt-1">
             {price_intelligence_data[0]?.gross_margin_label ?? "--"}
           </div>
         </div>
-
-        {/* 3 */}
         <div className="overflow-hidden rounded-lg bg-white shadow-sm p-3 border border-[#E6E6E6] card-hover">
           <div className="text-sm font-medium text-[#000000]">Cert premium</div>
           <div className="text-xl font-semibold text-[#000000] mt-2">
             {price_intelligence_data[0]?.cert_premium_overall ?? "--"}
-            {/* <span className="text-sm font-regular text-[#5F6368]">/kg</span> */}
           </div>
           <div className="text-sm font-regular text-[#5F6368] mt-1">
             {price_intelligence_data[0]?.cert_premium_label ?? "--"}
@@ -157,8 +126,6 @@ const PriceAnalysis = ({ price_intelligence_data }) => {
         <p className="text-sm text-[#5F6368] font-medium mb-2 uppercase">
           Margin analysis
         </p>
-
-        {/*  */}
         <div className="border-y border-[#E6E6E6] grid grid-cols-4 gap-10 hover:bg-gray-100">
           <div className=" py-3 text-sm font-medium wrap-break-word">
             Variant
@@ -173,8 +140,6 @@ const PriceAnalysis = ({ price_intelligence_data }) => {
             Position
           </div>
         </div>
-        {/*  */}
-
         {price_intelligence_data[0]?.variants?.map((item, index) => {
           if (item.masked) {
             return (
@@ -217,28 +182,6 @@ const PriceAnalysis = ({ price_intelligence_data }) => {
           );
         })}
       </div>
-
-      {/* <div className="p-3 rounded-lg bg-[#F3F3F3] mt-6">
-        <p className="text-sm font-medium text-[#5F6368] uppercase mb-3">
-          Why your certifications justify the price
-        </p>
-        <div className="grid grid-cols-3 gap-6">
-          {card?.map((itm, i) => {
-            return (
-              <div
-                className="border border-[#D9D9D9] bg-[#FFFFFF] p-3 rounded-lg card-hover"
-                key={i}
-              >
-                <p className="text-center text-xl font-medium text-[#000000]">
-                  {itm.txt1}
-                </p>
-                <p className="text-center text-xs text-[#5F6368]">{itm.txt2}</p>
-                <p className="text-center text-xs text-[#5F6368]">{itm.txt3}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div> */}
     </>
   );
 };

@@ -83,7 +83,6 @@ export default function Contact() {
     <>
       <Navbar />
       <PageWrapper>
-        {/* Hero */}
         <section className="relative pt-20 pb-20 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-40" />
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-brand-400/8 rounded-full blur-3xl" />
@@ -108,8 +107,6 @@ export default function Contact() {
             </motion.div>
           </div>
         </section>
-
-        {/* Contact channels */}
         <section className="px-4 pb-16">
           <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {channels.map(
@@ -134,11 +131,8 @@ export default function Contact() {
             )}
           </div>
         </section>
-
-        {/* Contact form + info */}
         <section className="px-4 pb-24">
           <div className="max-w-5xl mx-auto grid md:grid-cols-5 gap-8">
-            {/* Form */}
             <Reveal className="md:col-span-3">
               <div className="bg-white rounded-3xl border border-slate-200 shadow-card p-8">
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-6">
@@ -246,8 +240,6 @@ export default function Contact() {
                 )}
               </div>
             </Reveal>
-
-            {/* Info */}
             <Reveal delay={0.1} className="md:col-span-2 space-y-5">
               <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
                 <h3 className="font-bold text-slate-900 mb-4">Office</h3>
@@ -258,7 +250,6 @@ export default function Contact() {
                   />
                   <span>
                     Integers Insights Private Limited Unit No 28, 2nd Floor, Vicino Building, New Link Road, 
-                    {/* <br /> */}
                     Goregaon (Mumbai), Goregaon West, Maharashtra, 400104, India
                   </span>
                 </div>

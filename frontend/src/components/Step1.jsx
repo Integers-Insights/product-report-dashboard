@@ -14,7 +14,6 @@ import {
 } from "@heroicons/react/24/outline";
 import CircularProgress from "./CircularProgress";
 import { useState } from "react";
-import { base_url1 } from "../URL";
 
 const Step1 = ({
   nextStep,
@@ -39,7 +38,6 @@ const Step1 = ({
 
       <div className="mt-4">
         <div className="grid grid-cols-[1fr_326px] gap-6">
-          {/* Left Top */}
           <div className="border border-[#E6E6E6] rounded-xl bg-[#FFFFFF] p-4 card-hover">
             <div className="grid grid-cols-3 gap-1.5">
               <button
@@ -79,9 +77,6 @@ const Step1 = ({
               </label>
               <div>
                 <div className="flex items-center rounded-md bg-white pl-1 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-[#0284C7]">
-                  {/* <div className="shrink-0 text-base text-gray-500 select-none sm:text-sm/6">
-                    https://
-                  </div> */}
                   <input
                     id="company-website"
                     name="company-website"
@@ -205,19 +200,6 @@ const Step1 = ({
 
             <div className="flex gap-2.5 items-center mt-6">
               <div>
-                {/* <button
-                  type="button"
-                  className="inline-flex items-center gap-x-1.5 rounded-md bg-[#0284C7] px-3 py-2 text-base font-semibold text-white shadow-xs
-                   hover:bg-[#0273AE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0273AE] cursor-pointer"
-                  onClick={nextStep}
-                >
-                  Fetch Products
-                  <ArrowRightIcon
-                    aria-hidden="true"
-                    className="-mr-0.5 size-5"
-                  />
-                </button> */}
-
                 <button
                   type="button"
                   disabled={!agree1 || !agree2 || loading1}
@@ -230,8 +212,6 @@ const Step1 = ({
               <div>Uses 1 credit per product</div>
             </div>
           </div>
-
-          {/* Right Full */}
           <div className="border border-[#E6E6E6] row-span-2 rounded-xl bg-[#FFFFFF] p-4 card-hover">
             <div>
               <h1 className="text-[#5F6368] text-xs font-light">
@@ -394,15 +374,11 @@ const Step1 = ({
               </div>
             </div>
           </div>
-
-          {/* Left Bottom */}
           <div className="rounded-xl card-hover">
             <div className="rounded-lg border border-[#E6E6E6] bg-white p-4 shadow-xs">
               <div className="w-full">
                 <div className="text-13 text-[#5F6368]">PAST DISCOVERIES</div>
               </div>
-
-              {/* 1 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-3">
                 <div className="flex gap-3 items-center">
                   <div>
@@ -440,8 +416,6 @@ const Step1 = ({
                   </div>
                 </div>
               </div>
-
-              {/* 2 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-2.5">
                 <div className="flex gap-3 items-center">
                   <div>
@@ -477,8 +451,6 @@ const Step1 = ({
                   </div>
                 </div>
               </div>
-
-              {/* 3 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-2.5">
                 <div className="flex gap-3 items-center">
                   <div>
@@ -516,8 +488,6 @@ const Step1 = ({
                   </div>
                 </div>
               </div>
-
-              {/* 4 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-2.5">
                 <div className="flex gap-3 items-center">
                   <div>
@@ -553,8 +523,6 @@ const Step1 = ({
                   </div>
                 </div>
               </div>
-
-              {/* 5 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-2.5">
                 <div className="flex gap-3 items-center">
                   <div>
@@ -590,8 +558,6 @@ const Step1 = ({
                   </div>
                 </div>
               </div>
-
-              {/* 6 */}
               <div className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-2.5">
                 <div className="flex gap-3 items-center">
                   <div>

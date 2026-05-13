@@ -10,61 +10,6 @@ import InitialText from "./InitialText";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
 
-// const product_data = [
-//   {
-//     txt1: "Organic Turmeric Powder",
-//     txt2: "Nutraceutical",
-//     txt3: "High confidence",
-//     txt4: "500g pouches",
-//     txt5: "GMP",
-//     txt6: "USDA Organic",
-//     txt7: "🇺🇸 91",
-//     txt8: "🇩🇪 82",
-//     txt9: "🇬🇧 79",
-//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-//     txt11: "82",
-//   },
-//   {
-//     txt1: "Organic Turmeric Powder",
-//     txt2: "Nutraceutical",
-//     txt3: "High confidence",
-//     txt4: "500g pouches",
-//     txt5: "GMP",
-//     txt6: "USDA Organic",
-//     txt7: "🇺🇸 91",
-//     txt8: "🇩🇪 82",
-//     txt9: "🇬🇧 79",
-//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-//     txt11: "82",
-//   },
-//   {
-//     txt1: "Organic Turmeric Powder",
-//     txt2: "Nutraceutical",
-//     txt3: "High confidence",
-//     txt4: "500g pouches",
-//     txt5: "GMP",
-//     txt6: "USDA Organic",
-//     txt7: "🇺🇸 91",
-//     txt8: "🇩🇪 82",
-//     txt9: "🇬🇧 79",
-//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-//     txt11: "82",
-//   },
-//   {
-//     txt1: "Organic Turmeric Powder",
-//     txt2: "Nutraceutical",
-//     txt3: "High confidence",
-//     txt4: "500g pouches",
-//     txt5: "GMP",
-//     txt6: "USDA Organic",
-//     txt7: "🇺🇸 91",
-//     txt8: "🇩🇪 82",
-//     txt9: "🇬🇧 79",
-//     txt10: "Today, 2 hrs ago March 11, 2026 09:14",
-//     txt11: "82",
-//   },
-// ];
-
 const ProductComponent = ({ productData, productLoading }) => {
   const [view_com, setView_com] = useState("List");
 
@@ -162,12 +107,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                       key={i}
                     >
                       <div className="flex items-center gap-5">
-                        {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-                    <Squares2X2Icon className="h-6 w-6" />
-                  </div> */}
-                        {/* <div className="h-10 w-10 rounded-lg flex justify-center items-center font-bold text-[#0284C7] bg-[#E0F5FF]">
-                    {getInitials(item.txt1)}
-                  </div> */}
                         <InitialText text={item.name} />
                         <div className="flex flex-col gap-1">
                           <p className="flex gap-3">
@@ -177,7 +116,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                             <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
                               {item.industry}
                             </span>
-                            {/* <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]"> */}
                             <span
                               className={`font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32] ${Number(item.score) >= 71 ? "bg-[#CCFFCF] text-[#2E7D32]" : Number(item.score) >= 31 ? "bg-[#FFE9C5] text-[#D48C15]" : "bg-[#FFC4C4] text-[#C62828]"}`}
                             >
@@ -193,12 +131,7 @@ const ProductComponent = ({ productData, productLoading }) => {
                               {item.price_positioning
                                 .slice(0, 2)
                                 ?.map((itm, index) => {
-                                  return (
-                                    <span key={index}>
-                                      {itm},{" "}
-                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
-                                    </span>
-                                  );
+                                  return <span key={index}>{itm}, </span>;
                                 })}
                             </span>
 
@@ -216,7 +149,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                                       </span>
 
                                       <span>{itm.score}, </span>
-                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
                                     </span>
                                   );
                                 })}
@@ -241,7 +173,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                       </div>
                       <div className="flex items-center gap-5">
                         <div>
-                          {/* <p className="text-2xl font-bold text-center text-[#2E7D32]"> */}
                           <p
                             className={`text-2xl font-bold text-center text-[#2E7D32] ${Number(item.score) >= 71 ? "text-[#2E7D32]" : Number(item.score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
                           >
@@ -252,7 +183,10 @@ const ProductComponent = ({ productData, productLoading }) => {
                           </p>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={true}>
+                          <button
+                            className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={true}
+                          >
                             ↻ Re-run −0.5Q
                           </button>
                           <button
@@ -294,12 +228,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                       className="border border-t-4 border-[#009A3F] p-3 rounded-lg bg-white card-hover"
                       key={index}
                     >
-                      {/* <div className="border border-gray-500 h-10 w-10 flex justify-center items-center rounded-lg">
-                  <Squares2X2Icon className="h-6 w-6" />
-                </div> */}
-                      {/* <div className="h-10 w-10 flex justify-center items-center rounded-lg font-bold text-[#0284C7] bg-[#E0F5FF]">
-                  {getInitials(item.txt1)}
-                </div> */}
                       <InitialText text={item.name} />
                       <div className="mt-4 flex justify-between">
                         <div>
@@ -310,20 +238,13 @@ const ProductComponent = ({ productData, productLoading }) => {
                             <span className="whitespace-nowrap">
                               {item.monthly_supply_capacity || 0} pouches
                             </span>
-                            {/* <span>{item.price_positioning}</span> */}
                             <span>
                               {item.price_positioning
                                 .slice(0, 2)
                                 ?.map((itm, index) => {
-                                  return (
-                                    <span key={index}>
-                                      {itm},{" "}
-                                      {/* {i !== itm.price_positioning.length - 1 && ", "} */}
-                                    </span>
-                                  );
+                                  return <span key={index}>{itm}, </span>;
                                 })}
                             </span>
-                            {/* <span>{item.txt6}</span> */}
                           </p>
                         </div>
                         <div>
@@ -338,7 +259,6 @@ const ProductComponent = ({ productData, productLoading }) => {
                         </div>
                       </div>
                       <p className="text-xs font-regular text-[#5F6368] flex flex-wrap gap-2 mt-4">
-                        {/* <span className="flex gap-3"> */}
                         {item.country_and_score
                           .slice(0, 5)
                           ?.map((itm, index) => {
@@ -352,11 +272,9 @@ const ProductComponent = ({ productData, productLoading }) => {
                                 </span>
 
                                 <span>{itm.score}, </span>
-                                {/* {i !== itm.price_positioning.length - 1 && ", "} */}
                               </span>
                             );
                           })}
-                        {/* </span> */}
                       </p>
                       <div className="w-full h-1 bg-gray-300 rounded my-1">
                         <div
@@ -379,14 +297,19 @@ const ProductComponent = ({ productData, productLoading }) => {
                           : ""}
                       </p>
                       <div className="grid grid-cols-2 gap-5 mt-4">
-                        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={true}>
+                        <button
+                          className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={true}
+                        >
                           ↻ Re-run
                         </button>
-                        <button className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer"
-                         onClick={() => {
-                              if (!item?.product_id) return;
-                              navigate(`/full-report/${item.product_id}`);
-                            }}>
+                        <button
+                          className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            if (!item?.product_id) return;
+                            navigate(`/full-report/${item.product_id}`);
+                          }}
+                        >
                           Report →
                         </button>
                       </div>

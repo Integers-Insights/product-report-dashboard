@@ -236,99 +236,6 @@ export const faqData = [
   },
 ];
 
-// export const recentActivity = [
-//   'Report published: "India Nutra Market" (Today)',
-//   'Price updated: "Vitamin C Market" (Yesterday)',
-//   'Draft saved: "Germany Pharma" (2 days ago)',
-//   'Report published: "India Nutra Market" (Today)',
-//   'Price updated: "Vitamin C Market" (Yesterday)',
-//   'Draft saved: "Germany Pharma" (2 days ago)'
-// ];
-
-// export const warningData = [
-//   'Drafts older than 14 days: 6',
-//   'Missing section PDF files: 2 reports',
-//   'Published reports without preview: 5',
-//   'Drafts older than 14 days: 6',
-//   'Missing section PDF files: 2 reports',
-//   'Published reports without preview: 5'
-// ];
-
-// export const curatedData = [
-//   'New Product Launch',
-//   'Market Entry',
-//   'Competitor Analysis',
-//   'Pricing Strategy',
-//   'Investor/Board Presentation'
-// ];
-
-// export const howThisHelpsYou = [
-//   'Validate New Product',
-//   'Compare Competitors',
-//   'Understand Pricing',
-//   'Reduce Market Entry Risk'
-// ];
-
-// export const textContainerData = [
-//   'Explore Reports',
-//   'View Pricing',
-//   'Explore Trends',
-//   'Todays Offer',
-//   'Trending News',
-//   'Buyers Favourite',
-//   'Best Ingredients'
-// ];
-
-// export const dataSource = [
-//   'Government trade databases and customs data',
-//   'Regulatory authority publicationst',
-//   'Industry associations and market bodies',
-//   'Company annual reports and disclosures',
-//   'Public financial statements',
-//   'Import export statistics',
-//   'Industry journals and credible publications'
-// ];
-
-// export const marketEstimation = [
-//   'Top-down analysis (industry-level data allocation)',
-//   'Bottom-up estimation (aggregation of company and trade data)',
-//   'Trade-adjusted consumption modeling',
-//   'Historical trend extrapolation',
-//   'Comparative regional benchmarking'
-// ];
-
-// export const forecastingMethodology = [
-//   'Historical growth trend analysis',
-//   'CAGR-based modeling',
-//   'Demand-driver correlation analysis',
-//   'Scenario-based outlook assessment',
-//   'Sensitivity checks for major influencing factors'
-// ];
-
-// export const competitiveAnalysis = [
-//   'Publicly available company disclosures',
-//   'Product portfolio analysis',
-//   'Geographic presence mapping',
-//   'Strategic announcements and expansion activities',
-//   'Market positioning evaluation'
-// ];
-
-// export const pricing_Trade = [
-//   'Trade data trends',
-//   'Public procurement references',
-//   'Market comparisons across regions',
-//   'Value-chain positioning analysis'
-// ];
-
-// export const technology_Enabled = [
-//   'Extracting relevant information from diverse data sources',
-//   'Standardizing datasets into structured formats',
-//   'Improving content readability and presentation',
-//   'Maintaining citation traceability',
-//   'Reducing formatting inconsistencies'
-// ];
-
-
 export const platforms = [
     { label: "Instagram", value: "instagram" },
     { label: "Facebook", value: "facebook" },
@@ -498,8 +405,6 @@ export const primaryGoal = [
     }
 ];
 
-
-// used data
 export const companyType = [
     {
         id: "1",

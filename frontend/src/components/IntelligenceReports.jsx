@@ -8,46 +8,8 @@ import {
 } from "@heroicons/react/24/outline";
 import InitialText from "./InitialText";
 import { useEffect, useState } from "react";
-import { base_url1 } from "../URL";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
-
-// const intelligenceReports_data = [
-//   {
-//     txt1: "Organic Turmeric Powder — USA Market Intelligence",
-//     txt2: "✓ Complete",
-//     txt3: "🇺🇸 USA",
-//     txt4: "Market Demand + Keywords",
-//     txt5: "March 11, 2026 · 2 hrs ago",
-//     txt6: "91/100",
-//     txt7: "34 keywords",
-//     txt8: "5 buyer segments",
-//     txt9: "Demand up 18% YoY",
-//     txt10:
-//       "Strong Q2 opportunity for contract manufacturers in California and Texas.",
-//     txt11: "Score 91",
-//     txt12: "34 keywords",
-//     txt13: "200+ buyers",
-//     txt14: "8 segments",
-//   },
-//   {
-//     txt1: "Organic Turmeric Powder — USA Market Intelligence",
-//     txt2: "✓ Complete",
-//     txt3: "🇺🇸 USA",
-//     txt4: "Market Demand + Keywords",
-//     txt5: "March 11, 2026 · 2 hrs ago",
-//     txt6: "91/100",
-//     txt7: "34 keywords",
-//     txt8: "5 buyer segments",
-//     txt9: "Demand up 18% YoY",
-//     txt10:
-//       "Strong Q2 opportunity for contract manufacturers in California and Texas.",
-//     txt11: "Score 91",
-//     txt12: "34 keywords",
-//     txt13: "200+ buyers",
-//     txt14: "8 segments",
-//   },
-// ];
 
 const IntelligenceReportsComponent = ({
   allReportData,
@@ -95,9 +57,6 @@ const IntelligenceReportsComponent = ({
                     key={index}
                   >
                     <div className="flex gap-3 items-center">
-                      {/* <div className="border border-gray-500 h-10 w-10 rounded-lg flex justify-center items-center">
-                  <Squares2X2Icon className="h-6 w-6" />
-                </div> */}
                       <InitialText text={item.title} />
                       <div>
                         <p className="text-base font-medium text-[#000000]">
@@ -111,8 +70,6 @@ const IntelligenceReportsComponent = ({
                             <Flag country={item.target_country} />
                           </span>
                           <span>{item.report_type}</span>
-                          {/* <span>{item.last_analyzed_at}</span> */}
-
                           <span>
                             {item.last_analyzed_at
                               ? new Date(

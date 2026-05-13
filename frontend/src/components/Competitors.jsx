@@ -8,7 +8,6 @@ import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
 
 const Competitors = ({ competitor_data }) => {
-  // console.log("competitor_data: ", competitor_data);
 
   const navigate = useNavigate();
 
@@ -50,36 +49,6 @@ const Competitors = ({ competitor_data }) => {
           </span>
         </div>
       </div>
-
-      {/* <div className="mt-6">
-                <div className="border-b border-[#E6E6E6] grid grid-cols-5 gap-5 py-1 bg-gray-100">
-                    <div className="px-1 uppercase font-medium text-sm py-1 text-center ">Competitor</div>
-                    <div className="text-center px-1 uppercase font-medium text-sm py-1 ">Type</div>
-                    <div className="px-1 uppercase font-medium text-sm py-1 text-center ">Country</div>
-                    <div className="text-center uppercase font-medium text-sm py-1 ">Website</div>
-                    <div className="uppercase font-medium text-sm py-1  text-center">Notes</div>
-                </div>
-
-                {competitor_data?.map((item, i) => {
-                    return (
-                        <div className="grid grid-cols-5 gap-5 border-t py-2 border-[#E6E6E6] transition-all duration-300 hover:bg-gray-100" key={i}>
-                            <div className="px-1 text-sm text-[#000000] wrap-break-word text-center">
-                                {item.name}
-                            </div>
-                            <div className="text-center text-sm wrap-break-word">{item.competitor_type}</div>
-                            <div className="text-center text-sm px-1 flex flex-wrap gap-2 wrap-break-word">
-                                {item.origin_country}
-                                
-                            </div>
-                            <div className="text-center text-sm wrap-break-word">{item.website}</div>
-                            <div className="px-1 text-sm wrap-break-word text-center">
-                                {item.notes}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div> */}
-
       <div className="mt-6 flex flex-col gap-6">
         {competitor_data.length ? (
           competitor_data?.map((item, i) => {

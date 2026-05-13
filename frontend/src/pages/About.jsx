@@ -17,8 +17,6 @@ import {
   Award,
   Users2,
 } from "lucide-react";
-// import PageWrapper from "../components/PageWrapper";
-// import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
@@ -159,7 +157,6 @@ export default function About() {
     <>
       <Navbar />
       <PageWrapper>
-        {/* Mission hero */}
         <section className="relative pt-20 pb-24 px-4 overflow-hidden text-center bg-gradient-to-b from-slate-50 to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-40" />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-400/8 rounded-full blur-3xl" />
@@ -186,8 +183,6 @@ export default function About() {
                 slow research firms weren't built for modern global trade. So we
                 built something better.
               </p>
-
-              {/* Quote card */}
               <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-slate-200 p-8 shadow-card relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center shadow-glow-green-sm">
                   <span className="text-white font-serif text-lg font-bold">
@@ -217,8 +212,6 @@ export default function About() {
             </motion.div>
           </div>
         </section>
-
-        {/* Stats strip */}
         <div className="bg-brand-500 py-12 px-4">
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 rounded-2xl overflow-hidden">
             {statCells.map(({ num, label }) => (
@@ -231,8 +224,6 @@ export default function About() {
             ))}
           </div>
         </div>
-
-        {/* Team */}
         <section className="py-24 px-4 bg-slate-50">
           <div className="max-w-6xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -274,8 +265,6 @@ export default function About() {
             </div>
           </div>
         </section>
-
-        {/* Trust & Security */}
         <section className="py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -318,8 +307,6 @@ export default function About() {
             </div>
           </div>
         </section>
-
-        {/* Data sources */}
         <section className="py-24 px-4 bg-slate-50 relative overflow-hidden">
           <div className="absolute inset-0 bg-dot mask-radial opacity-30" />
           <div className="max-w-6xl mx-auto relative">
@@ -376,8 +363,6 @@ export default function About() {
             </Reveal>
           </div>
         </section>
-
-        {/* CTA */}
         <section className="py-24 px-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500 to-emerald-700" />
           <div className="absolute inset-0 bg-grid opacity-20" />

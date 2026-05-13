@@ -3,10 +3,8 @@ import Header from "../components/Header";
 import ProductReport from "../components/ProductReport";
 import SideBar from "../components/SideBar";
 import { useEffect, useState } from "react";
-import { base_url1 } from "../URL";
 
 const FullReport = () => {
-  // all product state
   const [banner_product_name, setBanner_product_name] = useState("");
   const [banner_hs_code, setBanner_hs_code] = useState("");
   const [banner_certifications, setBanner_certifications] = useState([]);
@@ -35,18 +33,15 @@ const FullReport = () => {
  
 
   const param = useParams();
-  // console.log("param: ",param);
   let index = param?.id;
-  //   console.log("index: ", index);
+
+  const base_url = import.meta.env.VITE_BASE_URL;
 
   const getFullReportData = async () => {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-
-      //   console.log("token: ", token);
-      //   console.log("index: ", index);
       const response = await fetch(
-        `${base_url1}/product-intelligence/${index}`,
+        `${base_url}/product-intelligence/${index}`,
         {
           method: "GET",
           headers: {
@@ -63,7 +58,6 @@ const FullReport = () => {
       const allProductData = await response.json();
 
       if (allProductData.success) {
-        console.log("allProductData: ", allProductData);
         setBanner_product_name(allProductData?.product?.name || "");
         setBanner_hs_code(allProductData?.product?.hs_code || "");
         setBanner_certifications(
@@ -95,12 +89,6 @@ const FullReport = () => {
             : []
         );
         setUrgent_note_data(allProductData?.urgent_note || "");
-        // setActions_data(
-        //   Array.isArray(allProductData?.actions)
-        //     ? allProductData?.actions
-        //     : []
-        // );
-
         setActions_data(allProductData?.actions);
 
         setMarket_data(
@@ -128,9 +116,6 @@ const FullReport = () => {
             ? allProductData?.competitor_intelligence?.competitors
             : []
         );
-
-        // setCompetitor_data(allProductData?.competitor_intelligence?.competitors);
-
         setMarketing_kit_data(allProductData?.marketing_intelligence?.marketing_info);
       }
     } catch (err) {
@@ -146,19 +131,13 @@ const FullReport = () => {
   return (
     <>
       <div className="flex bg-[#EFF4F8]">
-        {/* Sidebar */}
         <div>
           <SideBar />
         </div>
-
-        {/* Main Content */}
         <div className="flex-1 flex flex-col min-h-screen">
-          {/* Header */}
           <div className="sticky top-0 z-10">
             <Header />
           </div>
-
-          {/* Scrollable content */}
           <div className="flex-1 p-6">
             <ProductReport
               banner_product_name={banner_product_name}
