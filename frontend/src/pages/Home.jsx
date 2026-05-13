@@ -23,6 +23,7 @@ import {
 import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
+import { Helmet } from "react-helmet-async";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -207,6 +208,31 @@ export default function Home() {
 
   return (
     <>
+      <Helmet>
+        <title>Market Analysis Platform - Trade Data, Reports & Insights</title>
+
+        <meta
+          name="description"
+          content="Get in-depth market analysis, import export data, competitor insights, and buyer intelligence - all in one platform. Make smarter business decisions, faster."
+        />
+
+        <meta
+          name="keywords"
+          content="demand analysis, import export data, market analysis, research report, market demand analysis, demand forecasting software, market and demand analysis, industry report, market research industry report, market research, market research services, competitors analysis, marketing analysis, global trade data, exim trade data, importers data, business research, market research to start a business"
+        />
+        <meta
+          property="og:title"
+          content="Market Analysis Platform - Trade Data, Reports & Insights"
+        />
+
+        <meta
+          property="og:description"
+          content="Get in-depth market analysis, import export data, competitor insights, and buyer intelligence - all in one platform."
+        />
+
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.reportinshort.com/" />
+      </Helmet>
       <Navbar />
       <PageWrapper>
         {/* ═══════ HERO ═══════ */}
