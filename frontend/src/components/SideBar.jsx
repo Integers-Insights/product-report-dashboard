@@ -26,7 +26,6 @@ import Ellipse_11 from "../assets/Ellipse_11.svg";
 import { useEffect, useState } from "react";
 import Profile from "./Profile";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { base_url1 } from "../URL";
 
 const navigation = [
   {
@@ -35,7 +34,6 @@ const navigation = [
     icon: CubeTransparentIcon,
     current: true,
   },
-  // { name: "Opportunity Hub", href: "#", icon: BanknotesIcon, current: false },
   { name: "My Product", href: "/product", icon: WalletIcon, current: false },
   {
     name: "Market Glance",
@@ -54,14 +52,6 @@ const navigation = [
   },
 ];
 const teams = [
-  // {
-  //   id: 1,
-  //   name: "Settings",
-  //   href: "/setting",
-  //   initial: "H",
-  //   current: false,
-  //   icon: Cog6ToothIcon,
-  // },
   {
     id: 2,
     name: "Help & Support",
@@ -70,14 +60,6 @@ const teams = [
     current: false,
     icon: QuestionMarkCircleIcon,
   },
-  // {
-  //   id: 3,
-  //   name: "Log out",
-  //   href: "/logout",
-  //   initial: "W",
-  //   current: false,
-  //   icon: ArrowLeftStartOnRectangleIcon,
-  // },
 ];
 
 function classNames(...classes) {
@@ -86,8 +68,6 @@ function classNames(...classes) {
 
 const SideBar = () => {
   const [open_profile, setOpen_profile] = useState(false);
-
-  // user data state
   const [full_name, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -97,31 +77,23 @@ const SideBar = () => {
   const [business_type, setBusiness_Type] = useState("");
   const [business_type_data, setBusiness_Type_Data] = useState("");
 
-  //password
   const [current_password, setCurrent_password] = useState("");
   const [new_password, setNew_password] = useState("");
   const [confirm_password, setConfirm_password] = useState("");
   const [passError, setPassError] = useState(false);
 
-  // score data
   const [usage_data1, setUserData1] = useState(0);
   const [usage_data2, setUserData2] = useState(0);
   const [usage_date, setUsage_date] = useState("");
 
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    // try {
-    //   localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
-    //   localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
-    //   navigate("/login");
-    // } catch (err) {
-    //   console.log("Something went wrong");
-    // }
+  const base_url = import.meta.env.VITE_BASE_URL;
 
+  const handleLogout = async () => {
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/logout`, {
+      let response = await fetch(`${base_url}/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -149,7 +121,7 @@ const SideBar = () => {
   const getProfileData = async () => {
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/profile`, {
+      let response = await fetch(`${base_url}/profile`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +136,6 @@ const SideBar = () => {
       let data = await response.json();
 
       if (data?.success) {
-        // console.log("proile: ", data);
         setFullName(data?.data?.full_name);
         setEmail(data?.data?.email);
         setPhone(data?.data?.phone);
@@ -180,10 +151,9 @@ const SideBar = () => {
   };
 
   const handleProfile1 = async () => {
-    // alert("api called for update profile");
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/update-profile`, {
+      let response = await fetch(`${base_url}/update-profile`, {
         method: "PUT",
         body: JSON.stringify({ full_name, email, phone }),
         headers: {
@@ -197,7 +167,6 @@ const SideBar = () => {
       }
 
       let data = await response.json();
-      // console.log("updated data: ", data);
       if (data.force_logout) {
         alert(data.message || "Please verify your email and login again");
         localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
@@ -229,15 +198,11 @@ const SideBar = () => {
       return;
     }
 
-    // console.log("all pass: ", current_password, new_password, confirm_password);
-
     let payload = { current_password, new_password, confirm_password };
-
-    console.log("paylod: ", payload);
 
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/change-password`, {
+      let response = await fetch(`${base_url}/change-password`, {
         method: "POST",
         body: JSON.stringify(payload),
         headers: {
@@ -249,7 +214,6 @@ const SideBar = () => {
         throw new Error(`Error: ${response.status}`);
       }
       let data = await response.json();
-      console.log("data: ", data);
       if (data.force_logout) {
         alert(
           data.message || "Password updated successfully. Please login again.",
@@ -258,16 +222,6 @@ const SideBar = () => {
         localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
         navigate("/login");
       }
-
-      // console.log("updated data: ", data);
-      // if (data.force_logout) {
-      //   alert(data.message || "Email changed. Please login again.");
-      //   localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
-      //   localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
-      //   navigate("/login");
-      // } else {
-      //   alert(data.message || "Profile updated successfully");
-      // }
     } catch (err) {
       alert("something went wrong.");
       console.log("something went wrong.", err);
@@ -275,13 +229,10 @@ const SideBar = () => {
   };
 
   const handleProfile3 = async () => {
-    // alert("api called for update profile");
-    // console.log(company_name,industry,business_type);
     let payload = { company_name, industry, business_type };
-    console.log(payload);
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/profile/company`, {
+      let response = await fetch(`${base_url}/profile/company`, {
         method: "PUT",
         body: JSON.stringify(payload),
         headers: {
@@ -295,7 +246,6 @@ const SideBar = () => {
       }
 
       let data = await response.json();
-      // console.log("updated ind: ", data);
       if (data.success) {
         alert(data.message || "Company profile updated successfully");
       } else {
@@ -307,11 +257,9 @@ const SideBar = () => {
   };
 
   const getScoutPlan = async () => {
-    // let payload = { company_name, industry, business_type };
-    // console.log(payload);
     try {
       let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url1}/billing/usage`, {
+      let response = await fetch(`${base_url}/billing/usage`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -324,7 +272,6 @@ const SideBar = () => {
       }
 
       let data = await response.json();
-      console.log("billing data: ", data);
       if (data?.success) {
         setUsage_date(data?.end_date);
 
@@ -367,7 +314,6 @@ const SideBar = () => {
     : 0;
 
   return (
-    // <div className="sticky top-0 left-0 flex grow flex-col gap-y-3 overflow-y-auto bg-[#FFF] px-6 w-62 h-screen">
     <>
       <div className="sidebar sticky top-0 left-0 flex flex-col gap-y-3 bg-[#FFF] px-6 w-64 min-h-screen">
         <div className="flex h-12 mt-2 shrink-0 items-center">
@@ -377,13 +323,14 @@ const SideBar = () => {
             className="h-10 w-auto"
           />
         </div>
-        <div className="py-3 rounded-lg bg-gradient-to-r from-[#0284c7] via-[#29a5e9] to-[#0980c3] cursor-pointer flex justify-center items-center gap-2 font-medium text-white transition-all duration-300 hover:scale-[1.03]" onClick={()=>navigate("/discover")}>
-          {/* <button className="border h-full w-full flex justify-center items-center gap-2 font-medium text-white cursor-pointer"> */}
-            <span>
-              <SparklesIcon className="w-6 h-6" />
-            </span>
-            <span>New Intelligence</span>
-          {/* </button> */}
+        <div
+          className="py-3 rounded-lg bg-gradient-to-r from-[#0284c7] via-[#29a5e9] to-[#0980c3] cursor-pointer flex justify-center items-center gap-2 font-medium text-white transition-all duration-300 hover:scale-[1.03]"
+          onClick={() => navigate("/discover")}
+        >
+          <span>
+            <SparklesIcon className="w-6 h-6" />
+          </span>
+          <span>New Intelligence</span>
         </div>
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-1">
@@ -394,18 +341,12 @@ const SideBar = () => {
                     <NavLink
                       to={item.href}
                       className={classNames(
-                        // item.current
-                        //   ? "bg-[#E0F5FF] text-[#0284C7] font-medium"
-                        //   : "text-black hover:bg-gray-100",
                         "group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular hover:bg-[#F0F9FF] hover:text-[#0284C7]",
                       )}
                     >
                       <item.icon
                         aria-hidden="true"
-                        className={classNames(
-                          // item.current ? 'text-black' : 'text-indigo-200 group-hover:text-white',
-                          "size-6 shrink-0",
-                        )}
+                        className={classNames("size-6 shrink-0")}
                       />
                       {item.name}
                       {item.count ? (
@@ -427,24 +368,14 @@ const SideBar = () => {
                 {teams.map((team) => (
                   <li key={team.name}>
                     <NavLink
-                      // style={{ textDecoration: "none" }}
                       to={team.href}
                       className={classNames(
-                        // team.current
-                        //   ? "bg-[#E0F5FF] text-[#0284C7] font-medium"
-                        //   : "text-black hover:bg-gray-100 hover:text-black",
                         "group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular hover:bg-[#F0F9FF] hover:text-[#0284C7]",
                       )}
                     >
-                      {/* <span className="flex size-6 shrink-0 items-center justify-center rounded-lg text-[0.625rem] font-medium text-black">
-                      {team.initial}
-                    </span> */}
                       <team.icon
                         aria-hidden="true"
-                        className={classNames(
-                          // item.current ? 'text-black' : 'text-indigo-200 group-hover:text-white',
-                          "size-6 shrink-0",
-                        )}
+                        className={classNames("size-6 shrink-0")}
                       />
                       <span className="truncate">{team.name}</span>
                     </NavLink>
@@ -508,7 +439,10 @@ const SideBar = () => {
                   </p>
 
                   <div className="bg-[#0284C7] hover:bg-[#0369A1] rounded mt-2 transition-all duration-300">
-                    <button className="flex justify-center gap-2.5 items-center h-full w-full py-1.5 text-white rounded cursor-pointer" onClick={()=>navigate("/pricing")}>
+                    <button
+                      className="flex justify-center gap-2.5 items-center h-full w-full py-1.5 text-white rounded cursor-pointer"
+                      onClick={() => navigate("/pricing")}
+                    >
                       <span>
                         <ArrowUpCircleIcon className="h-5 w-5" />
                       </span>

@@ -15,9 +15,6 @@ const BuyerListComponent = ({
   total_b2b_buyers_data,
   fetchingBuyerData,
 }) => {
-  // console.log("fetchingBuyerData: ", fetchingBuyerData);
-  // console.log("buyer_list: ", buyer_list);
-  // console.log("total_b2b_buyers_data: ", total_b2b_buyers_data);
 
   const navigate = useNavigate();
 
@@ -143,12 +140,6 @@ const BuyerListComponent = ({
                           <p className="text-base font-medium text-[#000000]">
                             Natural Health Distributors Inc.
                           </p>
-                          {/* <button className="bg-[#F1FEF2] text-[#2E7D32] text-xs font-medium px-2 py-0.5 rounded-2xl">
-                            Active RFQ
-                          </button>
-                          <button className="bg-[#EDF9FF] text-[#008ACB] text-xs font-medium px-2 py-0.5 rounded-2xl">
-                            🇺🇸 USA
-                          </button> */}
                         </div>
                         <div className="text-xs font-light text-[#5F6368] flex gap-5 blur-sm">
                           <p>Contract Manufacturer</p>
@@ -180,17 +171,17 @@ const BuyerListComponent = ({
 
               const textColor =
                 score >= 7
-                  ? "text-[#009A3F]" // green
+                  ? "text-[#009A3F]"
                   : score >= 3
-                    ? "text-[#D48C15]" // yellow
-                    : "text-[#C62828]"; // red
+                    ? "text-[#D48C15]"
+                    : "text-[#C62828]";
 
               const bgColor =
                 score >= 7
-                  ? "bg-[#CCFFCF]" // green
+                  ? "bg-[#CCFFCF]"
                   : score >= 3
-                    ? "bg-[#FFF1DA]" // yellow
-                    : "bg-[#FFC4C4]"; // red
+                    ? "bg-[#FFF1DA]"
+                    : "bg-[#FFC4C4]";
 
               return (
                 <div
@@ -211,9 +202,6 @@ const BuyerListComponent = ({
                         <span className="text-base font-medium text-[#000000]">
                           {item?.company_name || ""}
                         </span>
-                        {/* <span className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
-                      {item.contact}hjhj
-                    </span> */}
                         <span>
                           <Flag country={item.country} />
                         </span>
@@ -229,9 +217,6 @@ const BuyerListComponent = ({
                         <span className="font-medium text-xs py-0.5 px-2 rounded-2xl bg-gray-100 text-[#000000]">
                           {item.product_name}
                         </span>
-                        {/* <span className="font-medium text-xs py-0.5 px-2 rounded-2xl bg-gray-100 text-[#000000]">
-                      {item.txt8}lk
-                    </span> */}
                       </p>
                     </div>
                   </div>

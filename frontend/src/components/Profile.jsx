@@ -2,7 +2,6 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 import { useState } from "react";
-import { base_url1 } from "../URL";
 import { useNavigate } from "react-router-dom";
 const Profile = ({
   setOpen_profile,
@@ -36,7 +35,7 @@ const Profile = ({
 
   const [deleting, setDeleting] = useState(false);
 
-  // console.log("edit: ", editBussinessType);
+  const base_url = import.meta.env.VITE_BASE_URL;
 
   const navigate = useNavigate();
 
@@ -46,12 +45,6 @@ const Profile = ({
     "Business Profile",
     "Plan & Billing",
   ];
-
-  // const handleDeleteProfile = () => {
-  //   let user_data = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
-  //   console.log(user_data);
-  //   alert("del profile");
-  // };
 
   const handleDeleteProfile = async () => {
     let confirmDelete = confirm("Are you sure?");
@@ -75,7 +68,7 @@ const Profile = ({
           return;
         }
 
-        const response = await fetch(`${base_url1}/account/${userId}`, {
+        const response = await fetch(`${base_url}/account/${userId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -88,7 +81,7 @@ const Profile = ({
         }
 
         const data = await response.json();
-        console.log("Delete response:", data);
+
         if (data.success) {
           localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
           localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
@@ -96,7 +89,6 @@ const Profile = ({
           alert("Profile deleted successfully");
         }
       } catch (error) {
-        console.log("Error deleting profile:", error);
         alert("Failed to delete profile");
       } finally {
         setDeleting(false);
@@ -268,21 +260,6 @@ const Profile = ({
                 >
                   Current Password <sup>*</sup>
                 </label>
-                {/* <div className="mt-1">
-                  <input
-                    id="password"
-                    name="current_password"
-                    type="password"
-                    value={current_password}
-                    onChange={(e) => setCurrent_password(e.target.value)}
-                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[var(--color-brand-primary1)] sm:text-sm/6"
-                  />
-                  {passError && !current_password && (
-                      <p className="text-red-500 text-sm text-right">
-                        Enter current_password
-                      </p>
-                    )}
-                </div> */}
                 <div className="mt-1">
                   <input
                     id="currentpassword"
@@ -306,29 +283,6 @@ const Profile = ({
               </div>
 
               <div className="grid grid-cols-2 gap-5">
-                {/* <div className="h-21">
-                  <label
-                    htmlFor="newpassword"
-                    className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
-                  >
-                    New Password <sup>*</sup>
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="newpassword"
-                      name="new_password"
-                      type="password"
-                      value={new_password}
-                      onChange={(e) => setNew_password(e.target.value)}
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[var(--color-brand-primary1)] sm:text-sm/6"
-                    />
-                    {passError && !new_password && (
-                      <p className="text-red-500 text-sm text-right">
-                        Enter new password
-                      </p>
-                    )}
-                  </div>
-                </div> */}
                 <div className="h-21">
                   <label
                     htmlFor="newpassword"
@@ -380,15 +334,11 @@ const Profile = ({
                           : "outline-gray-300 focus:outline-[var(--color-brand-primary1)]"
                       }`}
                     />
-
-                    {/* Empty error */}
                     {passError && !confirm_password && (
                       <p className="text-red-500 text-sm text-right mt-1">
                         Enter confirm password
                       </p>
                     )}
-
-                    {/* Match error */}
                     {confirm_password && new_password !== confirm_password && (
                       <p className="text-red-500 text-sm text-right mt-1">
                         Passwords do not match
@@ -501,7 +451,10 @@ const Profile = ({
                     $49/month · 100 queries · 2 modules
                   </p>
                 </div>
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white" onClick={()=>alert("hii")}>
+                <button
+                  className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white"
+                  onClick={() => alert("hii")}
+                >
                   Upgrade →
                 </button>
               </div>

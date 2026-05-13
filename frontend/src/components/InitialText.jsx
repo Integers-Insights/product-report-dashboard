@@ -1,66 +1,3 @@
-// const InitialText = ({ text }) => {
-//   const getInitials = (text) => {
-//     if (!text) return "";
-
-//     const words = text.trim().split(" ");
-//     return words
-//       .slice(0, 2)
-//       .map((word) => word[0].toUpperCase())
-//       .join("");
-//   };
-
-//   return (
-//     <div className="h-10 w-10 rounded-lg flex items-center justify-center font-semibold bg-[#E0F5FF] text-[#0284C7]">
-//       {getInitials(text)}
-//     </div>
-//   );
-// };
-
-// export default InitialText;
-
-// import { useState, useEffect } from "react";
-
-// const InitialText = ({ text }) => {
-//   const [bgColor, setBgColor] = useState("");
-
-//   const getInitials = (text) => {
-//     if (!text) return "";
-
-//     const words = text.trim().split(" ");
-//     return words
-//       .slice(0, 2)
-//       .map((word) => word[0]?.toUpperCase())
-//       .join("");
-//   };
-
-//   const getRandomLightColor = () => {
-//     const letters = "BCDEF"; // light shades
-//     // const letters = "89ABCDEF"; // light + mid
-//     let color = "#";
-//     for (let i = 0; i < 6; i++) {
-//       color += letters[Math.floor(Math.random() * letters.length)];
-//     }
-//     return color;
-//   };
-
-//   useEffect(() => {
-//     setBgColor(getRandomLightColor());
-//   }, []);
-
-//   return (
-//     <div
-//       className="h-10 w-10 rounded-lg flex items-center justify-center font-semibold text-sm text-black"
-//       style={{ backgroundColor: bgColor }}
-//     >
-//       {getInitials(text)}
-//     </div>
-//   );
-// };
-
-// export default InitialText;
-
-
-
 import { useState, useEffect } from "react";
 
 const InitialText = ({ text }) => {
@@ -80,7 +17,7 @@ const InitialText = ({ text }) => {
   };
 
   const getRandomLightColor = () => {
-    const letters = "89ABCDEF"; // balanced light colors
+    const letters = "89ABCDEF";
     let color = "#";
 
     for (let i = 0; i < 6; i++) {
@@ -96,7 +33,7 @@ const InitialText = ({ text }) => {
       setBgColor(getRandomLightColor());
     } catch (error) {
       console.error("Color generation error:", error);
-      setBgColor("#E5E7EB"); // fallback
+      setBgColor("#E5E7EB");
     }
   }, [text]);
 

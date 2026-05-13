@@ -8,147 +8,6 @@ import ellipse_3 from "../assets/Ellipse 3.svg";
 import ellipse_4 from "../assets/Ellipse 4.svg";
 import Flag from "./Flag";
 
-// const cardData = [
-//   {
-//     id: 1,
-//     image: ellipse_3,
-//     txt1: "United States",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 91,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "None detected",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-//   {
-//     id: 2,
-//     image: ellipse_4,
-//     txt1: "Germany",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 87,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "SpiceGuru — 8 days ago",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-//   {
-//     id: 3,
-//     image: ellipse_4,
-//     txt1: "Germany",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 87,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "SpiceGuru — 8 days ago",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-//   {
-//     id: 4,
-//     image: ellipse_3,
-//     txt1: "United States",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 91,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "None detected",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-//   {
-//     id: 5,
-//     image: ellipse_4,
-//     txt1: "Germany",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 87,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "SpiceGuru — 8 days ago",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-//   {
-//     id: 6,
-//     image: ellipse_4,
-//     txt1: "Germany",
-//     txt2: "HS 0910.30 — largest importer",
-//     val: 87,
-//     txt3: "Demand Growth",
-//     txt4: "↑ 18% YoY",
-//     txt5: "Import volume 2025",
-//     txt6: "18,400 MT",
-//     txt7: "Matched buyers",
-//     txt8: "120+",
-//     txt9: "Peak procurement",
-//     txt10: "Oct-Jan",
-//     txt11: "Primary channel",
-//     txt12: "Contract manufacturers",
-//     txt13: "Cert requirement",
-//     txt14: "GMP+USDA Organic",
-//     txt15: "Cert gap",
-//     txt16: "SpiceGuru — 8 days ago",
-//     txt17:
-//       "Anti-inflammatory megatrend driving supplement demand. Contract manufacturers are the primary buyer segment — they procure 6–12 months ahead. GMP + USDA Organic is a hard requirement for the top 40% of buyers.",
-//   },
-// ];
-
 const Markets = ({ market_data }) => {
   return (
     <>
@@ -176,7 +35,6 @@ const Markets = ({ market_data }) => {
                 <div className="flex gap-3 items-center">
                   <div className="h-6 w-6">
                     <Flag country={item.country} />
-                    {/* <img src={item.image} alt="" /> */}
                   </div>
                   <div>
                     <h2 className="text-[#000000] text-sm font-medium">
@@ -188,12 +46,6 @@ const Markets = ({ market_data }) => {
                   </div>
                 </div>
                 <div>
-                  {/* <CircularProgress
-                    value={item?.country_and_score?.score}
-                    progressColor="#22c55e"
-                    textColor="#065f46"
-                    bgColor="#d1fae5"
-                  /> */}
                   <CircularProgress
                     value={item?.country_and_score?.score || 0}
                     textColor={
@@ -278,23 +130,6 @@ const Markets = ({ market_data }) => {
                       })}
                   </p>
                 </div>
-                {/* <div className="flex justify-between items-center">
-                  <p className="text-[#5F6368] text-xs font-light">
-                    Cert gap
-                  </p>
-                  <p className="text-xs font-regular">
-                    {item.txt16 === "None detected" ? (
-                      <span className="text-[#9FA2A6]">None detected</span>
-                    ) : (
-                      <span className="flex gap-1">
-                        <span>
-                          <BoltIcon className="h-4 w-4 text-yellow-600" />
-                        </span>
-                        <span className="text-[#0284C7]">{item.txt16}</span>
-                      </span>
-                    )}
-                  </p>
-                </div> */}
               </div>
 
               <div className="border flex gap-2.5 p-3 border-[#A5F7A9] text-[#2E7D32] bg-[#F1FEF2] rounded-lg mt-2.5">

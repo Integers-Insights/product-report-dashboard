@@ -1,5 +1,4 @@
 const AdConcept = ({ adConceptsData }) => {
-  // console.log("adConceptsData: ", adConceptsData);
 
   return (
     <>

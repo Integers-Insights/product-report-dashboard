@@ -1,12 +1,4 @@
 import banner1 from "../assets/banner01.svg";
-import ellipse_3 from "../assets/Ellipse 3.svg";
-import ellipse_8 from "../assets/Ellipse 8.svg";
-import ellipse_9 from "../assets/Ellipse 9.svg";
-import ellipse_10 from "../assets/Ellipse 10.svg";
-import ellipse_4 from "../assets/Ellipse 4.svg";
-import ellipse_5 from "../assets/Ellipse 5.svg";
-import ellipse_6 from "../assets/Ellipse 6.svg";
-import ellipse_7 from "../assets/Ellipse 7.svg";
 import Tab from "./Tab";
 import { useState } from "react";
 import Overview from "./Overview";
@@ -60,17 +52,12 @@ const ProductReport = ({
   marketing_kit_data
 }) => {
   const [activeTab, setActiveTab] = useState("Overview");
-  // const [value, setValue] = useState(80);
-
-  // progress
-  // const value = 65;
   const size = 81;
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const safeValue = Math.min(100, Math.max(0, banner_score || 0));
   const progress = (safeValue / 100) * circumference;
-  
 
   return (
     <>
@@ -81,7 +68,6 @@ const ProductReport = ({
         <div>
           <p className="text-xs font-light">INDIVIDUAL PRODUCT REPORT</p>
           <h1 className="text-[28px] font-semibold mt-1">
-            {/* {console.log("banner_product_name: ",banner_product_name)} */}
             {banner_product_name || "--"}
           </h1>
           <div className="flex gap-9 items-center mt-3">
@@ -96,16 +82,10 @@ const ProductReport = ({
                   </button>
                 );
               })}
-
-              {/* <button className="border py-0.5 px-3 rounded-full">
-                USDA Organic
-              </button>
-              <button className="border py-0.5 px-3 rounded-full">ISO</button> */}
             </div>
             <div className="flex gap-1.5 items-center">
               <div className="h-3 w-6 rounded-full">
                 <Flag country={banner_single_country} />
-                {/* <img src={ellipse_8} alt="" /> */}
               </div>
               <div>
                 <ArrowRightIcon className="h-4 w-4" />
@@ -121,19 +101,6 @@ const ProductReport = ({
                     </div>
                   );
                 })}
-
-                {/* <div className="flex justify-center items-center h-8 w-8 rounded-full absolute left-3">
-                  <img src={ellipse_4} alt="" />
-                </div>
-                <div className="flex justify-center items-center h-8 w-8 rounded-full absolute left-6">
-                  <img src={ellipse_9} alt="" />
-                </div>
-                <div className="flex justify-center items-center h-8 w-8 rounded-full absolute left-9">
-                  <img src={ellipse_10} alt="" />
-                </div>
-                <div className="flex justify-center items-center h-8 w-8 rounded-full absolute left-12">
-                  <img src={ellipse_7} alt="" />
-                </div> */}
               </div>
             </div>
             <div className="text-sm font-medium">
@@ -167,7 +134,6 @@ const ProductReport = ({
             <div className="flex justify-between">
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {/* {banner_global_trade ?? "0"} */}
                   {banner_global_trade !== null &&
                   banner_global_trade !== undefined &&
                   banner_global_trade !== ""
@@ -197,7 +163,6 @@ const ProductReport = ({
             <div>
               <div className="p-0.5">
                 <h2 className="text-xl font-semibold">
-                  {/* {banner_market_range ?? "0"} */}
                   {banner_market_range !== null &&
                   banner_market_range !== undefined &&
                   banner_market_range !== ""
@@ -245,10 +210,6 @@ const ProductReport = ({
           </svg>
         </div>
       </div>
-
-      {/* <div className="border overflow-hidden w-full max-w-full">
-                <div className="border-b border-[#A9B3B1] flex gap-8 pb-0.5 bg-[#FFFFFF] overflow-x-scroll border whitespace-nowrap max-w-[60%]"> */}
-
       <div className="overflow-hidden w-full">
         <div className="border-b border-[#A9B3B1] bg-white pb-0.5">
           <div className="flex gap-8 overflow-x-auto whitespace-nowrap w-0 min-w-full">
@@ -300,38 +261,6 @@ const ProductReport = ({
               onClick={() => setActiveTab("Marketing Kit")}
               icon={MegaphoneIcon}
             />
-            {/* <Tab
-              label="Kpis & Actions"
-              isActive={activeTab === "Kpis & Actions"}
-              onClick={() => setActiveTab("Kpis & Actions")}
-              icon={TrophyIcon}
-            /> */}
-
-            {/*  */}
-            {/* <Tab
-                            label="Kpis1"
-                            isActive={activeTab === "Kpis1"}
-                            onClick={() => setActiveTab("Kpis1")}
-                            icon={HomeIcon}
-                        />
-                        <Tab
-                            label="Kpis2"
-                            isActive={activeTab === "Kpis2"}
-                            onClick={() => setActiveTab("Kpis2")}
-                            icon={HomeIcon}
-                        />
-                        <Tab
-                            label="Kpis3"
-                            isActive={activeTab === "Kpis3"}
-                            onClick={() => setActiveTab("Kpis3")}
-                            icon={HomeIcon}
-                        />
-                        <Tab
-                            label="Kpis4"
-                            isActive={activeTab === "Kpis4"}
-                            onClick={() => setActiveTab("Kpis4")}
-                            icon={HomeIcon}
-                        /> */}
           </div>
         </div>
       </div>

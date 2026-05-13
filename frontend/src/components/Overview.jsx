@@ -14,57 +14,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 
-// const cardData = [
-//   {
-//     id: 1,
-//     title: "MARKET DEMAND",
-//     txt1: "9/10",
-//     txt2: "↑18% YoY · Anti-inflammatory trend",
-//   },
-//   {
-//     id: 2,
-//     title: "Keywords Found",
-//     txt1: "34",
-//     txt2: "↑18% YoY · Anti-inflammatory trend",
-//   },
-//   {
-//     id: 3,
-//     title: "Competition",
-//     txt1: "6/10",
-//     txt2: "Cert gap open · 3 direct competitors",
-//   },
-//   {
-//     id: 4,
-//     title: "Trade Activity",
-//     txt1: "9/10",
-//     txt2: "18,400 MT US import · India 64%",
-//   },
-//   {
-//     id: 5,
-//     title: "PRICE FIT",
-//     txt1: "8/10",
-//     txt2: "$8.50 vs $8–16 market · +35% organic",
-//   },
-//   {
-//     id: 6,
-//     title: "Buyer Availability",
-//     txt1: "8/10",
-//     txt2: "200+ matched · 3 RFQs open now",
-//   },
-//   {
-//     id: 7,
-//     title: "VARIANTS FOUND",
-//     txt1: "5",
-//     txt2: "The demand is rising for these variants",
-//   },
-//   {
-//     id: 8,
-//     title: "RFQs found",
-//     txt1: "3",
-//     txt2: "Customers are demanding this product",
-//   },
-// ];
-
 const icons = [
   BuildingStorefrontIcon,
   LanguageIcon,
@@ -79,11 +28,8 @@ const icons = [
 const icon = [ClockIcon, CalendarIcon, CalendarDaysIcon];
 
 const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
-  // console.log("u: ",urgent_note_data);
-
-
   const navigate = useNavigate();
-  
+
   return (
     <>
       <div className="flex justify-between items-center">
@@ -107,10 +53,10 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
 
           const textColor =
             score >= 7
-              ? "text-[#009A3F]" // green
+              ? "text-[#009A3F]"
               : score >= 3
-                ? "text-[#D48C15]" // yellow
-                : "text-[#C62828]"; // red
+                ? "text-[#D48C15]"
+                : "text-[#C62828]";
 
           return (
             <div
@@ -146,44 +92,12 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
       </div>
 
       <div className="grid grid-cols-3 gap-6 mt-6">
-        {/* {actions_data.length ? (
-          actions_data?.map((item, index) => {
-            console.log("actions_data: ", actions_data);
-
-            const Icon = icon[index];
-            return (
-              <div
-                className="card-hover border border-[#A5F7A9] flex flex-col gap-1.5 rounded-lg p-3 bg-[#F1FEF2]"
-                key={index}
-              >
-                <div className="flex gap-3 items-center text-[#2E7D32]">
-                  <span>
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-base font-medium">{item.timing}</span>
-                </div>
-                <div className="text-[#1E1E1E] text-13 font-regular">
-                  {item.body}
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="border rounded-lg border-[#E6E6E6] p-3  text-center flex justify-between col-span-3">
-            <p className="blur-sm">Lorem ipsum dolor sit amet.</p>
-            <div className="blur-sm">$5–$9/kg</div>
-            <div className="blur-sm pl-10">30–38%</div>
-            <div className="text-sm font-medium">
-              <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap">
-                🔒 Upgrade your plan +
-              </button>
-            </div>
-          </div>
-        )} */}
-
         {actions_data?.masked ? (
           <div className="text-center">
-            <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-3 py-1" onClick={()=>navigate("/pricing")}>
+            <button
+              className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-3 py-1"
+              onClick={() => navigate("/pricing")}
+            >
               🔒 {actions_data.message}
             </button>
           </div>
@@ -208,32 +122,6 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
         ) : (
           <p className="text-center col-end-3">No Data</p>
         )}
-
-        {/* <div className="card-hover border border-[#96DBFF] flex flex-col gap-1.5 rounded-lg p-3 bg-[#EDF9FF]">
-          <div className="flex gap-3 items-center text-[#008ACB]">
-            <span>
-              <CalendarIcon className="h-5 w-5" />
-            </span>
-            <span className="text-base font-medium">This month</span>
-          </div>
-          <div className="text-[#1E1E1E] text-13 font-regular">
-            Run 3-step outreach to top 20 US buyers. Q2 sourcing window opens
-            April — pipeline now.
-          </div>
-        </div>
-
-        <div className="card-hover border border-[#D9D9D9] flex flex-col gap-1.5 rounded-lg p-3 bg-[#F3F3F3]">
-          <div className="flex gap-3 items-center">
-            <span>
-              <CalendarDaysIcon className="h-5 w-5" />
-            </span>
-            <span className="text-base font-medium">This quarter</span>
-          </div>
-          <div className="text-[#1E1E1E] text-13 font-regular">
-            Develop water-soluble variant ($14–22/kg). No competitors present.
-            Gap confirmed.
-          </div>
-        </div> */}
       </div>
     </>
   );

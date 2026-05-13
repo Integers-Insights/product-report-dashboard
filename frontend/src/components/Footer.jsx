@@ -52,7 +52,6 @@ export default function Footer() {
 
       <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          {/* Brand */}
           <div className="col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
               <div className="h-10 w-30">
@@ -67,7 +66,6 @@ export default function Footer() {
               Live market intelligence for exporters and manufacturers. Know
               your market before you enter it.
             </p>
-            {/* Social icons */}
             <div className="flex gap-2 flex-wrap">
               <SocialIcon
                 href="https://www.instagram.com/integers.insights/"
@@ -172,8 +170,6 @@ export default function Footer() {
               </SocialIcon>
             </div>
           </div>
-
-          {/* Cols */}
           {cols.map(({ title, links }) => (
             <div key={title}>
               <h5 className="text-xs font-bold uppercase tracking-widest text-slate-300 mb-4">
@@ -194,8 +190,6 @@ export default function Footer() {
             </div>
           ))}
         </div>
-
-        {/* Bottom */}
         <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-xs text-slate-600">
             © {new Date().getFullYear()} Integers Insights Private Limited. All

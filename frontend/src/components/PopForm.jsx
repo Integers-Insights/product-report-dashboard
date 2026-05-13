@@ -10,19 +10,16 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { IoChevronDown } from "react-icons/io5";
 import AccordionCheckBox from "./AccordianCheckBox";
 import { countries } from "./Data";
-import { base_url1 } from "../URL";
-// import {
-//   companyType,
-//   productType,
-//   notificationMethod1,
-//   notificationMethod2,
-//   primaryGoal,
-//   yearsInIndustry,
-//   platforms,
-//   ind,
-// } from "./dummyTableData";
-
-import { companyType,ind,yearsInIndustry,productType,notificationMethod1,notificationMethod2,primaryGoal,platforms } from "./Data";
+import {
+  companyType,
+  ind,
+  yearsInIndustry,
+  productType,
+  notificationMethod1,
+  notificationMethod2,
+  primaryGoal,
+  platforms,
+} from "./Data";
 import NeedHelp from "./NeedHelp";
 
 function classNames(...classes) {
@@ -40,13 +37,11 @@ export default function PopForm({ setPopupOpen }) {
   const [showInput1, setShowInput1] = useState(false);
   const [otherValue1, setOtherValue1] = useState("");
 
-  // country
   const dropdownRef = useRef(null);
   const [search, setSearch] = useState("");
 
   const [countryOpen, setCountryopen] = useState(false);
 
-  // step1 state
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -55,16 +50,13 @@ export default function PopForm({ setPopupOpen }) {
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [webInput, setWebInput] = useState("");
 
-  // step2 state
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [salesIntent, setSalesIntent] = useState("");
   const [buyerType, setBuyerType] = useState("");
   const [pricePositioning, setPricePositioning] = useState([]);
 
-  // step 3 state
   const [selectedGoals, setSelectedGoals] = useState([]);
 
-  // accordian state
   const [certifications, setCertifications] = useState({
     quality: [],
     food: [],
@@ -74,6 +66,8 @@ export default function PopForm({ setPopupOpen }) {
   });
 
   const [platform, setPlatform] = useState("");
+
+  const base_url = import.meta.env.VITE_BASE_URL;
 
   const steps = [
     {
@@ -117,23 +111,6 @@ export default function PopForm({ setPopupOpen }) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // const [showInput, setShowInput] = useState(false);
-  // const [selectedType, setSelectedType] = useState(null);
-  // const [otherValue, setOtherValue] = useState("");
-  // const [loading, setLoading] = useState(false); // loading
-  // const [error, setError] = useState(false);
-
-  // const [popup_Open,setPopup_Open] = useState(false);
-
-  // const [showInput1, setShowInput1] = useState(false);
-  // const [otherValue1, setOtherValue1] = useState("");
-
-  // // country
-  // const dropdownRef = useRef(null);
-  // const [search, setSearch] = useState("");
-
-  // const [countryOpen, setCountryopen] = useState(false);
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -154,21 +131,6 @@ export default function PopForm({ setPopupOpen }) {
     setShowInput(false);
   };
 
-  // // step1 state
-  // const [fullName, setFullName] = useState("");
-  // const [companyName, setCompanyName] = useState("");
-  // const [selectedCountry, setSelectedCountry] = useState("");
-  // const [industryData, setIndustryData] = useState("");
-  // const companyTypeValue = showInput ? otherValue : selectedType;
-  // const [selectedIndustry, setSelectedIndustry] = useState("");
-  // const [webInput, setWebInput] = useState("");
-
-  // // step2 state
-  // const [selectedProducts, setSelectedProducts] = useState([]);
-  // const [salesIntent, setSalesIntent] = useState("");
-  // const [buyerType, setBuyerType] = useState("");
-  // const [pricePositioning, setPricePositioning] = useState([]);
-
   const handleProductToggle = (value) => {
     setSelectedProducts((prev) =>
       prev.includes(value)
@@ -177,7 +139,6 @@ export default function PopForm({ setPopupOpen }) {
     );
   };
 
-  // pricePositioning
   const handlePriceChange = (value) => {
     setPricePositioning((prev) => {
       if (prev.includes(value)) {
@@ -188,8 +149,6 @@ export default function PopForm({ setPopupOpen }) {
     });
   };
 
-  // // step 3 state
-  // const [selectedGoals, setSelectedGoals] = useState([]);
   const handleGoalClick = (value) => {
     setSelectedGoals((prev) => {
       if (prev.includes(value)) {
@@ -200,15 +159,6 @@ export default function PopForm({ setPopupOpen }) {
     });
   };
 
-  // // for accordian state
-  // const [certifications, setCertifications] = useState({
-  //   quality: [],
-  //   food: [],
-  //   pharma: [],
-  //   ethics: [],
-  //   tech: [],
-  // });
-
   const handleCertChange = (category, value) => {
     setCertifications((prev) => ({
       ...prev,
@@ -218,9 +168,6 @@ export default function PopForm({ setPopupOpen }) {
     }));
   };
 
-  // const [platform, setPlatform] = useState("");
-
-  //  step1 submit
   const handleStep1Submit = async () => {
     if (!fullName.trim()) {
       setError(true);
@@ -273,7 +220,7 @@ export default function PopForm({ setPopupOpen }) {
         alert("User not authenticated");
         return false;
       }
-      const response = await fetch(`${base_url1}/step1`, {
+      const response = await fetch(`${base_url}/step1`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -297,7 +244,6 @@ export default function PopForm({ setPopupOpen }) {
     }
   };
 
-  //  step2 submit
   const handleStep2Submit = async () => {
     if (!salesIntent || !salesIntent.trim()) {
       setError(true);
@@ -319,7 +265,7 @@ export default function PopForm({ setPopupOpen }) {
         alert("User not authenticated");
         return false;
       }
-      const response = await fetch(`${base_url1}/step2`, {
+      const response = await fetch(`${base_url}/step2`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -343,7 +289,6 @@ export default function PopForm({ setPopupOpen }) {
     }
   };
 
-  //  step3 submit
   const handleStep3Submit = async () => {
     if (!selectedGoals || selectedGoals.length === 0) {
       setError(true);
@@ -376,7 +321,7 @@ export default function PopForm({ setPopupOpen }) {
         return false;
       }
 
-      const response = await fetch(`${base_url1}/step3`, {
+      const response = await fetch(`${base_url}/step3`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -391,7 +336,6 @@ export default function PopForm({ setPopupOpen }) {
         throw new Error(data.message || "Something went wrong");
       }
 
-      // localstorage update
       const key = "CtKoIC)iR1SP)5mr&R4d";
 
       let storedData = {};
@@ -473,7 +417,6 @@ export default function PopForm({ setPopupOpen }) {
           </div>
         </div>
 
-        {/* step navigation */}
         <div className="lg:border-t lg:border-b lg:border-gray-200">
           <nav aria-label="Progress" className="mx-auto ">
             <ol

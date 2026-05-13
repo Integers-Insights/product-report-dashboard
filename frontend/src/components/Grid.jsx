@@ -18,9 +18,6 @@ const Grid = ({
             />
           </div>
         ) : (
-          // <div className="col-span-3 h-86.5 flex justify-center items-center">
-          //   <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-          // </div>
           <>
             {products.length ? (
               [...products]
@@ -43,7 +40,6 @@ const Grid = ({
                             {prod?.category}
                           </p>
                           <p className="text-[#5F6368] text-xs font-light">
-                            {/* {prod?.source_url} */}
                             <a
                               href={prod?.source_url ? prod?.source_url : "#"}
                               target="_blank"

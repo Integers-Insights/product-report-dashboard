@@ -10,21 +10,6 @@ import {
 import { useState } from "react";
 import { faq_data } from "./Data";
 
-// const faq_data = [
-//   {
-//     que: "What counts as one query?",
-//     ans: "One query = one intelligence run for a product × country pair. Re-analyzing an existing product uses 0.5 queries. Browsing reports or buyer lists never uses queries.",
-//   },
-//   {
-//     que: "Why are buyer contacts locked?",
-//     ans: "Direct contact info (email, phone, LinkedIn) is available on Venture and Apex plans. All plans can see company names and profiles.",
-//   },
-//   {
-//     que: "How do I switch active modules?",
-//     ans: "Scout users can swap their 2 active modules once per billing cycle from Settings. Venture has 4 slots, Apex has all 6.",
-//   },
-// ];
-
 const HelpComponent = () => {
   const [open_Faq, setOpen_Faq] = useState([]);
 
@@ -55,17 +40,6 @@ const HelpComponent = () => {
             <p className="mt-1 text-sm text-[#5F6368] font-regular">
               Response under 5 minutes.
             </p>
-            {/* <button className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
-              Start Chat
-            </button> */}
-            {/* <a
-              href="https://wa.me/+919321256706"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-1 px-3 mt-2 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer inline-block"
-            >
-              Start Chat
-            </a> */}
             <a
               href="https://wa.me/919321256706?text=How%20can%20I%20help%20you%3F"
               target="_blank"
@@ -90,9 +64,6 @@ const HelpComponent = () => {
               </a>{" "}
               · Within 24hrs.
             </p>
-            {/* <button className="border border-gray-500 mt-2 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm">
-              <a href="mailto:info@integersinsights.com">Send Email</a>
-            </button> */}
             <a
               href="mailto:info@integersinsights.com"
               className="border border-gray-500 mt-2 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm inline-block"
@@ -134,5 +105,3 @@ const HelpComponent = () => {
   );
 };
 export default HelpComponent;
-
-// latest changes _1

@@ -94,7 +94,6 @@ export default function Blog() {
     <>
       <Navbar />
       <PageWrapper>
-        {/* Hero */}
         <section className="relative pt-20 pb-16 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-40" />
           <div className="relative max-w-3xl mx-auto">
@@ -118,8 +117,6 @@ export default function Blog() {
             </motion.div>
           </div>
         </section>
-
-        {/* Category filter */}
         <div className="px-4 pb-8">
           <div className="max-w-6xl mx-auto flex gap-2 flex-wrap justify-center">
             {categories.map((c, i) => (
@@ -136,11 +133,8 @@ export default function Blog() {
             ))}
           </div>
         </div>
-
-        {/* Posts grid */}
         <section className="px-4 pb-24">
           <div className="max-w-6xl mx-auto">
-            {/* Featured */}
             <Reveal className="mb-6">
               <motion.div
                 whileHover={{ y: -3 }}
@@ -172,8 +166,6 @@ export default function Blog() {
                 <div className="hidden md:block w-72 h-44 bg-gradient-to-br from-brand-50 to-brand-100 rounded-2xl border border-brand-200 shrink-0 mt-6 md:mt-0" />
               </motion.div>
             </Reveal>
-
-            {/* Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {posts
                 .slice(1)

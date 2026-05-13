@@ -31,15 +31,6 @@ export default function Navbar() {
   };
 
   let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
-  // let name = "";
-  // try {
-  //   const parsed = userProfile ? JSON.parse(userProfile) : null;
-  //   name = parsed?.name || "";
-  // } catch (e) {
-  //   console.log("Invalid localStorage data");
-  // }
-
-  // console.log("nav: ", name);
 
   return (
     <>
@@ -56,14 +47,15 @@ export default function Navbar() {
               : "bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_4px_16px_rgba(0,0,0,0.05)]"
           }`}
         >
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="h-10 w-30">
-              <img src={report_inshort_logo} alt="logo" className="h-full w-full" />
+              <img
+                src={report_inshort_logo}
+                alt="logo"
+                className="h-full w-full"
+              />
             </div>
           </Link>
-
-          {/* Desktop links */}
           <ul className="hidden md:flex items-center gap-0.5">
             {navLinks.map(({ to, label }) => (
               <li key={to}>
@@ -91,8 +83,6 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-
-          {/* Actions */}
           <div className="flex items-center gap-2">
             {!userProfile ? (
               <button
@@ -122,8 +112,6 @@ export default function Navbar() {
           </div>
         </nav>
       </motion.header>
-
-      {/* Mobile menu */}
       <AnimatePresence>
         {open && (
           <motion.div

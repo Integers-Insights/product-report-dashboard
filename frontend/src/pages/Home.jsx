@@ -20,13 +20,10 @@ import {
   DollarSign,
   Award,
 } from "lucide-react";
-// import PageWrapper from "../components/PageWrapper";
-// import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 
-/* ── Scroll reveal wrapper ── */
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
@@ -43,7 +40,6 @@ function Reveal({ children, delay = 0, className = "" }) {
   );
 }
 
-/* ── Animated counter ── */
 function Counter({ target, suffix = "" }) {
   const [val, setVal] = useState(0);
   const ref = useRef(null);
