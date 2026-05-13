@@ -13,13 +13,14 @@ load_dotenv(dotenv_path=env_path)
 # DATABASE CONFIGURATION (Update placeholders here)
 # =====================================================
 
-DATABASE_HOST = os.getenv("AI_REPORTS_HOST")
-DATABASE_PORT = os.getenv("AI_REPORTS_PORT")
-DATABASE_USER = os.getenv("AI_REPORTS_USER")
-DATABASE_PASSWORD = os.getenv("AI_REPORTS_PASSWORD")
-DATABASE_NAME = os.getenv("AI_REPORTS_DB")
-
-DATABASE_URL = f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+def get_database_url():
+    host = os.getenv("AI_REPORTS_HOST")
+    port = os.getenv("AI_REPORTS_PORT")
+    user = os.getenv("AI_REPORTS_USER")
+    password = os.getenv("AI_REPORTS_PASSWORD")
+    name = os.getenv("AI_REPORTS_DB")
+    print(f"🔌 DB connecting to: {host}:{port}/{name}")
+    return f"postgresql://{user}:{password}@{host}:{port}/{name}"
 
 
 # =====================================================
@@ -40,7 +41,7 @@ async def create_pool():
     print("🔥 Creating NEW DB pool...")
 
     db_pool = await asyncpg.create_pool(
-        dsn=DATABASE_URL,
+        dsn=get_database_url(),
         min_size=10,
         max_size=80,
         command_timeout=60,
