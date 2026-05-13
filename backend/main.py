@@ -22,9 +22,7 @@ app.add_middleware(
     allow_origins=[
         "* ",
         "http://localhost:5173",
-        "http://172.16.31.72:5173",
-        "http://192.168.0.100:5173",
-        "http://192.168.0.100:8000",
+        "https://www.reportinshort.com",
         "https://product-insight.integerstech.com",
         "https://product-insight-backend.integermarket.com",
         "https://dulcet-dragon-bed711.netlify.app"  # ✅ add this
