@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PLAYWRIGHT_CHROMIUM_USE_HEADLESS_SHELL=0
 RUN playwright install chromium && playwright install-deps chromium
 
 COPY . .
