@@ -6,7 +6,7 @@ import {
 const Keywords = ({
   high_volume_buyer_intent_data,
   low_competition_gaps_data,
-  multilingual_data
+  multilingual_data,
 }) => {
   return (
     <>

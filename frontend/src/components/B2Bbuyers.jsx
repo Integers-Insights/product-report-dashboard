@@ -4,7 +4,6 @@ import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
 
 const B2Bbuyers = ({ b2b }) => {
-
   const navigate = useNavigate();
 
   return (
@@ -20,7 +19,10 @@ const B2Bbuyers = ({ b2b }) => {
           </p>
         </div>
         <div className="flex gap-3 items-center">
-          <div className="bg-[#FFF8EE] text-[#A66A07] text-sm font-medium py-0.5 px-3 rounded-2xl h-6.5 cursor-pointer" onClick={()=>navigate("/pricing")}>
+          <div
+            className="bg-[#FFF8EE] text-[#A66A07] text-sm font-medium py-0.5 px-3 rounded-2xl h-6.5 cursor-pointer"
+            onClick={() => navigate("/pricing")}
+          >
             Contacts need Venture+
           </div>
           <div className="border border-gray-300 text-sm font-medium bg-gray-100 flex gap-2 items-center px-4 py-1.5 rounded-lg cursor-pointer">
@@ -66,7 +68,10 @@ const B2Bbuyers = ({ b2b }) => {
                   </div>
                 </div>
                 <div>
-                  <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap" onClick={()=>navigate("/pricing")}>
+                  <button
+                    className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
+                    onClick={() => navigate("/pricing")}
+                  >
                     🔒 Venture+
                   </button>
                 </div>
@@ -129,7 +134,10 @@ const B2Bbuyers = ({ b2b }) => {
           🔒 195 more buyers with contact details, procurement emails, LinkedIn
           profiles and RFQ history — unlock on Venture+
         </p>
-        <button className="bg-[#D48C15] text-white rounded-lg font-medium px-3 py-1" onClick={()=>navigate("/pricing")}>
+        <button
+          className="bg-[#D48C15] text-white rounded-lg font-medium px-3 py-1"
+          onClick={() => navigate("/pricing")}
+        >
           Upgrade to Venture+ →
         </button>
       </div>

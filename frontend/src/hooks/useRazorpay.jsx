@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 export const useRazorpay = () => {
   const loadScript = () => {
     return new Promise((resolve) => {
@@ -17,13 +18,13 @@ export const useRazorpay = () => {
     const isLoaded = await loadScript();
 
     if (!isLoaded) {
-      alert("Razorpay SDK failed to load");
+      toast.error("Razorpay SDK failed to load");
       return;
     }
 
     const options = {
-    //   key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    key:  "rzp_test_SavxVw5kDcTcNw",  // test
+      //   key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: "rzp_test_SavxVw5kDcTcNw", // test
       amount: order.amount,
       currency: order.currency,
       name: "Your Company",
@@ -48,7 +49,7 @@ export const useRazorpay = () => {
 
     rzp.on("payment.failed", function (response) {
       console.error("Payment Failed:", response.error);
-      alert("Payment failed. Try again.");
+      toast.error("Payment failed. Try again.");
     });
 
     rzp.open();

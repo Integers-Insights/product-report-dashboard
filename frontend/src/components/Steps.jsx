@@ -9,6 +9,7 @@ import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
 import Step4 from "./Step4";
+import toast from "react-hot-toast";
 
 const steps = [
   { id: "01", name: "Products Fetch" },
@@ -66,12 +67,12 @@ export default function Steps() {
 
   const handleFetchProducts = async () => {
     if (!url) {
-      alert("Please enter URL");
+      toast.error("Please enter URL");
       return;
     }
 
     if (!url.startsWith("http")) {
-      alert("Enter valid URL");
+      toast.error("Enter valid URL");
       return;
     }
 
@@ -99,7 +100,7 @@ export default function Steps() {
       const data = await response.json();
       if (data.success) {
         setJobId(data?.job_id);
-        alert(data?.message);
+        toast.success(data?.message);
         nextStep();
       }
     } catch (error) {
@@ -218,7 +219,6 @@ export default function Steps() {
       setLoading2(false);
     }
   };
-
 
   const getCardData = async () => {
     try {
@@ -419,32 +419,33 @@ export default function Steps() {
                 try {
                   if (currentStep === 1) {
                     if (selectedProducts.length === 0) {
-                      alert("Please select at least one product");
+                      toast.error("Please select at least one product");
                       return;
                     }
 
                     await postProduct();
-                  }
-                  else if (currentStep === 2) {
+                  } else if (currentStep === 2) {
                     console.log("Step 3 API call");
                     if (selectedGoal.length === 0) {
-                      alert("Please select at least one goal");
+                      toast.error("Please select at least one goal");
                       return;
                     }
                     if (!buyerType) {
-                      alert("Please select buyer type");
+                      toast.error("Please select buyer type");
                       return;
                     }
                     if (priceType.length === 0) {
-                      alert("Please select at least one price positioning");
+                      toast.error(
+                        "Please select at least one price positioning",
+                      );
                       return;
                     }
                     if (!capacity || Number(capacity) <= 0) {
-                      alert("Please enter valid monthly supply capacity");
+                      toast.error("Please enter valid monthly supply capacity");
                       return;
                     }
                     if (selected.length === 0) {
-                      alert("Please select at least one target country");
+                      toast.error("Please select at least one target country");
                       return;
                     }
                     const allCategoriesHaveOne = Object.values(
@@ -452,14 +453,13 @@ export default function Steps() {
                     ).every((arr) => arr.length > 0);
 
                     if (!allCategoriesHaveOne) {
-                      alert(
+                      toast.error(
                         "Please select at least one certification from each category",
                       );
                       return;
                     }
                     await researchGoals();
-                  }
-                  else if (currentStep === 3) {
+                  } else if (currentStep === 3) {
                     //console.log("Step 4 API call");
                   }
                   nextStep();

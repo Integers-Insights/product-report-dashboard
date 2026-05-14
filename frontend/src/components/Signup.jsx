@@ -26,7 +26,6 @@ const countries = [
 ];
 
 const Signup = () => {
-
   const [eyeButton, setEyeButton] = useState(false);
 
   const [error, setError] = useState(false);
@@ -87,7 +86,7 @@ const Signup = () => {
       phone: `${country}${phone || ""}`,
       // gdpr_consent: true,
       // marketing_consent: true,
-      gdpr_consent: formData.gdpr_consent ?? true,  // this is new payload
+      gdpr_consent: formData.gdpr_consent ?? true, // this is new payload
     };
 
     try {
@@ -102,7 +101,7 @@ const Signup = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data?.detail?.message || "Signup failed");  // this is new (data.detail.message)
+        toast.error(data?.detail?.message || "Signup failed"); // this is new (data.detail.message)
         return;
       }
 
@@ -334,7 +333,15 @@ const Signup = () => {
                   </div>
                 </form>
               </div>
-              <p className="text-center mt-3 text-sm font-medium text-gray-500">Already have an account? <Link to={"/login"} style={{color:"blue",textDecoration:"underline"}}>Login here</Link></p>
+              <p className="text-center mt-3 text-sm font-medium text-gray-500">
+                Already have an account?{" "}
+                <Link
+                  to={"/login"}
+                  style={{ color: "blue", textDecoration: "underline" }}
+                >
+                  Login here
+                </Link>
+              </p>
 
               <div className="mt-10">
                 <div className="relative">
@@ -400,11 +407,9 @@ const Signup = () => {
                     <span className="text-sm/6 font-semibold">GitHub</span>
                   </a>
                 </div>
-                
               </div>
             </div>
           </div>
-          
         </div>
         <div className="relative hidden w-0 flex-1 lg:block">
           <img

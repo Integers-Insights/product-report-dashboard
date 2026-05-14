@@ -5,7 +5,8 @@ import SideBar from "../components/SideBar";
 
 const IntelligenceReports = () => {
   const [allReportData, setAllReportData] = useState([]);
-  const [intelligenceReportLoading, setIntelligenceReportLoading] = useState(false);
+  const [intelligenceReportLoading, setIntelligenceReportLoading] =
+    useState(false);
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -29,14 +30,12 @@ const IntelligenceReports = () => {
       const reportData = await response.json();
       if (reportData.success) {
         setAllReportData(
-          Array.isArray(reportData?.reports)
-            ? reportData?.reports
-            : []
+          Array.isArray(reportData?.reports) ? reportData?.reports : [],
         );
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
-    }finally{
+    } finally {
       setIntelligenceReportLoading(false);
     }
   };
@@ -56,7 +55,10 @@ const IntelligenceReports = () => {
             <Header />
           </div>
           <div className="flex-1 p-6">
-            <IntelligenceReportsComponent allReportData={allReportData} intelligenceReportLoading={intelligenceReportLoading} />
+            <IntelligenceReportsComponent
+              allReportData={allReportData}
+              intelligenceReportLoading={intelligenceReportLoading}
+            />
           </div>
         </div>
       </div>

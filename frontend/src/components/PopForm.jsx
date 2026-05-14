@@ -21,6 +21,7 @@ import {
   platforms,
 } from "./Data";
 import NeedHelp from "./NeedHelp";
+import toast from "react-hot-toast";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -196,7 +197,7 @@ export default function PopForm({ setPopupOpen }) {
 
     if (webInput && webInput.trim()) {
       if (!/^https?:\/\/.+\..+/.test(webInput)) {
-        alert("Please enter valid website URL");
+        toast.error("Please enter valid website URL");
         return;
       }
     }
@@ -217,7 +218,7 @@ export default function PopForm({ setPopupOpen }) {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       if (!token) {
-        alert("User not authenticated");
+        toast.error("User not authenticated");
         return false;
       }
       const response = await fetch(`${base_url}/step1`, {
@@ -262,7 +263,7 @@ export default function PopForm({ setPopupOpen }) {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       if (!token) {
-        alert("User not authenticated");
+        toast.error("User not authenticated");
         return false;
       }
       const response = await fetch(`${base_url}/step2`, {
@@ -317,7 +318,7 @@ export default function PopForm({ setPopupOpen }) {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       if (!token) {
-        alert("User not authenticated");
+        toast.error("User not authenticated");
         return false;
       }
 

@@ -15,7 +15,6 @@ const BuyerListComponent = ({
   total_b2b_buyers_data,
   fetchingBuyerData,
 }) => {
-
   const navigate = useNavigate();
 
   return (
@@ -124,7 +123,6 @@ const BuyerListComponent = ({
         <div className="flex flex-col gap-6 mt-6">
           {buyer_list.length ? (
             buyer_list?.map((item, i) => {
-
               if (item?.masked) {
                 return (
                   <div
@@ -156,7 +154,10 @@ const BuyerListComponent = ({
                       </div>
                     </div>
                     <div>
-                      <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap" onClick={()=>navigate("/pricing")}>
+                      <button
+                        className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
+                        onClick={() => navigate("/pricing")}
+                      >
                         🔒 Venture+
                       </button>
                     </div>
@@ -230,7 +231,10 @@ const BuyerListComponent = ({
                     >
                       View Profile
                     </button>
-                    <button className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm" onClick={()=>navigate("/contact")}>
+                    <button
+                      className="border border-gray-500 py-1 px-3 rounded-lg hover:bg-gray-100 cursor-pointer font-medium text-sm"
+                      onClick={() => navigate("/contact")}
+                    >
                       Contact 🔒
                     </button>
                   </div>
@@ -249,7 +253,10 @@ const BuyerListComponent = ({
           Showing 5 of 12 buyers · <span className="font-medium">7 more</span>{" "}
           available with Venture plan
         </p>
-        <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white" onClick={()=>navigate("/pricing")}>
+        <button
+          className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white"
+          onClick={() => navigate("/pricing")}
+        >
           ↑ Upgrade to Venture — $129/mo
         </button>
       </div>

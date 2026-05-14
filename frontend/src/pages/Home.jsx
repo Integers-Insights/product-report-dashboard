@@ -68,7 +68,6 @@ function Counter({ target, suffix = "" }) {
   );
 }
 
-/* ── Ticker data ── */
 const ticks = [
   {
     flag: "🇩🇪",
@@ -105,7 +104,6 @@ const ticks = [
   },
 ];
 
-/* ── Module cards ── */
 const modules = [
   {
     icon: BarChart3,
@@ -151,7 +149,6 @@ const modules = [
   },
 ];
 
-/* ── Testimonials ── */
 const testimonials = [
   {
     quote:
@@ -182,7 +179,6 @@ const testimonials = [
   },
 ];
 
-/* ── Comparison data ── */
 const compare = [
   ["Market demand data", "6–12 weeks", "8 minutes"],
   ["Data freshness", "12–18 months old", "Live, always current"],
@@ -235,16 +231,12 @@ export default function Home() {
       </Helmet>
       <Navbar />
       <PageWrapper>
-        {/* ═══════ HERO ═══════ */}
         <section
           ref={heroRef}
           className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-8 pb-24"
         >
-          {/* Background: animated mesh + grid */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-brand-50/30" />
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-60" />
-
-          {/* Gradient orbs */}
           <motion.div
             style={{ y: heroY }}
             className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-brand-400/10 rounded-full blur-3xl pointer-events-none"
@@ -263,7 +255,6 @@ export default function Home() {
             style={{ opacity: heroOpacity }}
             className="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl"
           >
-            {/* Live badge */}
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -275,8 +266,6 @@ export default function Home() {
                 AI-Powered · 180+ Countries · Live Trade Data
               </span>
             </motion.div>
-
-            {/* Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 32 }}
               animate={{ opacity: 1, y: 0 }}
@@ -310,8 +299,6 @@ export default function Home() {
               <br />
               your product wins globally.
             </motion.h1>
-
-            {/* Sub */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -326,8 +313,6 @@ export default function Home() {
               live AI intelligence — supply demand analysis, global trade data,
               and verified buyer discovery in minutes, not weeks.
             </motion.p>
-
-            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -355,8 +340,6 @@ export default function Home() {
                 See how it works
               </motion.button>
             </motion.div>
-
-            {/* Trust row */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -378,8 +361,6 @@ export default function Home() {
                 </span>
               ))}
             </motion.div>
-
-            {/* Stat bar */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -401,8 +382,6 @@ export default function Home() {
               ))}
             </motion.div>
           </motion.div>
-
-          {/* Floating data cards */}
           <motion.div
             initial={{ opacity: 0, x: 40, y: 20 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -478,8 +457,6 @@ export default function Home() {
             </div>
           </motion.div>
         </section>
-
-        {/* ═══════ TICKER ═══════ */}
         <div className="border-y border-slate-100 bg-slate-50 py-3 overflow-hidden">
           <div
             className="flex gap-12 animate-ticker whitespace-nowrap"
@@ -500,8 +477,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-        {/* ═══════ MODULES BENTO ═══════ */}
         <section className="py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -547,8 +522,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* ═══════ LIVE REPORT PREVIEW ═══════ */}
         <section className="py-24 px-4 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
           <div className="absolute inset-0 bg-dot mask-radial opacity-40" />
           <div className="max-w-6xl mx-auto relative">
@@ -567,7 +540,6 @@ export default function Home() {
 
             <Reveal delay={0.1}>
               <div className="bg-white rounded-3xl border border-slate-200 shadow-[0_20px_80px_rgba(0,0,0,0.08)] overflow-hidden max-w-4xl mx-auto">
-                {/* Browser bar */}
                 <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100 bg-slate-50">
                   <div className="flex gap-1.5">
                     {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
@@ -588,7 +560,6 @@ export default function Home() {
                 </div>
 
                 <div className="grid lg:grid-cols-2">
-                  {/* Left — score + metrics */}
                   <div className="p-7 border-b lg:border-b-0 lg:border-r border-slate-100">
                     <div className="flex items-start gap-5 mb-6 pb-6 border-b border-slate-100">
                       <div>
@@ -636,8 +607,6 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Right — buyers */}
                   <div className="p-7">
                     <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-5">
                       Matched buyers
@@ -703,8 +672,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                {/* Footer CTA */}
                 <div className="px-7 py-4 bg-gradient-to-r from-brand-50 to-sky-50 border-t border-brand-100 flex items-center justify-between gap-4">
                   <p className="text-sm text-slate-600">
                     This is a{" "}
@@ -726,8 +693,6 @@ export default function Home() {
             </Reveal>
           </div>
         </section>
-
-        {/* ═══════ COMPARISON ═══════ */}
         <section className="py-24 px-4">
           <div className="max-w-5xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -741,7 +706,6 @@ export default function Home() {
 
             <Reveal delay={0.1}>
               <div className="grid lg:grid-cols-2 gap-8 items-start">
-                {/* Comparison table */}
                 <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-card">
                   <table className="w-full text-sm">
                     <thead>
@@ -777,8 +741,6 @@ export default function Home() {
                     </tbody>
                   </table>
                 </div>
-
-                {/* Features list */}
                 <div className="space-y-4">
                   {[
                     {
@@ -827,9 +789,7 @@ export default function Home() {
             </Reveal>
           </div>
         </section>
-
-        {/* ═══════ TESTIMONIALS ═══════ */}
-        <section className="py-24 px-4 bg-slate-50 relative overflow-hidden">
+        {/* <section className="py-24 px-4 bg-slate-50 relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
           <div className="max-w-6xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -892,11 +852,8 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
-
-        {/* ═══════ CTA ═══════ */}
+        </section> */}
         <section className="py-32 px-4 relative overflow-hidden">
-          {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500 via-brand-600 to-emerald-700" />
           <div className="absolute inset-0 bg-grid opacity-20" />
           <motion.div

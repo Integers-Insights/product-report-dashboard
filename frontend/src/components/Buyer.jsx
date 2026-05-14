@@ -17,10 +17,8 @@ const Buyer = ({ buyers_data }) => {
 
   return (
     <div className="p-3">
-      
       <div className="mb-3 flex justify-end">
         <div className="border border-[#E6E6E6] flex gap-2 px-3 py-1 bg-gray-100 rounded-lg">
-
           {(apiType === "B2B" || apiType === "BOTH") && (
             <button
               onClick={() => setBuyerType("B2B")}
@@ -42,15 +40,14 @@ const Buyer = ({ buyers_data }) => {
               B2C Profile
             </button>
           )}
-
         </div>
       </div>
 
-      {(buyerType === "B2B" && (apiType === "B2B" || apiType === "BOTH")) && (
+      {buyerType === "B2B" && (apiType === "B2B" || apiType === "BOTH") && (
         <B2Bbuyers b2b={buyers_data?.b2b} />
       )}
 
-      {(buyerType === "B2C" && (apiType === "B2C" || apiType === "BOTH")) && (
+      {buyerType === "B2C" && (apiType === "B2C" || apiType === "BOTH") && (
         <B2Cprofile b2c={buyers_data?.b2c} />
       )}
     </div>

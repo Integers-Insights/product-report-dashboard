@@ -18,7 +18,6 @@ function classNames(...classes) {
 }
 
 const KpiCards = ({ statsData, currentDate, fullName }) => {
-
   return (
     <>
       <div>

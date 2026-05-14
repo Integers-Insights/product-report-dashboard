@@ -9,7 +9,6 @@ import {
 import { PiGlobeXLight, PiGlobeLight } from "react-icons/pi";
 
 const B2Cprofile = ({ b2c }) => {
-
   return (
     <div>
       <div className="flex justify-between">

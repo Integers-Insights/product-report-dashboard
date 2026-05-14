@@ -1,5 +1,4 @@
-const EmailSequence = ({ emailData,sequence_note_data }) => {
-
+const EmailSequence = ({ emailData, sequence_note_data }) => {
   return (
     <>
       <div className="border p-3 rounded-lg border-[#96DBFF] flex justify-between items-center bg-[#EDF9FF] mt-6">

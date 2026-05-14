@@ -139,13 +139,13 @@ export default function Navbar() {
             </ul>
             <div className="flex gap-2 pt-3 border-t border-slate-100">
               <Link
-                to="/auth"
+                to="/login"
                 className="flex-1 text-center text-sm font-medium text-slate-700 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 Log in
               </Link>
               <Link
-                to="/auth"
+                to="/login"
                 className="flex-1 text-center text-sm font-semibold text-white py-2 rounded-xl bg-brand-500 hover:bg-brand-600 transition-colors"
               >
                 Start free

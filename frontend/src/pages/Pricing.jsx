@@ -14,6 +14,7 @@ import Navbar from "../components/Navbar";
 import { useRazorpay } from "../hooks/useRazorpay";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
+import toast from "react-hot-toast";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -168,10 +169,10 @@ export default function Pricing() {
       const result = await res.json();
 
       if (result.success) {
-        alert("Payment successful");
+        toast.success("Payment successful");
         navigate("/overview");
       } else {
-        alert("Verification failed");
+        toast.error("Verification failed");
       }
     } catch (err) {
       console.log(err);
@@ -216,7 +217,7 @@ export default function Pricing() {
               onSuccess: handlePaymentSuccess,
             });
           } else {
-            alert(data.message || "Order creation failed");
+            toast.error(data.message || "Order creation failed");
           }
           console.log("price data: ", data);
         } catch (err) {
@@ -257,7 +258,7 @@ export default function Pricing() {
               onSuccess: handlePaymentSuccess,
             });
           } else {
-            alert(data.message);
+            toast.error(data.message);
           }
         } catch (err) {
           console.log(err);
@@ -272,7 +273,6 @@ export default function Pricing() {
     <>
       <Navbar />
       <PageWrapper>
-        {/* Hero */}
         <section className="relative pt-20 pb-16 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-40" />
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-brand-400/8 rounded-full blur-3xl" />
@@ -294,8 +294,6 @@ export default function Pricing() {
                 Same data quality that large enterprises use — at a price for
                 growing exporters. Start free.
               </p>
-
-              {/* Billing toggle */}
               <div className="inline-flex items-center gap-4 bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
                 <span
                   onClick={() => setYearly(false)}
@@ -326,8 +324,6 @@ export default function Pricing() {
             </motion.div>
           </div>
         </section>
-
-        {/* Plans grid */}
         <section className="px-4 pb-24">
           <div className="max-w-6xl mx-auto">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -489,8 +485,6 @@ export default function Pricing() {
             </Reveal>
           </div>
         </section>
-
-        {/* Trust strip */}
         <div className="border-y border-slate-100 bg-slate-50 py-8 px-4">
           <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-6 text-center">
             {[
@@ -522,8 +516,6 @@ export default function Pricing() {
             ))}
           </div>
         </div>
-
-        {/* FAQ */}
         <section className="py-24 px-4">
           <div className="max-w-2xl mx-auto">
             <Reveal className="text-center mb-12">

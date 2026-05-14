@@ -3,6 +3,8 @@ import { PencilSquareIcon } from "@heroicons/react/24/outline";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 const Profile = ({
   setOpen_profile,
   full_name,
@@ -55,7 +57,7 @@ const Profile = ({
         const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
 
         if (!user_data) {
-          alert("No user data found");
+          toast.error("No user data found");
           return;
         }
 
@@ -64,7 +66,7 @@ const Profile = ({
         const userId = parsedData?.user_id;
 
         if (!userId) {
-          alert("User ID not found");
+          toast.error("User ID not found");
           return;
         }
 
@@ -86,15 +88,15 @@ const Profile = ({
           localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
           localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
           navigate("/signup");
-          alert("Profile deleted successfully");
+          toast.success("Profile deleted successfully");
         }
       } catch (error) {
-        alert("Failed to delete profile");
+        toast.error("Failed to delete profile");
       } finally {
         setDeleting(false);
       }
     } else {
-      alert("Profile not delete.");
+      toast.error("Profile not delete.");
     }
   };
 
@@ -452,8 +454,8 @@ const Profile = ({
                   </p>
                 </div>
                 <button
-                  className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white"
-                  onClick={() => alert("hii")}
+                  className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] text-white cursor-pointer"
+                  onClick={() => navigate("/pricing")}
                 >
                   Upgrade →
                 </button>

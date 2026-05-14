@@ -252,11 +252,16 @@ export default function PaymentRefund() {
 
             <Section title="6. DISPUTES">
               <p>
-                If you believe you've been charged incorrectly, contact us at info@integersinsights.com within 30 days of the charge. We'll investigate and respond within 3 working days.
+                If you believe you've been charged incorrectly, contact us at
+                info@integersinsights.com within 30 days of the charge. We'll
+                investigate and respond within 3 working days.
               </p>
 
               <p>
-                For Razorpay-related technical disputes (e.g., a charge appearing on your bank statement but not in your account), we'll coordinate with Razorpay on your behalf and resolve it as quickly as possible.
+                For Razorpay-related technical disputes (e.g., a charge
+                appearing on your bank statement but not in your account), we'll
+                coordinate with Razorpay on your behalf and resolve it as
+                quickly as possible.
               </p>
             </Section>
 
