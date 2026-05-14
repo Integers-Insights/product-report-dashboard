@@ -370,7 +370,7 @@ export const notificationMethod1 = [
 ];
 
 export const notificationMethod2 = [
-  { id: "b2b", title: "b2b" },
+  { id: "b2b", title: "B2B" },
   { id: "b2c", title: "B2C" },
   { id: "both", title: "Both" },
 ];

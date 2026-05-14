@@ -86,6 +86,7 @@ const SideBar = () => {
   const [usage_data1, setUserData1] = useState(0);
   const [usage_data2, setUserData2] = useState(0);
   const [usage_date, setUsage_date] = useState("");
+  const [plan,setPlan] = useState("");
 
   const navigate = useNavigate();
 
@@ -276,8 +277,11 @@ const SideBar = () => {
 
       let data = await response.json();
 
+      // console.log("data: ",data);
+
       if (data?.success) {
         setUsage_date(data?.end_date);
+        setPlan(data?.plan_name || "");
 
         if (data?.billing_cycle === "monthly") {
           setUserData1(data?.usage?.monthly_limit || 0);
@@ -404,7 +408,7 @@ const SideBar = () => {
                       <span>
                         <BoltIcon className="h-5 w-5 text-yellow-500" />
                       </span>
-                      <span className="text-[13px]">Scout Plan</span>
+                      <span className="text-[13px] capitalize">{plan} Plan</span>
                     </div>
                     <div>
                       <span className="text-xl font-semibold">{used}</span>
