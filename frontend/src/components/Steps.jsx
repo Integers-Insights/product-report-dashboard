@@ -19,7 +19,7 @@ const steps = [
 ];
 
 export default function Steps() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(2);
 
   const base_url = import.meta.env.VITE_BASE_URL;
 

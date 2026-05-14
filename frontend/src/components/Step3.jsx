@@ -418,7 +418,8 @@ const Step3 = ({
                 </div>
               </div>
               <div className="w-75">
-                <div ref={dropdownRef} className="w-75 relative mt-6.5">
+                <h1 className="block text-lg font-semibold text-[#001413] dark:text-white">Target Country</h1>
+                <div ref={dropdownRef} className="w-75 relative">
                   <div
                     onClick={() => setIsOpen((prev) => !prev)}
                     className="min-h-[37px] border rounded-lg px-3 py-1 text-sm flex items-center cursor-pointer bg-white border-gray-300"

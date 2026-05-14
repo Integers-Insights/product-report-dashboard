@@ -40,6 +40,12 @@ const Step2 = ({
     setIndeterminate(false);
   }
 
+  const selectedCount = selectedProducts?.length || 0;
+  const totalLimit = usage_summary_data || 0;
+
+  const progressPercent =
+    totalLimit > 0 ? (selectedCount / totalLimit) * 100 : 0;
+
   return (
     <>
       <h1 className="text-[28px] font-semibold text-[#000000]">
@@ -191,14 +197,16 @@ const Step2 = ({
             </div>
 
             <div className="flex justify-between items-center mt-4">
-              <div className="text-xs font-regular text-[#001413]">{selectedProducts?.length || 0}</div>
+              <div className="text-xs font-regular text-[#001413]">
+                {selectedProducts?.length || 0}
+              </div>
               <div className="w-[85%] h-1 bg-[#A9B3B1] rounded">
                 <div
                   className="h-1 bg-[#0284C7] rounded"
-                  style={{ width: "20%" }}
+                  style={{ width: `${progressPercent}%` }}
                 ></div>
               </div>
-              <div className="text-xs font-regular text-[#001413]">70</div>
+              <div className="text-xs font-regular text-[#001413]">{usage_summary_data || 0}</div>
             </div>
             <p className="flex justify-between">
               <span className="text-[#5F6368] text-xs font-light">

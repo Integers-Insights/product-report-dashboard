@@ -275,6 +275,7 @@ const SideBar = () => {
       }
 
       let data = await response.json();
+
       if (data?.success) {
         setUsage_date(data?.end_date);
 
