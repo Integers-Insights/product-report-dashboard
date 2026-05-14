@@ -43,7 +43,7 @@ const channels = [
     icon: Headphones,
     title: "Support",
     desc: "Technical help & account questions",
-    value: "support@integermarket.com",
+    value: "+91 9518349134",
     color: "bg-sky-50",
     iconColor: "text-sky-500",
   },
@@ -51,7 +51,7 @@ const channels = [
     icon: Users,
     title: "Enterprise Sales",
     desc: "Custom plans for large teams",
-    value: "sales@integermarket.com",
+    value: "info@integersinsights.com",
     color: "bg-violet-50",
     iconColor: "text-violet-500",
   },
@@ -161,12 +161,12 @@ export default function Contact() {
                         {
                           id: "name",
                           label: "Full name",
-                          placeholder: "Rajiv Kapoor",
+                          placeholder: "John Doe",
                         },
                         {
                           id: "email",
                           label: "Email address",
-                          placeholder: "raj@company.com",
+                          placeholder: "john@yourdomain.com",
                           type: "email",
                         },
                       ].map(({ id, label, placeholder, type = "text" }) => (
@@ -249,8 +249,9 @@ export default function Contact() {
                     className="text-brand-500 shrink-0 mt-0.5"
                   />
                   <span>
-                    Integers Insights Private Limited Unit No 28, 2nd Floor, Vicino Building, New Link Road, 
-                    Goregaon (Mumbai), Goregaon West, Maharashtra, 400104, India
+                    Integers Insights Private Limited Unit No 28, 2nd Floor,
+                    Vicino Building, New Link Road, Goregaon (Mumbai), Goregaon
+                    West, Maharashtra, 400104, India
                   </span>
                 </div>
               </div>

@@ -90,22 +90,31 @@ const NeedHelp = ({ setPopup_Open }) => {
           <div className="text-sm font-regular">
             <p>
               <span className="font-medium">This setup runs once. </span>
-              We use your answers to personalise every intelligence report — matching buyers to your product, certifications, pricing and target regions. The more accurate your input, the better your results.
+              We use your answers to personalise every intelligence report —
+              matching buyers to your product, certifications, pricing and
+              target regions. The more accurate your input, the better your
+              results.
             </p>
 
             <p className="mt-4">
               <span className="font-medium">Takes about 2 minutes. </span>
-              Three short steps — who you are, what you sell, and what certifications and goals matter to you. You can edit everything later from your profile settings.
+              Three short steps — who you are, what you sell, and what
+              certifications and goals matter to you. You can edit everything
+              later from your profile settings.
             </p>
 
             <p className="mt-4">
               <span className="font-medium">Your data stays yours. </span>
-              Everything you enter is used exclusively to generate your reports. It is never shared, sold, or used for any other purpose.
+              Everything you enter is used exclusively to generate your reports.
+              It is never shared, sold, or used for any other purpose.
             </p>
 
             <div className="border border-l-3 border-[#0284C7] bg-gray-100 rounded-lg p-2 mt-4">
               <span className="font-medium">What happens after setup?</span>
-              You add your products → we run 6 intelligence modules → you get a full opportunity report with matched buyers, market scores, keywords, pricing intelligence, competitor analysis, and an email outreach sequence — all in one place.
+              You add your products → we run 6 intelligence modules → you get a
+              full opportunity report with matched buyers, market scores,
+              keywords, pricing intelligence, competitor analysis, and an email
+              outreach sequence — all in one place.
             </div>
           </div>
         </div>
@@ -410,7 +419,9 @@ const NeedHelp = ({ setPopup_Open }) => {
             <span className="font-medium text-[#2E7D32]">
               Good goal combination:
             </span>
-             "Find export buyers" + "Discover new markets" + "Pricing intelligence" — gives you a balanced report with buyers, market scores, and price positioning in one run.
+            "Find export buyers" + "Discover new markets" + "Pricing
+            intelligence" — gives you a balanced report with buyers, market
+            scores, and price positioning in one run.
           </div>
         </div>
         <div

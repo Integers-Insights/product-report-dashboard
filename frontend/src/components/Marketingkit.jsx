@@ -70,9 +70,15 @@ const Marketingkit = ({ marketing_kit_data }) => {
       <div>
         {marketing_kit_data?.masked ? (
           <div className="border border-[#E6E6E6] rounded-lg p-3 mt-3 text-center flex justify-between">
-            <p className="blur-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat blanditiis facilis ipsam corrupti modi asperiores?</p>
+            <p className="blur-sm">
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat
+              blanditiis facilis ipsam corrupti modi asperiores?
+            </p>
             <div className="text-sm font-medium">
-              <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap" onClick={()=>navigate("/pricing")}>
+              <button
+                className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
+                onClick={() => navigate("/pricing")}
+              >
                 🔒 {marketing_kit_data?.message || "Upgrade to unlock"} +
               </button>
             </div>

@@ -1,5 +1,4 @@
 const AdConcept = ({ adConceptsData }) => {
-
   return (
     <>
       <p className="text-sm font-medium text-[#5F6368] mt-6 p-2.5 rounded-lg bg-gray-100">

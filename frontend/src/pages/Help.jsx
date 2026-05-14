@@ -14,7 +14,7 @@ const Help = () => {
             <Header />
           </div>
           <div className="flex-1 p-6">
-            <HelpComponent/>
+            <HelpComponent />
           </div>
         </div>
       </div>

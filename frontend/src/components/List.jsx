@@ -1,5 +1,5 @@
 import { H1Icon } from "@heroicons/react/24/solid";
-import loader from '../assets/loader.gif';
+import loader from "../assets/loader.gif";
 import { Link } from "react-router-dom";
 const List = ({
   selectedProducts,
@@ -7,13 +7,16 @@ const List = ({
   products,
   fetching_allProducts,
 }) => {
-
   return (
     <>
       <div className="p-4">
         {fetching_allProducts ? (
           <div className="h-86.5 w-full flex justify-between items-center overflow-hidden">
-            <img src={loader} alt="" className="h-full w-[50%] m-auto scale-175" />
+            <img
+              src={loader}
+              alt=""
+              className="h-full w-[50%] m-auto scale-175"
+            />
           </div>
         ) : (
           <>
@@ -126,7 +129,9 @@ const List = ({
                   );
                 })
             ) : (
-              <h1 className="text-center font-medium text-xl">Data not found</h1>
+              <h1 className="text-center font-medium text-xl">
+                Data not found
+              </h1>
             )}
           </>
         )}

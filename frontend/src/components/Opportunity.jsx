@@ -14,7 +14,6 @@ export default function Opportunity({
             <a href="">View All</a>
           </div>
         </div>
-        {/* 1 */}
         {opportunity_hubData?.map((item, index) => {
           return (
             <div

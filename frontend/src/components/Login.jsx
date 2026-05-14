@@ -184,7 +184,15 @@ const UserLogin = () => {
                 </button>
               </form>
             </div>
-            <p className="text-center mt-3 text-sm font-medium text-gray-500">Don't have an account? <Link to={"/signup"} style={{color:"blue",textDecoration:"underline"}}>SignUp</Link></p>
+            <p className="text-center mt-3 text-sm font-medium text-gray-500">
+              Don't have an account?{" "}
+              <Link
+                to={"/signup"}
+                style={{ color: "blue", textDecoration: "underline" }}
+              >
+                SignUp
+              </Link>
+            </p>
           </div>
         </div>
 

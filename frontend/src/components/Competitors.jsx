@@ -8,7 +8,6 @@ import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
 
 const Competitors = ({ competitor_data }) => {
-
   const navigate = useNavigate();
 
   return (
@@ -89,7 +88,10 @@ const Competitors = ({ competitor_data }) => {
                     </div>
                   </div>
                   <div>
-                    <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap" onClick={()=>navigate("/pricing")}>
+                    <button
+                      className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
+                      onClick={() => navigate("/pricing")}
+                    >
                       🔒 {item?.message} +
                     </button>
                   </div>

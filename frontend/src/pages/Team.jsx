@@ -101,8 +101,6 @@ export default function Team() {
             </motion.div>
           </div>
         </section>
-
-        {/* Team grid */}
         <section className="px-4 pb-24">
           <div className="max-w-6xl mx-auto">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -148,8 +146,6 @@ export default function Team() {
             </div>
           </div>
         </section>
-
-        {/* Values */}
         <section className="py-20 px-4 bg-slate-50">
           <div className="max-w-5xl mx-auto">
             <Reveal className="text-center mb-12">
@@ -174,8 +170,6 @@ export default function Team() {
             </div>
           </div>
         </section>
-
-        {/* CTA */}
         <section className="py-20 px-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500 to-emerald-700" />
           <div className="absolute inset-0 bg-grid opacity-20" />

@@ -59,8 +59,12 @@ const OverViewPage = () => {
 
       if (data?.success) {
         setStatsData(Array.isArray(data?.stats) ? data.stats : []);
-        setOpportunity_hubData(Array.isArray(data?.opportunity_hub) ? data.opportunity_hub : []);
-        setAi_insightsData(Array.isArray(data?.ai_insights) ? data.ai_insights : []);
+        setOpportunity_hubData(
+          Array.isArray(data?.opportunity_hub) ? data.opportunity_hub : [],
+        );
+        setAi_insightsData(
+          Array.isArray(data?.ai_insights) ? data.ai_insights : [],
+        );
 
         setCurrentDate(data?.current_datetime || "");
         setFullName(data?.full_name || "");
@@ -90,7 +94,9 @@ const OverViewPage = () => {
       // console.log(data);
 
       if (data?.success) {
-        setRecent_activityData(Array.isArray(data?.recent_activity) ? data?.recent_activity : []);
+        setRecent_activityData(
+          Array.isArray(data?.recent_activity) ? data?.recent_activity : [],
+        );
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);

@@ -5,9 +5,8 @@ const CircularProgress = ({
   trackColor = "#e5e7eb",
   progressColor,
   textColor,
-  bgColor
+  bgColor,
 }) => {
-
   const safeValue = Math.min(100, Math.max(0, value || 0));
 
   const safeProgressColor = progressColor || "#0284C7";
@@ -24,12 +23,7 @@ const CircularProgress = ({
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={innerRadius}
-        fill={safeBgColor}
-      />
+      <circle cx={size / 2} cy={size / 2} r={innerRadius} fill={safeBgColor} />
       <circle
         cx={size / 2}
         cy={size / 2}

@@ -4,7 +4,6 @@ import {
 } from "@heroicons/react/24/outline";
 
 const Variants = ({ variants_data }) => {
-
   return (
     <>
       <div className="flex justify-between items-center">
@@ -62,19 +61,19 @@ const Variants = ({ variants_data }) => {
                 ? "border-[#D48C15]"
                 : "border-[#C62828]";
 
-                const textColor =
-                    score >= 7
-                      ? "text-[#009A3F]"
-                      : score >= 3
-                        ? "text-[#D48C15]"
-                        : "text-[#C62828]";
+          const textColor =
+            score >= 7
+              ? "text-[#009A3F]"
+              : score >= 3
+                ? "text-[#D48C15]"
+                : "text-[#C62828]";
 
           const bgColor =
-                    score >= 7
-                      ? "bg-[#CCFFCF]"
-                      : score >= 3
-                        ? "bg-[#FFE9C5]"
-                        : "bg-[#FFC4C4]";
+            score >= 7
+              ? "bg-[#CCFFCF]"
+              : score >= 3
+                ? "bg-[#FFE9C5]"
+                : "bg-[#FFC4C4]";
 
           return (
             <div
@@ -86,7 +85,9 @@ const Variants = ({ variants_data }) => {
                   <div className="text-sm text-[#000000] font-medium">
                     {item?.variant_name ?? 0}
                   </div>
-                    <div className={`text-sm ${textColor} font-medium px-3 py-0.5 rounded-2xl ${bgColor}`}>
+                  <div
+                    className={`text-sm ${textColor} font-medium px-3 py-0.5 rounded-2xl ${bgColor}`}
+                  >
                     {item?.tag ?? 0}
                   </div>
                 </div>

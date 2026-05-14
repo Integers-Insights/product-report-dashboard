@@ -49,7 +49,7 @@ const ProductReport = ({
   price_intelligence_data,
   variants_data,
   competitor_data,
-  marketing_kit_data
+  marketing_kit_data,
 }) => {
   const [activeTab, setActiveTab] = useState("Overview");
   const size = 81;
@@ -276,10 +276,18 @@ const ProductReport = ({
         {activeTab === "Markets" && <Markets market_data={market_data} />}
         {activeTab === "Trade" && <Trade trade_data={trade_data} />}
         {activeTab === "Buyers" && <Buyer buyers_data={buyers_data} />}
-        {activeTab === "Price Analysis" && <PriceAnalysis price_intelligence_data={price_intelligence_data} />}
-        {activeTab === "Variants & Formats" && <Variants variants_data={variants_data} />}
-        {activeTab === "Competitors" && <Competitors competitor_data={competitor_data} />}
-        {activeTab === "Marketing Kit" && <Marketingkit marketing_kit_data={marketing_kit_data} />}
+        {activeTab === "Price Analysis" && (
+          <PriceAnalysis price_intelligence_data={price_intelligence_data} />
+        )}
+        {activeTab === "Variants & Formats" && (
+          <Variants variants_data={variants_data} />
+        )}
+        {activeTab === "Competitors" && (
+          <Competitors competitor_data={competitor_data} />
+        )}
+        {activeTab === "Marketing Kit" && (
+          <Marketingkit marketing_kit_data={marketing_kit_data} />
+        )}
         {/* {activeTab === "Kpis & Actions" && <Kpis />} */}
       </div>
     </>

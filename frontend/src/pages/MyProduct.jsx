@@ -53,7 +53,10 @@ const MyProduct = () => {
             <Header />
           </div>
           <div className="flex-1 p-6">
-            <Product productData={productData} productLoading={productLoading} />
+            <Product
+              productData={productData}
+              productLoading={productLoading}
+            />
           </div>
         </div>
       </div>

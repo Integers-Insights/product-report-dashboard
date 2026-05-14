@@ -113,39 +113,93 @@ export default function DataPolicy() {
                 We update data on different cycles depending on the source:
               </p>
               <p>
-                <span>Buyer data &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;  Refreshed every 7 days</span><br />
-                <span>Trade volumes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;  Updated monthly (as governments publish customs records)</span><br />
-                <span>Demand signals &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;  Refreshed weekly</span><br />
-                <span>Confidence scores &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;  Recalculated with every data refresh cycle</span>
+                <span>
+                  Buyer data
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
+                  &nbsp;&nbsp; Refreshed every 7 days
+                </span>
+                <br />
+                <span>
+                  Trade volumes
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
+                  &nbsp;&nbsp; Updated monthly (as governments publish customs
+                  records)
+                </span>
+                <br />
+                <span>
+                  Demand signals
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
+                  &nbsp;&nbsp; Refreshed weekly
+                </span>
+                <br />
+                <span>
+                  Confidence scores &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;
+                  Recalculated with every data refresh cycle
+                </span>
               </p>
               <p>
-                You'll always see the last-updated date on every data point inside your report.
+                You'll always see the last-updated date on every data point
+                inside your report.
               </p>
             </Section>
 
             <Section title="4. WHAT CONFIDENCE SCORES MEAN">
               <p className="text-base font-medium">
-                Every insight in a REPORTINSHORT report carries a confidence score from 0 to 100. Here's a rough guide:
+                Every insight in a REPORTINSHORT report carries a confidence
+                score from 0 to 100. Here's a rough guide:
               </p>
               <p>
-                <span>90–100  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;  Cross-verified from multiple independent sources. High reliability.</span><br />
-                <span>75–89   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;  Strong primary source data. Reliable for most business decisions.</span><br />
-                <span>50–74   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;  Single source, or data that hasn't been refreshed recently. Use with caution.</span><br />
-                <span>Below 50 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;  Flagged as low-confidence. We show it for completeness, not as a basis for action.</span>
+                <span>
+                  90–100
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;
+                  Cross-verified from multiple independent sources. High
+                  reliability.
+                </span>
+                <br />
+                <span>
+                  75–89
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;
+                  Strong primary source data. Reliable for most business
+                  decisions.
+                </span>
+                <br />
+                <span>
+                  50–74
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;
+                  Single source, or data that hasn't been refreshed recently.
+                  Use with caution.
+                </span>
+                <br />
+                <span>
+                  Below 50 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp; Flagged
+                  as low-confidence. We show it for completeness, not as a basis
+                  for action.
+                </span>
               </p>
-              <p>Our platform average is 94. We recommend acting on insights scored 75 and above.</p>
+              <p>
+                Our platform average is 94. We recommend acting on insights
+                scored 75 and above.
+              </p>
             </Section>
 
             <Section title="5. YOUR DATA ON OUR PLATFORM">
               <p className="text-base font-medium">
-                The information you enter — your product searches, target markets, saved reports — belongs to you. We use it only to generate and personalise your reports. We do not:
+                The information you enter — your product searches, target
+                markets, saved reports — belongs to you. We use it only to
+                generate and personalise your reports. We do not:
               </p>
               <ul className="list-disc ml-8">
                 <li>Share your search history with other users</li>
                 <li>Sell or licence your research activity to third parties</li>
-                <li>Use your competitive intelligence data to build products for your competitors</li>
+                <li>
+                  Use your competitive intelligence data to build products for
+                  your competitors
+                </li>
               </ul>
-              <p>Your data is stored securely and deleted within 30 days of account closure.</p>
+              <p>
+                Your data is stored securely and deleted within 30 days of
+                account closure.
+              </p>
             </Section>
 
             <Section title="6. BUYER CONTACT DATA">
@@ -158,13 +212,18 @@ export default function DataPolicy() {
                 <li>Accredited B2B directories</li>
               </ul>
               <p>
-                We do not purchase scraped data or harvest private communication. Every contact in a report has been matched to an active import record before being included.
+                We do not purchase scraped data or harvest private
+                communication. Every contact in a report has been matched to an
+                active import record before being included.
               </p>
             </Section>
 
             <Section title="7. IF YOU SPOT A DATA ERROR">
               <p>
-                Use the "Flag data issue" button inside any report. Our team reviews flagged items within 5 business days. If we confirm an error, your report is updated automatically — no need to re-run it.
+                Use the "Flag data issue" button inside any report. Our team
+                reviews flagged items within 5 business days. If we confirm an
+                error, your report is updated automatically — no need to re-run
+                it.
               </p>
             </Section>
 
@@ -172,9 +231,16 @@ export default function DataPolicy() {
               <p className="text-base font-medium">
                 Data questions or concerns:
               </p>
-              <p className="-mb-0.5"><span className="font-medium">Email: </span>info@integersinsights.com</p>
-              <p className="-mb-0.5"><span className="font-medium">Phone: </span>+91 93212 56706</p>
-              <p className="-mb-0.5">Integers Insights Private Limited, India</p>
+              <p className="-mb-0.5">
+                <span className="font-medium">Email: </span>
+                info@integersinsights.com
+              </p>
+              <p className="-mb-0.5">
+                <span className="font-medium">Phone: </span>+91 93212 56706
+              </p>
+              <p className="-mb-0.5">
+                Integers Insights Private Limited, India
+              </p>
             </Section>
           </div>
         </article>

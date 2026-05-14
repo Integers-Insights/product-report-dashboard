@@ -26,6 +26,7 @@ import Ellipse_11 from "../assets/Ellipse_11.svg";
 import { useEffect, useState } from "react";
 import Profile from "./Profile";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const navigation = [
   {
@@ -108,7 +109,7 @@ const SideBar = () => {
       let data = await response.json();
 
       if (data?.success) {
-        alert(data?.message || "Logged out successfully");
+        toast.success(data?.message || "Logged out successfully");
         localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
         localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
         navigate("/login");
@@ -168,12 +169,14 @@ const SideBar = () => {
 
       let data = await response.json();
       if (data.force_logout) {
-        alert(data.message || "Please verify your email and login again");
+        toast.success(
+          data.message || "Please verify your email and login again",
+        );
         localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
         localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
         navigate("/login");
       } else {
-        alert(data.message || "Profile updated successfully");
+        toast.success(data.message || "Profile updated successfully");
       }
     } catch (err) {
       console.log("something went wrong.", err);
@@ -189,12 +192,12 @@ const SideBar = () => {
     }
 
     if (new_password.length < 6) {
-      alert("Password must be at least 6 characters");
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
     if (new_password !== confirm_password) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -215,7 +218,7 @@ const SideBar = () => {
       }
       let data = await response.json();
       if (data.force_logout) {
-        alert(
+        toast.success(
           data.message || "Password updated successfully. Please login again.",
         );
         localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
@@ -223,7 +226,7 @@ const SideBar = () => {
         navigate("/login");
       }
     } catch (err) {
-      alert("something went wrong.");
+      toast.error("something went wrong.");
       console.log("something went wrong.", err);
     }
   };
@@ -247,9 +250,9 @@ const SideBar = () => {
 
       let data = await response.json();
       if (data.success) {
-        alert(data.message || "Company profile updated successfully");
+        toast.success(data.message || "Company profile updated successfully");
       } else {
-        alert(data.message || "");
+        toast.error(data.message || "");
       }
     } catch (err) {
       console.log("something went wrong.", err);

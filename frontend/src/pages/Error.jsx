@@ -5,10 +5,7 @@ const Error = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      
-      <h1 className="text-[120px] font-bold text-gray-400 leading-none">
-        404
-      </h1>
+      <h1 className="text-[120px] font-bold text-gray-400 leading-none">404</h1>
 
       <h2 className="text-3xl font-semibold mt-4 text-gray-400">
         Page Not Found
@@ -25,7 +22,6 @@ const Error = () => {
       >
         Go to Home Page
       </button>
-
     </div>
   );
 };

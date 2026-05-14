@@ -188,7 +188,6 @@ export default function HowItWorks() {
     <>
       <PageWrapper>
         <Navbar />
-        {/* Hero */}
         <section className="relative py-24 px-4 overflow-hidden text-center bg-gradient-to-b from-slate-50 via-white to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-50" />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-400/8 rounded-full blur-3xl pointer-events-none" />
@@ -215,14 +214,10 @@ export default function HowItWorks() {
             </motion.div>
           </div>
         </section>
-
-        {/* Steps — interactive timeline */}
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="relative">
-              {/* Connector line */}
               <div className="absolute left-8 top-10 bottom-10 w-px bg-gradient-to-b from-brand-200 via-sky-200 via-violet-200 to-amber-200 hidden md:block" />
-
               <div className="space-y-6">
                 {steps.map(({ n, icon: Icon, title, desc, color }, i) => (
                   <Reveal key={n} delay={i * 0.1}>
@@ -230,7 +225,6 @@ export default function HowItWorks() {
                       whileHover={{ x: 4 }}
                       className="relative flex gap-6 p-7 bg-white rounded-2xl border border-slate-200 shadow-card hover:shadow-card-hover hover:border-brand-200 transition-all duration-300 md:ml-16"
                     >
-                      {/* Step number circle — sits on the line */}
                       <div
                         className={`absolute -left-8 top-1/2 -translate-y-1/2 hidden md:flex w-16 h-16 -ml-16 rounded-2xl ${color} items-center justify-center shadow-md flex-shrink-0`}
                       >
@@ -270,8 +264,6 @@ export default function HowItWorks() {
             </div>
           </div>
         </section>
-
-        {/* Features grid */}
         <section className="py-24 px-4 bg-slate-50 relative overflow-hidden">
           <div className="absolute inset-0 bg-dot mask-radial opacity-30" />
           <div className="max-w-6xl mx-auto relative">
@@ -311,8 +303,6 @@ export default function HowItWorks() {
             </div>
           </div>
         </section>
-
-        {/* Modules */}
         <section className="py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <Reveal className="text-center mb-14">
@@ -373,8 +363,6 @@ export default function HowItWorks() {
             </div>
           </div>
         </section>
-
-        {/* CTA */}
         <section className="py-24 px-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500 to-emerald-700" />
           <div className="absolute inset-0 bg-grid opacity-20" />
