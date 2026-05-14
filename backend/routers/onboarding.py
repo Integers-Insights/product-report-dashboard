@@ -1273,11 +1273,82 @@ async def get_pipeline_products(
                 **data
             })
 
+        # =====================================================
+        # 💳 Fetch billing usage for response
+        # =====================================================
+        monthly_remaining = 0
+        yearly_remaining  = 0
+        billing_cycle_val = "monthly"
+
+        try:
+            from datetime import datetime, timezone, timedelta
+            from utils.subscription_service import PLAN_CONFIG as _PC
+
+            company_id = current_user.get("company_id")
+            if company_id:
+                now   = datetime.now(timezone.utc)
+                today = now.date()
+
+                sub = await conn.fetchrow("""
+                    SELECT sp.plan_name, sp.query_limit,
+                           cs.start_date, cs.end_date, cs.billing_cycle
+                    FROM core_auth_table.company_subscriptions cs
+                    JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
+                    WHERE cs.company_id = $1 AND cs.status = 'active'
+                    ORDER BY cs.created_at DESC LIMIT 1
+                """, company_id)
+
+                if sub:
+                    billing_cycle_val = sub["billing_cycle"] or "monthly"
+                    daily_limit       = sub["query_limit"]
+                    unlimited         = (daily_limit is None or daily_limit == -1)
+                    start_date        = sub["start_date"]
+                    end_date          = sub["end_date"]
+                    plan_name         = sub["plan_name"]
+                    plan_cfg          = _PC.get(plan_name, {})
+                    limit_type        = plan_cfg.get("limit_type", "daily")
+
+                    if end_date and start_date:
+                        start_date_only = start_date.date() if hasattr(start_date, "date") else start_date
+                        days_in_cycle   = max((end_date.date() - start_date_only).days, 1)
+                    else:
+                        days_in_cycle   = 365 if billing_cycle_val == "yearly" else 30
+                        start_date_only = today - timedelta(days=days_in_cycle)
+
+                    year_start = today.replace(month=1, day=1)
+
+                    usage_row = await conn.fetchrow("""
+                        SELECT
+                            COALESCE(SUM(usage_count) FILTER (WHERE usage_date >= $2), 0) AS free_used_cycle,
+                            COALESCE(SUM(usage_count) FILTER (WHERE usage_date >= $3), 0) AS free_used_year
+                        FROM core_auth_table.company_usage
+                        WHERE company_id = $1
+                          AND module_code NOT LIKE 'addon_%'
+                          AND usage_date >= $2
+                    """, company_id, start_date_only, year_start)
+
+                    free_used_cycle = int(usage_row["free_used_cycle"]) if usage_row else 0
+                    free_used_year  = int(usage_row["free_used_year"])  if usage_row else 0
+
+                    if unlimited:
+                        monthly_remaining = -1  # signal for unlimited
+                        yearly_remaining  = -1 if billing_cycle_val == "yearly" else 0
+                    elif limit_type != "daily":
+                        monthly_limit     = daily_limit * days_in_cycle
+                        monthly_remaining = max(monthly_limit - free_used_cycle, 0)
+                        yearly_limit      = (daily_limit * days_in_cycle) if billing_cycle_val == "yearly" else 0
+                        yearly_remaining  = max(yearly_limit - free_used_year, 0) if billing_cycle_val == "yearly" else 0
+        except Exception as billing_err:
+            print("BILLING FETCH ERROR (non-fatal):", str(billing_err))
+
         return {
-            "success":  True,
-            "status":   "completed",
-            "products": result,
-            "count":    len(result),
+            "success":           True,
+            "status":            "completed",
+            "products":          result,
+            "count":             len(result),
+            "monthly_remaining": monthly_remaining,
+            "yearly_remaining":  yearly_remaining,
+            "billing_cycle":     billing_cycle_val,
         }
 
     except HTTPException:
