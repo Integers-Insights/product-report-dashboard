@@ -19,7 +19,7 @@ const steps = [
 ];
 
 export default function Steps() {
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -129,7 +129,7 @@ export default function Steps() {
 
       const data = await response.json();
 
-      console.log("data: ",data);
+      // console.log("data: ",data);
       
       if (data?.success) {
         setProducts(Array.isArray(data?.products) ? data?.products : []);
@@ -428,7 +428,6 @@ export default function Steps() {
 
                     await postProduct();
                   } else if (currentStep === 2) {
-                    console.log("Step 3 API call");
                     if (selectedGoal.length === 0) {
                       toast.error("Please select at least one goal");
                       return;
