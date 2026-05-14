@@ -13,6 +13,7 @@ Usage:
 """
 
 import asyncio
+import os
 import random
 from urllib.parse import urlparse
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
@@ -47,7 +48,12 @@ class BrowserSession:
 
     async def __aenter__(self) -> "BrowserSession":
         self._playwright = await async_playwright().start()
-        self._browser = await self._playwright.chromium.launch(headless=True)
+        executable_path = os.getenv("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH")
+        self._browser = await self._playwright.chromium.launch(
+            headless=True,
+            executable_path=executable_path,
+            args=["--no-sandbox", "--disable-setuid-sandbox"],
+        )
         self._context = await self._browser.new_context(
             viewport=CRAWLER["viewport"],
             user_agent=CRAWLER["user_agent"],
