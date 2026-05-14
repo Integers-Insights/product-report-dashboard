@@ -26,7 +26,7 @@ export const useRazorpay = () => {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
       currency: order.currency,
-      name: "Your Company",
+      name: "Reportinshort",
       description: order.description,
       order_id: order.order_id,
 
@@ -35,8 +35,8 @@ export const useRazorpay = () => {
       },
 
       prefill: {
-        name: "Customer Name",
-        email: "customer@email.com",
+        name: order.prefill?.name || "",
+        email: order.prefill?.email || "",
       },
 
       theme: {

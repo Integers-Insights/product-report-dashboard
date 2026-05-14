@@ -32,7 +32,7 @@ export default function PopForm({ setPopupOpen }) {
   const [showInput, setShowInput] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
   const [otherValue, setOtherValue] = useState("");
-  const [loading, setLoading] = useState(false); // loading
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [popup_Open, setPopup_Open] = useState(false);
   const [showInput1, setShowInput1] = useState(false);

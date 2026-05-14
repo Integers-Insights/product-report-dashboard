@@ -128,12 +128,17 @@ export default function Steps() {
       }
 
       const data = await response.json();
-
-      // console.log("data: ",data);
       
+      // console.log("data: ",data);
+    
       if (data?.success) {
         setProducts(Array.isArray(data?.products) ? data?.products : []);
-        setUsage_summary_data(data?.usage_summary?.queries_remaining || 0);
+
+        if (data?.billing_cycle === "monthly") {
+          setUsage_summary_data(data?.monthly_remaining || 0);
+        }
+      } else {
+        setUsage_summary_data(data?.yearly_remaining || 0);
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
