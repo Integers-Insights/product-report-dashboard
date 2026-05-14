@@ -380,7 +380,7 @@ const Step3 = ({
               <div>
                 <label
                   htmlFor="phone-number"
-                  className="block text-lg font-semibold text-[#001413]"
+                  className="block text-base font-semibold text-[#001413]"
                 >
                   Monthly supply capacity
                 </label>
@@ -418,7 +418,7 @@ const Step3 = ({
                 </div>
               </div>
               <div className="w-75">
-                <h1 className="block text-lg font-semibold text-[#001413]">Target Country</h1>
+                <h1 className="block text-base font-semibold text-[#001413]">Target Country</h1>
                 <div ref={dropdownRef} className="w-75 relative">
                   <div
                     onClick={() => setIsOpen((prev) => !prev)}
