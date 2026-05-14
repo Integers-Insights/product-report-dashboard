@@ -473,13 +473,6 @@ const SideBar = () => {
                   <span aria-hidden="true" className="text-black">
                     {name || ""}
                   </span>
-                  <br />
-                  <span
-                    aria-hidden="true"
-                    className="block -mt-2 text-[#5F6368] text-[11px]"
-                  >
-                    Premium Account
-                  </span>
                 </span>
               </div>
             </li>
