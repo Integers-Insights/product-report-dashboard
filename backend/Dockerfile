@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     curl \
     chromium \
-
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -22,8 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
-RUN playwright install chromium && playwright install-deps chromium
-
 
 COPY . .
 

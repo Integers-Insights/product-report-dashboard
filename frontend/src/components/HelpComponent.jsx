@@ -104,5 +104,9 @@ const HelpComponent = () => {
     </>
   );
 };
+<<<<<<< HEAD
 
 export default HelpComponent;
+=======
+export default HelpComponent;
+>>>>>>> dev
