@@ -48,7 +48,18 @@ class BrowserSession:
 
     async def __aenter__(self) -> "BrowserSession":
         self._playwright = await async_playwright().start()
-        executable_path = os.getenv("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH")
+        executable_path = (
+            os.getenv("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH")
+            or next(
+                (p for p in [
+                    "/usr/bin/chromium",
+                    "/usr/bin/chromium-browser",
+                    "/usr/bin/google-chrome",
+                ] if os.path.exists(p)),
+                None
+            )
+        )
+        print(f"🌐 Launching Chromium: {executable_path or 'playwright default'}")
         self._browser = await self._playwright.chromium.launch(
             headless=True,
             executable_path=executable_path,
