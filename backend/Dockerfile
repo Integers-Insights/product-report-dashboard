@@ -19,7 +19,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENV PLAYWRIGHT_CHROMIUM_USE_HEADLESS_SHELL=0
-RUN playwright install chromium && playwright install-deps chromium
+RUN playwright install --with-deps chromium
 
 COPY . .
 
