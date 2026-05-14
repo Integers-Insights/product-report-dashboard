@@ -136,9 +136,11 @@ export default function Steps() {
 
         if (data?.billing_cycle === "monthly") {
           setUsage_summary_data(data?.monthly_remaining || 0);
+        } else if (data?.billing_cycle === "yearly") {
+          setUsage_summary_data(data?.yearly_remaining || 0);
+        } else {
+          setUsage_summary_data(0);
         }
-      } else {
-        setUsage_summary_data(data?.yearly_remaining || 0);
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
