@@ -191,7 +191,7 @@ const Step2 = ({
             </div>
 
             <div className="flex justify-between items-center mt-4">
-              <div className="text-xs font-regular text-[#001413]">3</div>
+              <div className="text-xs font-regular text-[#001413]">{selectedProducts?.length || 0}</div>
               <div className="w-[85%] h-1 bg-[#A9B3B1] rounded">
                 <div
                   className="h-1 bg-[#0284C7] rounded"
