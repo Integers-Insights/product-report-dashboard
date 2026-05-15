@@ -89,7 +89,7 @@ export default function PaymentRefund() {
               <p>
                 We never store your card or bank details on our servers. All
                 payment data is handled directly by Razorpay under PCI DSS Level
-                1 compliance — the highest security standard for payment
+                1 compliance - the highest security standard for payment
                 processing
               </p>
             </Section>
@@ -97,7 +97,7 @@ export default function PaymentRefund() {
             <Section title="3. BILLING CYCLES">
               <p className="font-medium -mb-0.5">Monthly plans</p>
               <p>
-                You're billed on the same date every month — the date you first
+                You're billed on the same date every month - the date you first
                 subscribed. If you subscribe on the 28th, 29th, 30th, or 31st of
                 a month, billing adjusts to the last valid date in shorter
                 months.
@@ -120,7 +120,7 @@ export default function PaymentRefund() {
             <Section title="4. THE FREE PLAN">
               <p>
                 The Explorer (free) plan requires no payment details whatsoever.
-                You get 3 full intelligence reports with real data — no trial
+                You get 3 full intelligence reports with real data - no trial
                 period, no credit card prompt, no expiry. It's permanently free.
               </p>
             </Section>
@@ -149,9 +149,9 @@ export default function PaymentRefund() {
               <span></span>
             </Section>
 
-            <Section title="6. REFUND POLICY — MONTHLY PLANS">
+            <Section title="6. REFUND POLICY - MONTHLY PLANS">
               <p>
-                Monthly billing is prepaid — you pay at the start of each period
+                Monthly billing is prepaid - you pay at the start of each period
                 for that month's access. If you cancel mid-month, you keep
                 access until the period ends but we don't refund the remaining
                 days. There are no pro-rated refunds for monthly plans.
@@ -166,7 +166,7 @@ export default function PaymentRefund() {
               </p>
             </Section>
 
-            <Section title="7. REFUND POLICY — ANNUAL PLANS">
+            <Section title="7. REFUND POLICY - ANNUAL PLANS">
               <p>
                 We offer a 14-day full refund guarantee on all annual plan
                 purchases.
@@ -175,7 +175,7 @@ export default function PaymentRefund() {
                 If you're not satisfied within 14 days of starting an annual
                 plan, email us at info@integersinsights.com with the subject
                 "Refund Request" and we'll process a full refund within 5–7
-                working days — no forms, no interrogation, no hassle.
+                working days - no forms, no interrogation, no hassle.
               </p>
               <p>
                 After 14 days, annual payments are non-refundable. However, you
@@ -275,7 +275,7 @@ export default function PaymentRefund() {
                 <span className="font-medium">Phone: </span>+91 93212 56706
               </p>
               <p className="-mb-0.5">
-                Business hours: Mon–Fri, 9 AM – 6 PM IST
+                Business hours: Mon-Fri, 9 AM – 6 PM IST
               </p>
               <p className="-mb-0.5">
                 Integers Insights Private Limited, India

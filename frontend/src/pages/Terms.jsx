@@ -62,7 +62,7 @@ export default function Terms() {
             <Section title="2. WHO THESE TERMS APPLY TO">
               <p>
                 These Terms of Service apply to anyone who creates an account or
-                uses REPORTINSHORT — whether you're on the free plan or a paid
+                uses REPORTINSHORT - whether you're on the free plan or a paid
                 plan. By signing up, you agree to these terms. If you're signing
                 up on behalf of a company, you confirm you have the authority to
                 do so.
@@ -83,7 +83,7 @@ export default function Terms() {
               </p>
               <p>
                 We offer a free plan and several paid subscription tiers.
-                Features vary by plan — see our Pricing page for the current
+                Features vary by plan - see our Pricing page for the current
                 breakdown.
               </p>
             </Section>
@@ -134,7 +134,7 @@ export default function Terms() {
               </ul>
               <p>
                 We reserve the right to suspend accounts that violate these
-                rules — with or without notice, depending on severity.
+                rules - with or without notice, depending on severity.
               </p>
             </Section>
 
@@ -158,7 +158,7 @@ export default function Terms() {
               <p>
                 We take data integrity seriously. Every data point in your
                 report shows its source, freshness date, and confidence score.
-                That said, no dataset is perfect — trade data has inherent
+                That said, no dataset is perfect - trade data has inherent
                 limitations, and we recommend cross-referencing high-stakes
                 decisions with additional sources.
               </p>
@@ -182,7 +182,7 @@ export default function Terms() {
               <p>
                 We aim for high uptime, but we don't guarantee the platform will
                 be available 24/7. We may occasionally need to take it offline
-                for maintenance — we'll always try to give advance notice when
+                for maintenance - we'll always try to give advance notice when
                 possible.
               </p>
               <p>

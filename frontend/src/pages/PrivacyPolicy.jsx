@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
                 REPORTINSHORT is a market intelligence platform operated by
                 Integers Insights Private Limited, a company incorporated in
                 India. When you use our platform, you're sharing some
-                information with us — and we take that seriously.
+                information with us - and we take that seriously.
               </p>
               <p>
                 This policy explains what we collect, why we collect it, how we
@@ -71,7 +71,7 @@ export default function PrivacyPolicy() {
               <ul className="list-disc ml-8">
                 <li>Your name, email address, and company name</li>
                 <li>
-                  Payment details (processed securely through Razorpay — we
+                  Payment details (processed securely through Razorpay - we
                   never see your card number)
                 </li>
                 <li>
@@ -110,7 +110,7 @@ export default function PrivacyPolicy() {
               </ul>
               <p>
                 We do not sell your data. We do not share your research queries,
-                product lists, or target markets with anyone — not even
+                product lists, or target markets with anyone - not even
                 anonymously.
               </p>
             </Section>
@@ -118,12 +118,12 @@ export default function PrivacyPolicy() {
             <Section title="4. WHO ELSE SEES YOUR DATA">
               <p>
                 We work with a small number of trusted service providers who
-                help us run the platform — things like cloud hosting, payment
+                help us run the platform - things like cloud hosting, payment
                 processing, and email delivery. Each of them is bound by strict
                 data agreements and cannot use your data for their own purposes.
               </p>
               <p>
-                Other than that, we only share data if the law requires it — and
+                Other than that, we only share data if the law requires it - and
                 even then, we'll always try to notify you first where we legally
                 can.
               </p>
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
               <p>
                 We keep your account data for as long as your account is active.
                 If you close your account, we delete your personal data within
-                30 days — with one exception: billing records, which we're
+                30 days - with one exception: billing records, which we're
                 required to keep for 7 years under Indian accounting law.
               </p>
             </Section>

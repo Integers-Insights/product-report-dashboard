@@ -58,7 +58,7 @@ const team = [
     initials: "NN",
     name: "Neel Naik",
     role: "Data Engineer",
-    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS — shipped and battle-tested.",
+    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS - shipped and battle-tested.",
     color: "bg-violet-100 text-violet-700",
     border: "border-violet-200",
   },
@@ -66,7 +66,7 @@ const team = [
     initials: "AG",
     name: "Amarjit Gupta",
     role: "Full-Stack Developer",
-    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind — from pixel-perfect UI to production-ready databases.",
+    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind - from pixel-perfect UI to production-ready databases.",
     color: "bg-amber-100 text-amber-700",
     border: "border-amber-200",
   },
@@ -109,17 +109,17 @@ const sources = [
   {
     icon: Building2,
     title: "Government Trade Records",
-    desc: "Official customs data from 80+ authorities — DGFT, US CBP, HMRC, EU TARIC.",
+    desc: "Official customs data from 80+ authorities - DGFT, US CBP, HMRC, EU TARIC.",
   },
   {
     icon: Ship,
     title: "Global Shipment Records",
-    desc: "Bill of lading and shipment data from major ports worldwide — actual trade flows.",
+    desc: "Bill of lading and shipment data from major ports worldwide - actual trade flows.",
   },
   {
     icon: Search,
     title: "Search & Buyer Intent",
-    desc: "Aggregated search volume across Google and trade platforms — real buyer demand signals.",
+    desc: "Aggregated search volume across Google and trade platforms - real buyer demand signals.",
   },
   {
     icon: Building2,
@@ -134,7 +134,7 @@ const sources = [
   {
     icon: Cpu,
     title: "AI Scoring & Synthesis",
-    desc: "All raw data passes through our AI engine — confidence scores, anomaly removal, ranking.",
+    desc: "All raw data passes through our AI engine - confidence scores, anomaly removal, ranking.",
   },
 ];
 
@@ -178,7 +178,7 @@ export default function About() {
               </h1>
               <p className="text-lg text-slate-500 font-light max-w-2xl mx-auto mb-12">
                 We watched manufacturers spend months and lakhs of rupees on
-                outdated reports from traditional agencies — only to still be
+                outdated reports from traditional agencies - only to still be
                 guessing when they entered a market. Static Mintel reports and
                 slow research firms weren't built for modern global trade. So we
                 built something better.
@@ -190,8 +190,8 @@ export default function About() {
                   </span>
                 </div>
                 <p className="text-slate-700 text-base leading-relaxed font-light italic mb-5">
-                  Our mission is simple: give every exporter — whether they're a
-                  one-person operation or a 500-crore trading house — the same
+                  Our mission is simple: give every exporter - whether they're a
+                  one-person operation or a 500-crore trading house - the same
                   quality of market intelligence that Fortune 500 companies take
                   for granted.
                 </p>
@@ -235,7 +235,7 @@ export default function About() {
                 The people behind your intelligence
               </h2>
               <p className="text-lg text-slate-500 font-light max-w-xl mx-auto">
-                International trade, data engineering, and AI — because solving
+                International trade, data engineering, and AI - because solving
                 this problem requires all three.
               </p>
             </Reveal>
@@ -371,7 +371,7 @@ export default function About() {
               Confident in our data. You should be too.
             </h2>
             <p className="text-lg text-white/70 font-light mb-10">
-              Start with 3 free reports — no card, no pressure. Judge us
+              Start with 3 free reports - no card, no pressure. Judge us
               entirely on the quality of the data.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

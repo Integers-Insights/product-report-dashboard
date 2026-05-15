@@ -102,7 +102,7 @@ export default function Contact() {
               </h1>
               <p className="text-lg text-slate-500 font-light">
                 Whether you have a question, need support, or want to explore an
-                enterprise plan — we're here.
+                enterprise plan - we're here.
               </p>
             </motion.div>
           </div>
@@ -261,15 +261,15 @@ export default function Contact() {
                 </h3>
                 <div className="space-y-2 text-sm text-slate-600">
                   <div className="flex justify-between">
-                    <span>Monday – Friday</span>
+                    <span>Monday - Friday</span>
                     <span className="font-medium text-slate-800">
-                      9 AM – 6 PM IST
+                      9 AM - 6 PM IST
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Saturday</span>
                     <span className="font-medium text-slate-800">
-                      10 AM – 2 PM IST
+                      10 AM - 2 PM IST
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -283,7 +283,7 @@ export default function Contact() {
                   Enterprise inquiry?
                 </div>
                 <p className="text-xs text-brand-700 leading-relaxed">
-                  For custom plans, data partnerships, or API access — email our
+                  For custom plans, data partnerships, or API access - email our
                   sales team and we'll respond within 4 hours.
                 </p>
               </div>
