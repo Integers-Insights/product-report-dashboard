@@ -41,7 +41,6 @@ const OverViewPage = () => {
   const getOverviewData = async () => {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-
       const response = await fetch(`${base_url}/dashboard`, {
         method: "GET",
         headers: {

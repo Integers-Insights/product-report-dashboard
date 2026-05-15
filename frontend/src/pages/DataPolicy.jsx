@@ -63,7 +63,7 @@ export default function DataPolicy() {
               </p>
               <p className="font-medium -mb-0.5">Government Customs Records</p>
               <p>
-                Official import/export data from 80+ trade authorities —
+                Official import/export data from 80+ trade authorities -
                 including India's DGFT, the US CBP, the UK's HMRC, EU TARIC, and
                 equivalent bodies across Asia, Africa, and Latin America. These
                 are primary-source records, not estimates.
@@ -72,7 +72,7 @@ export default function DataPolicy() {
               <p className="font-medium -mb-0.5">Global Shipment Records</p>
               <p>
                 Bill of lading and cargo movement data from major ports
-                worldwide. This shows actual trade flows — what's really moving,
+                worldwide. This shows actual trade flows - what's really moving,
                 where, and in what volume.
               </p>
 
@@ -87,7 +87,7 @@ export default function DataPolicy() {
               <p className="font-medium -mb-0.5">Search & Demand Signals</p>
               <p>
                 Aggregated and anonymised search volume data reflecting real
-                buyer intent — what importers are actively searching for, by
+                buyer intent - what importers are actively searching for, by
                 country and language.
               </p>
 
@@ -184,8 +184,8 @@ export default function DataPolicy() {
 
             <Section title="5. YOUR DATA ON OUR PLATFORM">
               <p className="text-base font-medium">
-                The information you enter — your product searches, target
-                markets, saved reports — belongs to you. We use it only to
+                The information you enter - your product searches, target
+                markets, saved reports - belongs to you. We use it only to
                 generate and personalise your reports. We do not:
               </p>
               <ul className="list-disc ml-8">
@@ -222,7 +222,7 @@ export default function DataPolicy() {
               <p>
                 Use the "Flag data issue" button inside any report. Our team
                 reviews flagged items within 5 business days. If we confirm an
-                error, your report is updated automatically — no need to re-run
+                error, your report is updated automatically - no need to re-run
                 it.
               </p>
             </Section>

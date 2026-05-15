@@ -38,14 +38,10 @@ export default function Navbar() {
         initial={{ y: -90, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4"
+        className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4 bg-white"
       >
         <nav
-          className={`w-full max-w-6xl flex items-center justify-between px-5 h-14 rounded-2xl transition-all duration-500 ${
-            scrolled
-              ? "bg-white/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/60"
-              : "bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_4px_16px_rgba(0,0,0,0.05)]"
-          }`}
+          className={`w-full max-w-6xl flex items-center justify-between px-5 h-14 rounded-2xl transition-all duration-500`}
         >
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="h-10 w-30">

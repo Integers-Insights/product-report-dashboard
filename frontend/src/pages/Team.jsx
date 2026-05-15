@@ -35,7 +35,7 @@ const team = [
     initials: "NN",
     name: "Neel Naik",
     role: "Data Engineer",
-    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS — shipped and battle-tested.",
+    bio: "Architects production-grade backends and databases that power AI SaaS at scale. Python, FastAPI, AWS, RDS - shipped and battle-tested.",
     color: "bg-violet-100 text-violet-700",
     border: "border-violet-200",
   },
@@ -43,7 +43,7 @@ const team = [
     initials: "AG",
     name: "Amarjit Gupta",
     role: "Full-Stack Developer",
-    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind — from pixel-perfect UI to production-ready databases.",
+    bio: "Builds sleek, scalable full-stack products across MERN, Next.js, TypeScript and Tailwind - from pixel-perfect UI to production-ready databases.",
     color: "bg-amber-100 text-amber-700",
     border: "border-amber-200",
   },
@@ -94,7 +94,7 @@ export default function Team() {
                 <span className="gradient-text">your intelligence</span>
               </h1>
               <p className="text-lg text-slate-500 font-light max-w-2xl mx-auto">
-                International trade, data engineering, and AI expertise —
+                International trade, data engineering, and AI expertise -
                 because solving this problem requires all three. We're a team of
                 builders who've lived the exporter's pain firsthand.
               </p>

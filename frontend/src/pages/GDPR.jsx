@@ -52,7 +52,7 @@ export default function GDPR() {
           <div className="bg-white rounded-3xl border border-slate-200 shadow-card p-8 md:p-12">
             <Section title="1. OUR COMMITMENT">
               <p>
-                REPORTINSHORT applies GDPR principles to every user globally —
+                REPORTINSHORT applies GDPR principles to every user globally -
                 not just users based in the European Economic Area. We believe
                 strong data protection is a right, not a regional checkbox.
               </p>
@@ -142,7 +142,7 @@ export default function GDPR() {
 
               <p className="font-medium -mb-0.5">Right to Object</p>
               <p>
-                You can object to processing based on legitimate interests — for
+                You can object to processing based on legitimate interests - for
                 example, if you feel our interest doesn't outweigh your privacy
                 right in a specific case. We'll review and respond within 30
                 days.
@@ -157,7 +157,7 @@ export default function GDPR() {
               <p>
                 To exercise any of these rights, email info@integersinsights.com
                 with "GDPR Request" in the subject line. We'll respond within 30
-                days — and usually much faster.
+                days - and usually much faster.
               </p>
             </Section>
 
@@ -165,9 +165,9 @@ export default function GDPR() {
               <p>
                 Integers Insights Private Limited is based in India. When data
                 is transferred between our systems and users in the European
-                Economic Area, we rely on Standard Contractual Clauses (SCCs) —
+                Economic Area, we rely on Standard Contractual Clauses (SCCs) -
                 the mechanism approved by the European Commission for
-                international transfers — to ensure your data stays protected.
+                international transfers - to ensure your data stays protected.
               </p>
             </Section>
 
@@ -213,7 +213,7 @@ export default function GDPR() {
             <Section title="6. YOUR RIGHT TO COMPLAIN">
               <p className="text-base font-medium">
                 If you feel we've handled your data incorrectly, please contact
-                us first — we want to make it right. If you're not satisfied
+                us first - we want to make it right. If you're not satisfied
                 with our response, you have the right to lodge a complaint with:
               </p>
               <ul className="list-disc ml-8">
