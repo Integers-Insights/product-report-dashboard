@@ -23,6 +23,7 @@ import {
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import { Helmet } from "react-helmet-async";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -186,8 +187,36 @@ export default function HowItWorks() {
 
   return (
     <>
+      <Helmet>
+        <title>
+          Find International Buyers with Global Trade Data | Report InShort
+        </title>
+        <meta
+          name="description"
+          content="See how Report InShort turns global import export data into a verified export buyer list in minutes. Find foreign buyers, overseas importers, and real demand signals across 180+ countries — free to try."
+        />
+
+        <meta
+          property="og:title"
+          content="Find International Buyers with Global Trade Data | Report InShort"
+        />
+        <meta
+          property="og:url"
+          content="https://www.reportinshort.com/how-it-works"
+        />
+
+        <meta
+          property="og:description"
+          content="See how Report InShort turns global import export data into a verified export buyer list in minutes. Find foreign buyers, overseas importers, and real demand signals across 180+ countries — free to try."
+        />
+        <meta property="og:type" content="website" />
+        <link
+          rel="canonical"
+          href="https://www.reportinshort.com/how-it-works"
+        />
+      </Helmet>
+      <Navbar />
       <PageWrapper>
-        <Navbar />
         <section className="relative py-24 px-4 overflow-hidden text-center bg-gradient-to-b from-slate-50 via-white to-white">
           <div className="absolute inset-0 bg-grid mask-radial-top opacity-50" />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-400/8 rounded-full blur-3xl pointer-events-none" />
