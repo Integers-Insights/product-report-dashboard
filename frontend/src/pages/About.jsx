@@ -158,6 +158,7 @@ export default function About() {
     <>
     <Helmet>
         <title>About Report InShort – Global Import Export Data Provider for Exporters</title>
+
         <meta
           name="description"
           content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
