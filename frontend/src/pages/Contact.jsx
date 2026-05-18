@@ -84,7 +84,7 @@ export default function Contact() {
     <>
       <Helmet>
         <title>
-          Contact Report InShort – Global Import Export Data Support
+          Contact Report InShort - Global Import Export Data Support
         </title>
         <meta
           name="description"
@@ -93,7 +93,7 @@ export default function Contact() {
 
         <meta
           property="og:title"
-          content="Contact Report InShort – Global Import Export Data Support"
+          content="Contact Report InShort - Global Import Export Data Support"
         />
         <meta property="og:url" content="https://www.reportinshort.com/contact" />
         <meta

@@ -157,7 +157,7 @@ export default function About() {
   return (
     <>
     <Helmet>
-        <title>About Report InShort – Global Import Export Data Provider for Exporters</title>
+        <title>About Report InShort - Global Import Export Data Provider for Exporters</title>
         <meta
           name="description"
           content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
@@ -165,7 +165,7 @@ export default function About() {
 
         <meta
           property="og:title"
-          content="About Report InShort – Global Import Export Data Provider for Exporters"
+          content="About Report InShort - Global Import Export Data Provider for Exporters"
         />
         <meta property="og:url" content="https://www.reportinshort.com/about" />
         <meta
