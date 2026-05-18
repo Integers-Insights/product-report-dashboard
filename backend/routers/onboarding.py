@@ -179,7 +179,7 @@ async def google_auth(
 ):
     try:
         return await google_signup_login(
-            token=data.token,
+            token=data.resolved_token,
             #company_name=data.company_name,
             request=request,
             response=response,

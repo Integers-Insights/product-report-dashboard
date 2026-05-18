@@ -967,7 +967,8 @@ async def google_signup_login(
         # ==========================================
         user = await conn.fetchrow(
             """
-            SELECT user_id, auth_provider
+            SELECT user_id, auth_provider,
+                   companies_other_id, is_submitted
             FROM core_auth_table.auth_user
             WHERE LOWER(email) = LOWER($1)
             """,
@@ -1020,11 +1021,12 @@ async def google_signup_login(
             )
 
         # ==========================================
-        # 🔐 Generate Tokens (NO company_id)
+        # 🔐 Generate Tokens
         # ==========================================
-        permissions = []  # or minimal default
+        permissions = []
+        company_id = str(user["companies_other_id"]) if (user and user["companies_other_id"]) else None
 
-        access_token = create_access_token(user_id, None, permissions)
+        access_token = create_access_token(user_id, company_id, permissions)
         #refresh_token = create_refresh_token(user_id, None)
 
         # ==========================================
@@ -1043,7 +1045,7 @@ async def google_signup_login(
             "web",
             request.client.host,
             request.headers.get("user-agent"),
-            #refresh_token,
+            None,
             datetime.now(timezone.utc) + timedelta(days=7)
         )
 
@@ -1068,12 +1070,18 @@ async def google_signup_login(
         #     max_age=60 * 60 * 24 * 7
         # )
 
+        is_submitted = bool(user["is_submitted"]) if (user and user["is_submitted"] is not None) else False
+
         return {
             "success": True,
             "message": "Google login successful",
-            "user_id": user_id,
-            "is_new_user": is_new_user,
-            "access_token": access_token
+            "access_token": access_token,
+            "user": {
+                "user_id": user_id,
+                "is_new_user": is_new_user,
+                "name": full_name,
+                "isSubmitted": is_submitted,
+            }
         }
 
     except Exception as e:

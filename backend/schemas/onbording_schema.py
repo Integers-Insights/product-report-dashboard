@@ -89,7 +89,12 @@ class ChangePasswordRequest(BaseModel):
     confirm_password: str
 
 class GoogleAuthRequest(BaseModel):
-    token: str
+    token: str | None = None
+    credential: str | None = None
+
+    @property
+    def resolved_token(self) -> str:
+        return self.token or self.credential or ""
     #company_name: str
 
 class UpdateProfileRequest(BaseModel):
