@@ -20,6 +20,7 @@ import {
 import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
+import { Helmet } from "react-helmet-async";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -155,6 +156,26 @@ export default function About() {
 
   return (
     <>
+    <Helmet>
+        <title>About Report InShort – Global Import Export Data Provider for Exporters</title>
+        <meta
+          name="description"
+          content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
+        />
+
+        <meta
+          property="og:title"
+          content="About Report InShort – Global Import Export Data Provider for Exporters"
+        />
+        <meta property="og:url" content="https://www.reportinshort.com/about" />
+        <meta
+          property="og:description"
+          content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
+        />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.reportinshort.com/about" />
+      </Helmet>
+
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-24 px-4 overflow-hidden text-center bg-gradient-to-b from-slate-50 to-white">

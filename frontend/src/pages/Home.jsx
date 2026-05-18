@@ -205,8 +205,7 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        {/* <title>Market Analysis Platform - Trade Data, Reports & Insights</title> */}
-
+        <title>Market Analysis Platform - Trade Data, Reports & Insights</title>
         <meta
           name="description"
           content="Get in-depth market analysis, import export data, competitor insights, and buyer intelligence - all in one platform. Make smarter business decisions, faster."
@@ -221,11 +220,11 @@ export default function Home() {
           content="Market Analysis Platform - Trade Data, Reports & Insights"
         />
 
+        <meta property="og:url" content="https://www.reportinshort.com/" />
         <meta
           property="og:description"
           content="Get in-depth market analysis, import export data, competitor insights, and buyer intelligence - all in one platform."
         />
-
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://www.reportinshort.com/" />
       </Helmet>

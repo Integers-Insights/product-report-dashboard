@@ -15,6 +15,7 @@ import { useRazorpay } from "../hooks/useRazorpay";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import toast from "react-hot-toast";
+import { Helmet } from "react-helmet-async";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -271,6 +272,30 @@ export default function Pricing() {
 
   return (
     <>
+      <Helmet>
+        <title>
+          Find International Buyers Fast - Trade Intelligence Plans & Pricing
+        </title>
+        <meta
+          name="description"
+          content="Stop guessing. Report InShort gives you real customs data, buyers email id, and market demand scores for 180+ countries."
+        />
+
+        <meta
+          property="og:title"
+          content="Find International Buyers Fast - Trade Intelligence Plans & Pricing"
+        />
+        <meta
+          property="og:url"
+          content="https://www.reportinshort.com/pricing"
+        />
+        <meta
+          property="og:description"
+          content="Stop guessing. Report InShort gives you real customs data, buyers email id, and market demand scores for 180+ countries."
+        />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.reportinshort.com/pricing" />
+      </Helmet>
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-16 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
