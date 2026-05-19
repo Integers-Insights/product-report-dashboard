@@ -20,12 +20,16 @@ const GoogleAuthButton = () => {
       });
 
       const data = await response.json();
-      
+      // console.log("google: ", data);
+
       if (data?.success) {
         toast.success(data.message || "successful");
         localStorage.setItem("VZyHRIoNN3m)OXhGwCtC", data.access_token);
         localStorage.setItem("CtKoIC)iR1SP)5mr&R4d", JSON.stringify(data.user));
         navigate("/overview");
+      }
+      if (data.detail) {
+        toast.error(data?.detail);
       }
     } catch (error) {
       console.log(error);

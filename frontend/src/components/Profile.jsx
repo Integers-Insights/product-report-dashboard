@@ -41,13 +41,6 @@ const Profile = ({
 
   const navigate = useNavigate();
 
-  const tab_btn = [
-    "Personal Info",
-    "Security",
-    "Business Profile",
-    "Plan & Billing",
-  ];
-
   const handleDeleteProfile = async () => {
     let confirmDelete = confirm("Are you sure?");
     if (confirmDelete) {
@@ -99,6 +92,16 @@ const Profile = ({
       toast.error("Profile not delete.");
     }
   };
+
+  let userDetail = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+  const parsedData = userDetail ? JSON.parse(userDetail) : null;
+
+  const tab_btn = [
+    "Personal Info",
+    ...(parsedData?.google_login ? [] : ["Security"]),
+    "Business Profile",
+    "Plan & Billing",
+  ];
 
   return (
     <>
@@ -253,12 +256,12 @@ const Profile = ({
             </div>
           )}
 
-          {active_tab === "Security" && (
+          {active_tab === "Security" && !parsedData?.google_login && (
             <div className="flex flex-col gap-3">
               <div>
                 <label
                   htmlFor="currentpassword"
-                  className="block text-sm/6 font-medium text-gray-900 dark:text-gray-100"
+                  className="block text-sm/6 font-medium text-gray-900"
                 >
                   Current Password <sup>*</sup>
                 </label>
