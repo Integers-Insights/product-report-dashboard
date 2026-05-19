@@ -40,7 +40,7 @@ const navigation = [
     name: "Market Glance",
     href: "/market",
     icon: ChartBarIcon,
-    count: "5",
+    // count: "5",
     current: false,
   },
   { name: "Buyer List", href: "/buyer", icon: UserGroupIcon, current: false },
@@ -48,7 +48,7 @@ const navigation = [
     name: "Reports",
     href: "/intelligence-reports",
     icon: ChartPieIcon,
-    count: "5",
+    // count: "5",
     current: false,
   },
 ];
@@ -324,7 +324,7 @@ const SideBar = () => {
   return (
     <>
       <div className="sidebar sticky top-0 left-0 flex flex-col gap-y-3 bg-[#FFF] px-6 w-64 min-h-screen">
-        <div className="flex h-12 mt-2 shrink-0 items-center">
+        <div className="flex h-12 mt-2 shrink-0 items-center cursor-pointer" onClick={()=>navigate("/")}>
           <img
             alt="Int-Logo"
             src={Int_Logo_Main_Horz}
