@@ -190,38 +190,25 @@ async def assign_trial_plan_if_needed(conn, company_id: str, trial_days: Optiona
     if not company_id:
         return
 
-    # Check if already has an active subscription
-    existing = await conn.fetchrow("""
-        SELECT 1 FROM core_auth_table.company_subscriptions
-        WHERE company_id = $1 AND status = 'active'
-        LIMIT 1
-    """, company_id)
-
-    if existing:
-        return  # already has a plan
-
-    trial_plan = await conn.fetchrow("""
-        SELECT plan_id FROM core_auth_table.subscription_plans
-        WHERE plan_name = 'trial' AND status = 'active'
-        LIMIT 1
-    """)
-
-    if not trial_plan:
-        return  # trial plan not configured in DB
-
+    # Single query: skip if active plan exists, pull trial plan_id, insert — all at once
     await conn.execute("""
         INSERT INTO core_auth_table.company_subscriptions
         (subscription_id, company_id, plan_id, billing_cycle, status, start_date, end_date, source, created_at)
-        VALUES (
-            $1, $2, $3, NULL, 'active',
+        SELECT
+            $1, $2, sp.plan_id, NULL, 'active',
             NOW(),
-            CASE WHEN $4::int IS NOT NULL THEN NOW() + ($4 * INTERVAL '1 day') ELSE NULL END,
+            CASE WHEN $3::int IS NOT NULL THEN NOW() + ($3 * INTERVAL '1 day') ELSE NULL END,
             'auto_trial', NOW()
-        )
+        FROM core_auth_table.subscription_plans sp
+        WHERE sp.plan_name = 'trial' AND sp.status = 'active'
+          AND NOT EXISTS (
+              SELECT 1 FROM core_auth_table.company_subscriptions
+              WHERE company_id = $2 AND status = 'active'
+          )
+        LIMIT 1
     """,
         str(uuid.uuid4()),
         company_id,
-        str(trial_plan["plan_id"]),
         trial_days,
     )
 
@@ -533,6 +520,50 @@ async def check_and_handle_subscription_expiry(conn, company_id: str):
 
 
 # =========================================================
+# ENSURE ACTIVE SUBSCRIPTION (merged expiry-check + trial-assign)
+# Replaces calling check_and_handle_subscription_expiry then
+# assign_trial_plan_if_needed separately in login — saves 1 DB round-trip
+# on the happy path (active, non-expired subscription).
+# =========================================================
+async def ensure_active_subscription(conn, company_id: str):
+    """
+    Single entry point for login:
+      1. Fetch the active subscription (1 query).
+      2. If expired → mark expired, then fall through to trial assignment.
+      3. If no active sub (or just expired) → assign trial via assign_trial_plan_if_needed.
+      4. If active and not expired → return immediately (1 query total).
+    """
+    if not company_id:
+        return
+
+    sub = await conn.fetchrow("""
+        SELECT subscription_id, end_date
+        FROM core_auth_table.company_subscriptions
+        WHERE company_id = $1
+          AND status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, company_id)
+
+    if sub:
+        end_date = sub["end_date"]
+        if not end_date or end_date >= _utcnow():
+            return  # active and not expired — done in 1 query
+
+        # Expire it
+        await conn.execute("""
+            UPDATE core_auth_table.company_subscriptions
+            SET status = 'expired', updated_at = NOW()
+            WHERE subscription_id = $1
+        """, str(sub["subscription_id"]))
+
+    # Assign trial if still no active sub (handles: never had one + just-expired).
+    # assign_trial_plan_if_needed checks for another active sub internally,
+    # so it's safe even if they bought a new plan after the expired one.
+    await assign_trial_plan_if_needed(conn, company_id)
+
+
+# =========================================================
 # UPGRADE PLAN
 # =========================================================
 async def upgrade_company_plan(
@@ -708,24 +739,16 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str, cou
 
 
 async def _record_free_usage(conn, company_id: str, module_code: str, today, now, count: int = 1):
-    """Insert or increment a free usage row for today."""
-    existing = await conn.fetchrow("""
-        SELECT id FROM core_auth_table.company_usage
-        WHERE company_id = $1 AND module_code = $2 AND usage_date = $3
-    """, company_id, module_code, today)
-
-    if existing is None:
-        await conn.execute("""
-            INSERT INTO core_auth_table.company_usage
+    """Insert or increment a free usage row for today (single UPSERT).
+    Requires: UNIQUE INDEX on (company_id, module_code, usage_date).
+    """
+    await conn.execute("""
+        INSERT INTO core_auth_table.company_usage
             (id, company_id, module_code, usage_count, carry_forward, month, year, usage_date)
-            VALUES ($1,$2,$3,$7,0,$4,$5,$6)
-        """, str(uuid.uuid4()), company_id, module_code, now.month, now.year, today, count)
-    else:
-        await conn.execute("""
-            UPDATE core_auth_table.company_usage
-            SET usage_count = usage_count + $4
-            WHERE company_id = $1 AND module_code = $2 AND usage_date = $3
-        """, company_id, module_code, today, count)
+        VALUES ($1, $2, $3, $4, 0, $5, $6, $7)
+        ON CONFLICT (company_id, module_code, usage_date)
+        DO UPDATE SET usage_count = core_auth_table.company_usage.usage_count + EXCLUDED.usage_count
+    """, str(uuid.uuid4()), company_id, module_code, count, now.month, now.year, today)
 
 
 async def _consume_addon(conn, company_id, module_code, today, now,

@@ -443,9 +443,8 @@ async def login_user(conn, data):
     user_id = str(user["user_id"])
     company_id = str(user["companies_other_id"]) if user["companies_other_id"] else None
 
-    from utils.subscription_service import check_and_handle_subscription_expiry, assign_trial_plan_if_needed
-    await check_and_handle_subscription_expiry(conn, company_id)
-    await assign_trial_plan_if_needed(conn, company_id)
+    from utils.subscription_service import ensure_active_subscription
+    await ensure_active_subscription(conn, company_id)
 
     permissions = await get_user_permissions(conn, user_id)
  
@@ -461,6 +460,7 @@ async def login_user(conn, data):
         "message": "Login successful",
         "user": {
             "user_id": user_id,
+            "google_login":False,
             "name": user["full_name"],
             "company_id": company_id,
             "company_name": user["company_name"],
@@ -985,13 +985,14 @@ async def google_signup_login(
 
             user_id = str(user["user_id"])
 
-            # update profile
+            # update profile only if values actually changed
             await conn.execute(
                 """
                 UPDATE core_auth_table.auth_user
                 SET profile_picture = $1,
                     full_name = $2
                 WHERE user_id = $3
+                  AND (profile_picture IS DISTINCT FROM $1 OR full_name IS DISTINCT FROM $2)
                 """,
                 picture,
                 full_name,
@@ -1003,28 +1004,58 @@ async def google_signup_login(
             user_id = str(uuid.uuid4())
 
             # ==========================================
-            # 🆕 Create User (NO COMPANY)
+            # 🆕 Create Company for new Google user
+            # ==========================================
+            company_id = str(uuid.uuid4())
+            slug = await generate_unique_slug(conn, full_name)
+
+            await conn.execute(
+                """
+                INSERT INTO core_tables.companies_other
+                (id, name, legal_name, slug, company_type, source, created_at, updated_at)
+                VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())
+                """,
+                company_id,
+                full_name,
+                full_name,
+                slug,
+                "customer",
+                "customer",
+            )
+
+            # ==========================================
+            # 🆕 Create User with Company
             # ==========================================
             await conn.execute(
                 """
                 INSERT INTO core_auth_table.auth_user
                 (user_id, email, full_name, status,
-                 auth_provider, profile_picture, created_at)
-                VALUES ($1,$2,$3,$4,$5,$6,NOW())
+                 companies_other_id, auth_provider, profile_picture, created_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())
                 """,
                 user_id,
                 email,
                 full_name,
                 "active",
+                company_id,
                 "google",
-                picture
+                picture,
             )
+
+            # ==========================================
+            # 🎯 Assign Trial Plan
+            # ==========================================
+            from utils.subscription_service import assign_trial_plan_if_needed
+            await assign_trial_plan_if_needed(conn, company_id, trial_days=7)
 
         # ==========================================
         # 🔐 Generate Tokens
         # ==========================================
         permissions = []
-        company_id = str(user["companies_other_id"]) if (user and user["companies_other_id"]) else None
+        if is_new_user:
+            pass  # company_id already set above
+        else:
+            company_id = str(user["companies_other_id"]) if (user and user["companies_other_id"]) else None
 
         access_token = create_access_token(user_id, company_id, permissions)
         #refresh_token = create_refresh_token(user_id, None)
@@ -1078,6 +1109,7 @@ async def google_signup_login(
             "access_token": access_token,
             "user": {
                 "user_id": user_id,
+                "google_login":True,
                 "is_new_user": is_new_user,
                 "name": full_name,
                 "isSubmitted": is_submitted,
