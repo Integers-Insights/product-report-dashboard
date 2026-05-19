@@ -68,6 +68,8 @@ const UserLogin = () => {
 
       const data = await response.json();
 
+      // console.log("data: ",data);
+
       if (data.success) {
         toast.success(data.message || "Login successful");
         localStorage.setItem("VZyHRIoNN3m)OXhGwCtC", data.access_token);
