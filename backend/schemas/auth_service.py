@@ -1084,6 +1084,8 @@ async def google_signup_login(
             }
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         print("GOOGLE AUTH ERROR:", str(e))
         raise HTTPException(500, "Google login failed")
@@ -1251,6 +1253,7 @@ async def get_user_profile(conn, user_id):
                 u.email,
                 u.phone,
                 u.status,
+                u.auth_provider,
                 c.name as company_name,
                 c.headquarters_country as country,
                 c.company_type as business_type,

@@ -1,8 +1,25 @@
 from typing import Dict, Any
 import json
 import traceback
+import time
 from datetime import datetime, timezone
 from fastapi import HTTPException
+
+# Simple in-memory cache: product intelligence rarely changes after pipeline runs
+_cache: dict = {}
+_CACHE_TTL = 300  # 5 minutes
+
+def _cache_get(key: str):
+    entry = _cache.get(key)
+    if entry and (time.monotonic() - entry["ts"]) < _CACHE_TTL:
+        return entry["val"]
+    return None
+
+def _cache_set(key: str, val):
+    _cache[key] = {"val": val, "ts": time.monotonic()}
+
+def invalidate_product_cache(product_id: str):
+    _cache.pop(f"pi:{product_id}", None)
 
 def _confidence_label(score) -> str:
     if score is None:
@@ -198,121 +215,67 @@ async def get_reports(conn, user_id: str):
 
 async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dict[str, Any]:
 
+    cached = _cache_get(f"pi:{product_id}:{user_id}")
+    if cached is not None:
+        print(f"[PI] cache hit — {product_id[:8]}")
+        return cached
+
+    t0 = time.monotonic()
+
     try:
-        # =====================================================
-        # 📦 PRODUCT
-        # =====================================================
-        product = await conn.fetchrow("""
-            SELECT u.user_id,pm.product_name, pm.hs_code,
-                   co.name AS company_name, co.headquarters_country,ur.buyer_type,
-                    ur.price_positioning,ur.monthly_supply_capacity,ur.certifications,ur.target_country
-            FROM product_info.product_master pm
-            JOIN core_tables.companies_other co
-                ON co.id = pm.company_id
-            JOIN core_auth_table.auth_user u
-                ON u.companies_other_id = co.id
-            JOIN core_tables.user_research_preferences ur
-                ON ur.user_id = u.user_id
-            WHERE pm.id=$1 AND pm.created_by=$2
+        # Single round-trip: all tables fetched in one CTE query
+        row = await conn.fetchrow("""
+            WITH prod AS (
+                SELECT u.user_id, pm.product_name, pm.hs_code,
+                       co.name AS company_name, co.headquarters_country,
+                       ur.buyer_type, ur.price_positioning,
+                       ur.monthly_supply_capacity, ur.certifications, ur.target_country
+                FROM product_info.product_master pm
+                JOIN core_tables.companies_other co ON co.id = pm.company_id
+                JOIN core_auth_table.auth_user u ON u.companies_other_id = co.id
+                JOIN core_tables.user_research_preferences ur ON ur.user_id = u.user_id
+                WHERE pm.id = $1 AND pm.created_by = $2
+                LIMIT 1
+            )
+            SELECT
+                (SELECT row_to_json(p) FROM prod p LIMIT 1)                                        AS product,
+                (SELECT jsonb_agg(row_to_json(m))
+                    FROM product_info.market_intelligence m
+                    WHERE m.product_id = $1 AND m.country IS NOT NULL)                            AS market,
+                (SELECT row_to_json(b) FROM product_info.b2b_buyer_intelligence b
+                    WHERE b.product_id = $1 LIMIT 1)                                              AS b2b_buyers,
+                (SELECT row_to_json(c) FROM product_info.b2c_buyer_intelligence c
+                    WHERE c.product_id = $1 LIMIT 1)                                              AS b2c_buyers,
+                (SELECT row_to_json(t) FROM product_info.trade_intelligence t
+                    WHERE t.product_id = $1 LIMIT 1)                                              AS trade,
+                (SELECT row_to_json(co) FROM product_info.competitor_intelligence co
+                    WHERE co.product_id = $1 LIMIT 1)                                             AS competitor,
+                (SELECT row_to_json(mk) FROM product_info.marketing_intelligence mk
+                    WHERE mk.product_id = $1 LIMIT 1)                                             AS marketing,
+                (SELECT jsonb_agg(row_to_json(pr))
+                    FROM product_info.price_intelligence pr
+                    WHERE pr.product_id = $1)                                                     AS price,
+                (SELECT row_to_json(ov) FROM product_info.overall_intelligence_scores ov
+                    WHERE ov.product_id = $1 LIMIT 1)                                             AS overall,
+                (SELECT row_to_json(v) FROM product_info.variants_formats v
+                    WHERE v.product_id = $1 LIMIT 1)                                              AS variants
         """, product_id, user_id)
 
-        if not product:
+        if not row or not row["product"]:
             return {"success": False, "error": "Product not found", "code": "PRODUCT_NOT_FOUND"}
 
-        # =====================================================
-        # 🌍 MARKET
-        # =====================================================
-        market = await conn.fetch("""
-            SELECT *
-            FROM product_info.market_intelligence
-            WHERE product_id=$1
-            AND country IS NOT NULL
-        """, product_id)
-
-        # =====================================================
-        # 🧑‍🤝‍🧑 BUYERS — fetch from both tables
-        # =====================================================
-        b2b_buyers = await conn.fetchrow("""
-            SELECT buyers, buyers_count, target_country, is_fallback
-            FROM product_info.b2b_buyer_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        b2c_buyers = await conn.fetchrow("""
-            SELECT consumer_profile, purchase_channels, label_preferences,
-                leading_brands, market_gap, target_country
-            FROM product_info.b2c_buyer_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        # ── BUYERS COUNT ─────────────────────────────────────────────────
-        b2b_buyers_count = await conn.fetchrow("""
-            SELECT buyers_count
-            FROM product_info.b2b_buyer_intelligence
-            WHERE product_id = $1
-        """, product_id)
-
-        b2c_buyers_count = await conn.fetchrow("""
-            SELECT jsonb_array_length(COALESCE(leading_brands, '[]'::jsonb)) AS buyers_count
-            FROM product_info.b2c_buyer_intelligence
-            WHERE product_id = $1
-        """, product_id)
-
-        # =====================================================
-        # 📊 TRADE
-        # =====================================================
-        trade = await conn.fetchrow("""
-            SELECT hs_code, global_trade_value, volume_traded_globally,
-             top_exporters, top_importers, avg_global_trade_price, country_export_share,
-            export_volume_trend, export_pricing_commod, analysis_note, origin_country
-            FROM product_info.trade_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        # =====================================================
-        # 🧠 COMPETITORS
-        # =====================================================
-        competitor = await conn.fetchrow("""
-            SELECT *
-            FROM product_info.competitor_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        # =====================================================
-        # 📣 MARKETING
-        # =====================================================
-        marketing = await conn.fetchrow("""
-            SELECT *
-            FROM product_info.marketing_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        # =====================================================
-        # 💰 PRICE
-        # =====================================================
-        price = await conn.fetch("""
-            SELECT top_metrics, variant_table, cert_premiums
-            FROM product_info.price_intelligence
-            WHERE product_id=$1
-        """, product_id)
-
-        # =====================================================
-        # 🎯 OVERALL
-        # =====================================================
-        overall = await conn.fetchrow("""
-            SELECT *
-            FROM product_info.overall_intelligence_scores
-            WHERE product_id=$1
-        """, product_id)
-
-        # =====================================================
-        # 🎯 VARIANTS
-        # =====================================================
-        variants = await conn.fetchrow("""
-            SELECT *
-            FROM product_info.variants_formats
-            WHERE product_id=$1
-        """, product_id)
+        # Unpack CTE result — each column is already JSON from PostgreSQL
+        # row_to_json / jsonb_agg results may come back as JSON strings — parse all
+        product    = _parse(row["product"])
+        market     = [_parse(m) for m in (_parse(row["market"]) or [])]
+        b2b_buyers = _parse(row["b2b_buyers"])
+        b2c_buyers = _parse(row["b2c_buyers"])
+        trade      = _parse(row["trade"])
+        competitor = _parse(row["competitor"])
+        marketing  = _parse(row["marketing"])
+        price      = [_parse(p) for p in (_parse(row["price"]) or [])]
+        overall    = _parse(row["overall"])
+        variants   = _parse(row["variants"])
 
     except Exception as e:
         traceback.print_exc()
@@ -323,65 +286,63 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
     # =====================================================
     try:
         price_data = []
-        for row in price:
-            top_metrics = _parse(row["top_metrics"]) or {}
-            variant_table = _parse(row["variant_table"]) or []
+        for p in price:
+            top_metrics   = _parse(p.get("top_metrics"))   or {}
+            variant_table = _parse(p.get("variant_table")) or []
             price_data.append({
                 **top_metrics,
                 "variants": variant_table,
-                #"cert_premiums": _parse(row["cert_premiums"]),
             })
 
         market_data = []
-        for row in market:
+        for m in market:
             market_data.append({
-                "country": row["country"],
-                "demand_growth": _parse(row["demand_growth"]),
-                "import_volume": _parse(row["import_volume"]),
-                "matched_buyers": _parse(row["matched_buyers"]),
-                "peak_procurement": _parse(row["peak_procurement"]),
-                "primary_channel": _parse(row["primary_channel"]),
-                "cert_require": _parse(row["cert_require"]),
-                "country_and_score": _parse(row["country_and_score"]),
-                #"cert_gap": _parse(row["cert_gap"]),
-                "analysis_note": row["analysis_note"],
+                "country":          m.get("country"),
+                "demand_growth":    _parse(m.get("demand_growth")),
+                "import_volume":    _parse(m.get("import_volume")),
+                "matched_buyers":   _parse(m.get("matched_buyers")),
+                "peak_procurement": _parse(m.get("peak_procurement")),
+                "primary_channel":  _parse(m.get("primary_channel")),
+                "cert_require":     _parse(m.get("cert_require")),
+                "country_and_score":_parse(m.get("country_and_score")),
+                "analysis_note":    m.get("analysis_note"),
             })
 
         marketing_data = None
         if marketing:
             marketing_data = {
-                "high_volume_buyer_intent": _parse(marketing["high_volume_buyer_intent"]),
-                "low_competition_gaps": _parse(marketing["low_competition_gaps"]),
-                "multilingual": _parse(marketing["multilingual"]),
-                "emails": _parse(marketing["emails"]),
-                "sequence_note": marketing["sequence_note"],
-                "buyer_type": marketing["buyer_type"],
-                "target_country": marketing["target_country"],
-                "ad_concepts": _parse(marketing["ad_concepts"]),
-                "product_name": product["product_name"],
+                "high_volume_buyer_intent": _parse(marketing.get("high_volume_buyer_intent")),
+                "low_competition_gaps":     _parse(marketing.get("low_competition_gaps")),
+                "multilingual":             _parse(marketing.get("multilingual")),
+                "emails":                   _parse(marketing.get("emails")),
+                "sequence_note":            marketing.get("sequence_note"),
+                "buyer_type":               marketing.get("buyer_type"),
+                "target_country":           marketing.get("target_country"),
+                "ad_concepts":              _parse(marketing.get("ad_concepts")),
+                "product_name":             product.get("product_name"),
             }
         trade_data = None
         if trade:
-            export_volume_trend = _parse(trade["export_volume_trend"]) or []
-            years = [row["year"] for row in export_volume_trend if row.get("year")]
+            export_volume_trend = _parse(trade.get("export_volume_trend")) or []
+            years = [r["year"] for r in export_volume_trend if isinstance(r, dict) and r.get("year")]
             trend_period = f"{min(years)}-{max(years)}" if years else None
             trade_data = {
-                "product_name":        product["product_name"],
-                "trend_period":        trend_period,
-                "global_trade_value": _parse(trade["global_trade_value"]),
-                "volume_traded_globally": _parse(trade["volume_traded_globally"]),
-                "avg_global_trade_price": _parse(trade["avg_global_trade_price"]),
-                "country_export_share": _parse(trade["country_export_share"]),
-                "top_exporters": _parse(trade["top_exporters"]),
-                "top_importers": _parse(trade["top_importers"]),
-                "export_volume_trend": _parse(trade["export_volume_trend"]),
-                "export_pricing_commod": _parse(trade["export_pricing_commod"]),
-                "analysis_note": trade["analysis_note"],
-                "hs_code": trade["hs_code"],
-                "origin_country": trade["origin_country"],
+                "product_name":           product.get("product_name"),
+                "trend_period":           trend_period,
+                "global_trade_value":     _parse(trade.get("global_trade_value")),
+                "volume_traded_globally": _parse(trade.get("volume_traded_globally")),
+                "avg_global_trade_price": _parse(trade.get("avg_global_trade_price")),
+                "country_export_share":   _parse(trade.get("country_export_share")),
+                "top_exporters":          _parse(trade.get("top_exporters")),
+                "top_importers":          _parse(trade.get("top_importers")),
+                "export_volume_trend":    _parse(trade.get("export_volume_trend")),
+                "export_pricing_commod":  _parse(trade.get("export_pricing_commod")),
+                "analysis_note":          trade.get("analysis_note"),
+                "hs_code":                trade.get("hs_code"),
+                "origin_country":         trade.get("origin_country"),
             }
 
-        variants_data = _parse(variants["variants"]) if variants and variants["variants"] else []
+        variants_data = _parse(variants.get("variants")) if variants and variants.get("variants") else []
 
         # replace old buyers_data block with this
         buyers_data = {
@@ -394,34 +355,32 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 ),
 
                 "b2b": {
-                    "buyers":      _parse(b2b_buyers["buyers"])  if b2b_buyers and b2b_buyers["buyers"] else [],
-                    "is_fallback": b2b_buyers["is_fallback"]     if b2b_buyers else None,
+                    "buyers":      _parse(b2b_buyers.get("buyers"))      if b2b_buyers else [],
+                    "is_fallback": b2b_buyers.get("is_fallback")         if b2b_buyers else None,
                 } if b2b_buyers else None,
 
                 "b2c": {
-                    "consumer_profile":  _parse(b2c_buyers["consumer_profile"])  if b2c_buyers else {},
-                    "purchase_channels": _parse(b2c_buyers["purchase_channels"]) if b2c_buyers else {},
-                    "label_preferences": _parse(b2c_buyers["label_preferences"]) if b2c_buyers else {},
-                    "leading_brands":    _parse(b2c_buyers["leading_brands"])    if b2c_buyers else [],
-                    "market_gap":        b2c_buyers["market_gap"]                if b2c_buyers else None,
+                    "consumer_profile":  _parse(b2c_buyers.get("consumer_profile"))  if b2c_buyers else {},
+                    "purchase_channels": _parse(b2c_buyers.get("purchase_channels")) if b2c_buyers else {},
+                    "label_preferences": _parse(b2c_buyers.get("label_preferences")) if b2c_buyers else {},
+                    "leading_brands":    _parse(b2c_buyers.get("leading_brands"))    if b2c_buyers else [],
+                    "market_gap":        b2c_buyers.get("market_gap")                if b2c_buyers else None,
                 } if b2c_buyers else None,
             }
         competitor_data = {
-            "competitors": _parse(competitor["competitors"]) if competitor and competitor["competitors"] else [],
-            #"is_fallback": competitor["is_fallback"] if competitor else None,
+            "competitors": _parse(competitor.get("competitors")) if competitor and competitor.get("competitors") else [],
         }
-        scores        = _parse(overall["scores"])    if overall and overall["scores"]        else []
+        scores         = _parse(overall.get("scores"))   if overall and overall.get("scores") else []
         easy_win_count = sum(
-                1 for row in market
-                if row.get("country_and_score") and
-                _parse(row["country_and_score"]) and
-                _parse(row["country_and_score"]).get("tier") == "Easy Win"
-            )
-        b2b_count = b2b_buyers_count["buyers_count"] if b2b_buyers_count and b2b_buyers_count["buyers_count"] else 0
-        b2c_count = b2c_buyers_count["buyers_count"] if b2c_buyers_count and b2c_buyers_count["buyers_count"] else 0
+            1 for m in market
+            if m.get("country_and_score") and
+            _parse(m.get("country_and_score")) and
+            _parse(m.get("country_and_score")).get("tier") == "Easy Win"
+        )
+        b2b_count    = b2b_buyers.get("buyers_count") or 0 if b2b_buyers else 0
+        b2c_count    = len(_parse(b2c_buyers.get("leading_brands")) or []) if b2c_buyers else 0
         total_buyers = b2b_count + b2c_count
-        # ✅ flatten certifications dict → simple list
-        raw_certs = _parse(product["certifications"]) or {}
+        raw_certs    = _parse(product.get("certifications")) or {}
         if isinstance(raw_certs, dict):
             certifications = [
                 cert
@@ -442,39 +401,39 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
     try:
         response = {
             "success": True,
-                "product": {
-                    "name":                    product["product_name"],
-                    "hs_code":                 product["hs_code"],
-                    "target_country":            _parse(product["target_country"]) if product["target_country"] else [],
-                    "headquarters_country":    product["headquarters_country"],
-                    "buyer_type":              product["buyer_type"],
-                    "total_buyers":total_buyers,
-                    "price_positioning":       _parse(product["price_positioning"]) if product["price_positioning"] else [],
-                    "monthly_supply_capacity": product["monthly_supply_capacity"],
-                    "certifications": certifications,  # ✅ ["ISO 27001", "FDA Registered", "ISO 9001"]
-                    "market_country":          [row["country"] for row in market[:4]],
-                    "score":                   overall["overall_score"] if overall else None,
-                    "easy_win":                easy_win_count,
-                    "keywords":                len(marketing_data["high_volume_buyer_intent"])
-                                            if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
-                    "market_range": price_data[0].get("market_range")
-                                            if price_data else None,
-                    "global_trade":            trade_data["global_trade_value"].get("yoy_growth")
-                                            if trade_data and trade_data.get("global_trade_value") else None,
-                   
-                },
-                "overview":           scores,
-                "urgent_note":             overall["urgent_note"]   if overall else None,
-                "actions":                 _parse(overall["action_cards"]) if overall and overall["action_cards"] else [],
-                "variants":                {"variants_info": variants_data},
-                "market_intelligence":     {"market_info": market_data},
-                "price_intelligence":      {"price_info": price_data},
-                "buyers_intelligence":     buyers_data,
-                "trade_intelligence":      {"trade_info": trade_data},
-                "competitor_intelligence": competitor_data,
-                "marketing_intelligence":  {"marketing_info": marketing_data},
+            "product": {
+                "name":                    product.get("product_name"),
+                "hs_code":                 product.get("hs_code"),
+                "target_country":          _parse(product.get("target_country")) or [],
+                "headquarters_country":    product.get("headquarters_country"),
+                "buyer_type":              product.get("buyer_type"),
+                "total_buyers":            total_buyers,
+                "price_positioning":       _parse(product.get("price_positioning")) or [],
+                "monthly_supply_capacity": product.get("monthly_supply_capacity"),
+                "certifications":          certifications,
+                "market_country":          [m.get("country") for m in market[:4]],
+                "score":                   overall.get("overall_score") if overall else None,
+                "easy_win":                easy_win_count,
+                "keywords":                len(marketing_data["high_volume_buyer_intent"])
+                                           if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
+                "market_range":            price_data[0].get("market_range") if price_data else None,
+                "global_trade":            trade_data["global_trade_value"].get("yoy_growth")
+                                           if trade_data and trade_data.get("global_trade_value") else None,
+            },
+            "overview":                scores,
+            "urgent_note":             overall.get("urgent_note")    if overall else None,
+            "actions":                 _parse(overall.get("action_cards")) if overall and overall.get("action_cards") else [],
+            "variants":                {"variants_info": variants_data},
+            "market_intelligence":     {"market_info": market_data},
+            "price_intelligence":      {"price_info": price_data},
+            "buyers_intelligence":     buyers_data,
+            "trade_intelligence":      {"trade_info": trade_data},
+            "competitor_intelligence": competitor_data,
+            "marketing_intelligence":  {"marketing_info": marketing_data},
         }
 
+        _cache_set(f"pi:{product_id}:{user_id}", response)
+        print(f"[PI] fetched in {(time.monotonic() - t0) * 1000:.0f}ms — {product_id[:8]}")
         return response
 
     except Exception as e:

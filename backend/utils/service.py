@@ -4,8 +4,6 @@ import re
 from jose import jwt,JWTError
 from utils.jwt_utils import verify_token, SECRET_KEY, ALGORITHM, create_access_token,  get_user_permissions
 from fastapi import Request, Response, HTTPException, Depends
-from db.database import get_db
-from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError, ExpiredSignatureError
 #from services.onboarding_service import resolve_company_id
@@ -203,53 +201,24 @@ async def generate_unique_slug(conn, company_name: str):
 async def get_current_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    conn=Depends(get_db),
 ):
-
     if not credentials:
-        raise HTTPException(
-            status_code=401,
-            detail="Authorization token missing"
-        )
+        raise HTTPException(status_code=401, detail="Authorization token missing")
 
     try:
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         if payload.get("type") != "access":
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid token type"
-            )
+            raise HTTPException(status_code=401, detail="Invalid token type")
 
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token payload")
 
-        # Check if token was issued before password change
-        iat = payload.get("iat")
-        if iat:
-            row = await conn.fetchrow("""
-                SELECT tokens_revoked_at
-                FROM core_auth_table.auth_user
-                WHERE user_id = $1
-            """, user_id)
-            if row and row["tokens_revoked_at"]:
-                from datetime import timezone as _tz
-                revoked_at = row["tokens_revoked_at"]
-                # Ensure timezone-aware for comparison
-                if revoked_at.tzinfo is None:
-                    revoked_at = revoked_at.replace(tzinfo=_tz.utc)
-                revoked_ts = int(revoked_at.timestamp())
-                if iat < revoked_ts:
-                    raise HTTPException(
-                        status_code=401,
-                        detail="Session expired. Please login again."
-                    )
-
         user = {
-            "user_id": user_id,
-            "company_id": payload.get("company_id"),
+            "user_id":     user_id,
+            "company_id":  payload.get("company_id"),
             "permissions": payload.get("permissions"),
         }
 

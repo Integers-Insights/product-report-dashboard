@@ -609,7 +609,7 @@ async def upgrade_company_plan(
 #   ALTER TABLE core_auth_table.company_usage
 #   ADD COLUMN IF NOT EXISTS usage_date DATE;
 # =========================================================
-async def check_and_increment_usage(conn, company_id: str, module_code: str):
+async def check_and_increment_usage(conn, company_id: str, module_code: str, count: int = 1):
     now   = datetime.now(timezone.utc)
     today = now.date()
 
@@ -649,7 +649,7 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str):
         total_used_today = int(usage["total_used"]) if usage else 0
 
         if total_used_today < query_limit:
-            await _record_free_usage(conn, company_id, module_code, today, now)
+            await _record_free_usage(conn, company_id, module_code, today, now, count=count)
             return {"type": "free", "company_id": company_id, "module_code": module_code, "date": today}
 
         # Daily limit hit → try add-on
@@ -697,7 +697,7 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str):
     total_used_month = int(usage_month["total_used"]) if usage_month else 0
 
     if total_used_month < monthly_limit:
-        await _record_free_usage(conn, company_id, module_code, today, now)
+        await _record_free_usage(conn, company_id, module_code, today, now, count=count)
         return {"type": "free", "company_id": company_id, "module_code": module_code, "date": today}
 
     # Monthly pool exhausted → try add-on
@@ -707,7 +707,7 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str):
                                 message=f"Monthly query limit of {monthly_limit} reached. Purchase add-on credits to continue.")
 
 
-async def _record_free_usage(conn, company_id: str, module_code: str, today, now):
+async def _record_free_usage(conn, company_id: str, module_code: str, today, now, count: int = 1):
     """Insert or increment a free usage row for today."""
     existing = await conn.fetchrow("""
         SELECT id FROM core_auth_table.company_usage
@@ -718,14 +718,14 @@ async def _record_free_usage(conn, company_id: str, module_code: str, today, now
         await conn.execute("""
             INSERT INTO core_auth_table.company_usage
             (id, company_id, module_code, usage_count, carry_forward, month, year, usage_date)
-            VALUES ($1,$2,$3,1,0,$4,$5,$6)
-        """, str(uuid.uuid4()), company_id, module_code, now.month, now.year, today)
+            VALUES ($1,$2,$3,$7,0,$4,$5,$6)
+        """, str(uuid.uuid4()), company_id, module_code, now.month, now.year, today, count)
     else:
         await conn.execute("""
             UPDATE core_auth_table.company_usage
-            SET usage_count = usage_count + 1
+            SET usage_count = usage_count + $4
             WHERE company_id = $1 AND module_code = $2 AND usage_date = $3
-        """, company_id, module_code, today)
+        """, company_id, module_code, today, count)
 
 
 async def _consume_addon(conn, company_id, module_code, today, now,

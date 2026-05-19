@@ -1665,9 +1665,9 @@ async def select_products(
                 "product_data": p
             })
 
-        # Deduct 1 query per selected product
-        for _ in updated_products:
-            await check_and_increment_usage(conn, str(company_id), "product_intelligence")
+        # Deduct usage in a single call instead of one per product
+        if updated_products:
+            await check_and_increment_usage(conn, str(company_id), "product_intelligence", count=len(updated_products))
 
         return {
             "success": True,
@@ -1778,22 +1778,19 @@ async def confirm_products(
                     WHERE job_id = $1 AND user_id = $2
                 """, job_id, user_id)
 
-                for pid in product_ids:
-                    row = await conn.fetchrow("""
-                        SELECT product_data
-                        FROM product_info.pipeline_temp_products
-                        WHERE id = $1 AND user_id = $2 AND job_id = $3
-                    """, pid, user_id, job_id)
+                # Batch fetch all products in one query instead of N individual SELECTs
+                rows = await conn.fetch("""
+                    SELECT id, product_data
+                    FROM product_info.pipeline_temp_products
+                    WHERE id = ANY($1::uuid[]) AND user_id = $2 AND job_id = $3
+                """, product_ids, user_id, job_id)
 
-                    print(f"[CONFIRM] lookup pid={pid} found={row is not None}")
-
-                    if not row:
-                        continue
-
+                # Sequential updates — asyncpg does not allow concurrent ops on one connection
+                for row in rows:
+                    pid = str(row["id"])
                     raw = row["product_data"]
                     p = json.loads(raw) if isinstance(raw, str) else dict(raw)
 
-                    # apply any frontend edits for this product
                     if pid in updates and isinstance(updates[pid], dict):
                         p.update(updates[pid])
 
@@ -1801,7 +1798,7 @@ async def confirm_products(
                         UPDATE product_info.pipeline_temp_products
                         SET product_data = $1, is_selected = TRUE, updated_at = NOW()
                         WHERE id = $2
-                    """, json.dumps(p), pid)
+                    """, json.dumps(p), row["id"])
 
             # ── STEP 2: fetch all selected products ──────────────────────────
             selected_products = await conn.fetch("""
@@ -1997,7 +1994,9 @@ async def get_product_intelligence(
         })
 
     # user_id = current_user["sub"]
-    user_id = current_user["user_id"]
+    user_id    = current_user["user_id"]
+    company_id = current_user.get("company_id")
+
     data = await fetch_product_intelligence(conn, product_id, user_id)
 
     if not data.get("success", True):
@@ -2009,7 +2008,6 @@ async def get_product_intelligence(
             "code": code,
         })
 
-    company_id = current_user.get("company_id")
     plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
     print(f"🔒 Applying plan visibility | plan={plan_name} | company={company_id}")
     market_raw = data.get("market_intelligence", {})
@@ -2028,7 +2026,9 @@ async def get_all_products_overview(
     current_user=Depends(get_current_user)
 ):
     try:
-        user_id = current_user["user_id"]
+        user_id    = current_user["user_id"]
+        company_id = current_user.get("company_id")
+
         data = await fetch_all_products_overview(conn, user_id)
 
         if not data.get("success"):
@@ -2039,7 +2039,6 @@ async def get_all_products_overview(
                 "code": data.get("code"),
             })
 
-        company_id = current_user.get("company_id")
         plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
         data["products"] = apply_trial_visibility(data.get("products", []), plan_name)
         data["plan"] = plan_name
