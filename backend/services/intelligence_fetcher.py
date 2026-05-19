@@ -4,6 +4,7 @@ import traceback
 import time
 from datetime import datetime, timezone
 from fastapi import HTTPException
+import pandas as pd
 
 # Simple in-memory cache: product intelligence rarely changes after pipeline runs
 _cache: dict = {}
@@ -909,235 +910,135 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
         return {"success": False, "error": "Failed to build products overview", "detail": str(e), "code": "BUILD_ERROR"}
 
 
-async def fetch_dashboard_data(conn, user_id: str) -> Dict[str, Any]:
+_STATS_SQL = """
+WITH product_ids AS (
+    SELECT id, created_at
+    FROM product_info.product_master
+    WHERE created_by = $1
+),
+buyer_stats AS (
+    SELECT
+        COALESCE(SUM(bi.buyers_count), 0)                                                        AS total,
+        COALESCE(SUM(bi.buyers_count) FILTER (WHERE bi.created_at >= NOW() - INTERVAL '7 days'), 0) AS this_week
+    FROM product_info.buyer_intelligence bi
+    WHERE bi.product_id IN (SELECT id FROM product_ids)
+),
+email_stats AS (
+    SELECT
+        COALESCE(SUM(COALESCE(mi.emails_count, jsonb_array_length(mi.emails::jsonb))), 0)                                                         AS total,
+        COALESCE(SUM(COALESCE(mi.emails_count, jsonb_array_length(mi.emails::jsonb))) FILTER (WHERE mi.updated_at >= NOW() - INTERVAL '7 days'), 0) AS this_week
+    FROM product_info.marketing_intelligence mi
+    WHERE mi.product_id IN (SELECT id FROM product_ids)
+      AND mi.emails IS NOT NULL
+      AND mi.emails::text != 'null'
+)
+SELECT
+    (SELECT full_name FROM core_auth_table.auth_user WHERE user_id = $1)     AS full_name,
+    (SELECT COUNT(*)      FROM product_ids)                                   AS products_total,
+    (SELECT COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') FROM product_ids) AS products_this_week,
+    (SELECT total     FROM buyer_stats)                                       AS buyers_total,
+    (SELECT this_week FROM buyer_stats)                                       AS buyers_this_week,
+    (SELECT total     FROM email_stats)                                       AS emails_total,
+    (SELECT this_week FROM email_stats)                                       AS emails_this_week,
+    (SELECT COUNT(*) FROM core_tables.pipeline_jobs
+     WHERE user_id = $1 AND status = 'completed'
+       AND created_at >= date_trunc('month', NOW()))                          AS reports_total
+"""
+
+_PRODUCTS_SQL = """
+SELECT
+    pm.id, pm.product_name, pm.created_at,
+    oi.overall_score, oi.urgent_note,
+    COALESCE(bi.buyers_count, 0) AS buyers_count,
+    ARRAY(
+        SELECT country FROM product_info.market_intelligence
+        WHERE product_id = pm.id AND country IS NOT NULL
+        ORDER BY created_at ASC LIMIT 3
+    ) AS top_markets,
+    mi_first.country
+FROM product_info.product_master pm
+LEFT JOIN product_info.overall_intelligence_scores oi ON oi.product_id = pm.id
+LEFT JOIN product_info.buyer_intelligence bi ON bi.product_id = pm.id
+LEFT JOIN LATERAL (
+    SELECT country FROM product_info.market_intelligence
+    WHERE product_id = pm.id AND country IS NOT NULL
+    ORDER BY created_at ASC LIMIT 1
+) mi_first ON TRUE
+WHERE pm.created_by = $1
+ORDER BY oi.overall_score DESC NULLS LAST
+"""
+
+
+async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
+    import asyncio
+    from db.database import get_pool
+
     try:
-        # ── 1. User full_name ─────────────────────────────────────────────────
-        user_row = await conn.fetchrow("""
-            SELECT full_name,user_id FROM core_auth_table.auth_user WHERE user_id = $1
-        """, user_id)
-        full_name = user_row["full_name"] if user_row else "Guest"
+        pool = get_pool()
 
-        # ── 2. Products tracked (total + added this week) ─────────────────────
-        products_row = await conn.fetchrow("""
-            SELECT
-                COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') AS this_week
-            FROM product_info.product_master
-            WHERE created_by = $1
-        """, user_id)
-        products_total    = products_row["total"]    or 0
-        products_this_week = products_row["this_week"] or 0
+        # Run 2 queries in parallel on separate pool connections
+        async def _stats():
+            async with pool.acquire() as c:
+                return await c.fetchrow(_STATS_SQL, user_id)
 
-        # ── 3. Buyers discovered (total + change this week) ───────────────────
-        buyers_row = await conn.fetchrow("""
-            SELECT
-                COALESCE(SUM(bi.buyers_count), 0) AS total,
-                COALESCE(SUM(bi.buyers_count) FILTER (WHERE bi.created_at >= NOW() - INTERVAL '7 days'), 0) AS this_week
-            FROM product_info.buyer_intelligence bi
-            WHERE bi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
-            )
-        """, user_id)
-        buyers_total     = int(buyers_row["total"]    or 0)
-        buyers_this_week = int(buyers_row["this_week"] or 0)
+        async def _products():
+            async with pool.acquire() as c:
+                return await c.fetch(_PRODUCTS_SQL, user_id)
 
-        # ── 4. Emails generated (total + this week vs prev week) ─────────────
-        # Use COALESCE(emails_count, jsonb_array_length(emails)) so rows that
-        # were inserted before emails_count was added still count correctly.
-        emails_row = await conn.fetchrow("""
-            SELECT
-                COALESCE(SUM(
-                    COALESCE(mi.emails_count, jsonb_array_length(mi.emails::jsonb))
-                ), 0) AS total,
-                COALESCE(SUM(
-                    COALESCE(mi.emails_count, jsonb_array_length(mi.emails::jsonb))
-                ) FILTER (
-                    WHERE mi.updated_at >= NOW() - INTERVAL '7 days'
-                ), 0) AS this_week,
-                COALESCE(SUM(
-                    COALESCE(mi.emails_count, jsonb_array_length(mi.emails::jsonb))
-                ) FILTER (
-                    WHERE mi.updated_at >= NOW() - INTERVAL '14 days'
-                      AND mi.updated_at <  NOW() - INTERVAL '7 days'
-                ), 0) AS prev_week
-            FROM product_info.marketing_intelligence mi
-            WHERE mi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
-            )
-              AND mi.emails IS NOT NULL
-              AND mi.emails::text != 'null'
-        """, user_id)
-        emails_total     = int(emails_row["total"]     or 0)
-        emails_this_week = int(emails_row["this_week"] or 0)
+        stats_row, products_rows = await asyncio.gather(
+            _stats(), _products()
+        )
 
+        # ── Stats ─────────────────────────────────────────────────────────────
+        full_name         = stats_row["full_name"] or "Guest"
+        products_total    = int(stats_row["products_total"]    or 0)
+        products_this_week = int(stats_row["products_this_week"] or 0)
+        buyers_total      = int(stats_row["buyers_total"]      or 0)
+        buyers_this_week  = int(stats_row["buyers_this_week"]  or 0)
+        emails_total      = int(stats_row["emails_total"]      or 0)
+        emails_this_week  = int(stats_row["emails_this_week"]  or 0)
+        reports_completed = int(stats_row["reports_total"]     or 0)
 
-        # ── 5. Reports completed (pipeline jobs completed this billing cycle) ──
-        reports_row = await conn.fetchrow("""
-            SELECT COUNT(*) AS total
-            FROM core_tables.pipeline_jobs
-            WHERE user_id = $1
-              AND status = 'completed'
-              AND created_at >= date_trunc('month', NOW())
-        """, user_id)
-        reports_completed = reports_row["total"] or 0
-
-        # ── 6. Opportunity hub (top 5 products with score label) ──────────────
-        products_rows = await conn.fetch("""
-            SELECT pm.id, pm.product_name, pm.created_at,
-                   oi.overall_score,
-                   COALESCE(bi.buyers_count, 0) AS buyers_count,
-                   ARRAY(
-                       SELECT country FROM product_info.market_intelligence
-                       WHERE product_id = pm.id AND country IS NOT NULL
-                       ORDER BY created_at ASC LIMIT 3
-                   ) AS top_markets
-            FROM product_info.product_master pm
-            LEFT JOIN product_info.overall_intelligence_scores oi ON oi.product_id = pm.id
-            LEFT JOIN product_info.buyer_intelligence bi ON bi.product_id = pm.id
-            WHERE pm.created_by = $1
-            ORDER BY oi.overall_score DESC NULLS LAST
-        """, user_id)
-
+        # ── Opportunity hub + AI insights (split from same rows) ──────────────
         def score_label(score):
-            if score is None:   return "Pending"
-            if score >= 75:     return "Easy Win"
-            if score >= 50:     return "Less Demand"
+            if score is None: return "Pending"
+            if score >= 75:   return "Easy Win"
+            if score >= 50:   return "Less Demand"
             return "No Demand"
 
         opportunity_hub = []
+        ai_insights     = []
         for p in products_rows:
-            opportunity_hub.append({
-                "product_id":   str(p["id"]),
-                "product_name": p["product_name"],
-                "buyers_count": p["buyers_count"],
-                "top_markets":  list(p["top_markets"]) if p["top_markets"] else [],
-                "score":        p["overall_score"],
-                "label":        score_label(p["overall_score"]),
-                "initiated_at": p["created_at"].isoformat() if p["created_at"] else None,
-            })
-
-        # ── 7. Recent activity (last 5 pipeline jobs) ─────────────────────────
-        jobs_rows = await conn.fetch("""
-            SELECT
-                pj.id,
-                pj.status,
-                pj.stage,
-                pj.progress,
-                pj.created_at,
-
-                -- Product names: from temp table (always has correct job_id)
-                (
-                    SELECT ARRAY_AGG(tp.product_data->>'product_name'
-                                     ORDER BY tp.created_at ASC)
-                    FROM product_info.pipeline_temp_products tp
-                    WHERE tp.job_id::text = pj.id::text
-                      AND tp.user_id::text = $1
-                      AND (tp.product_data->>'product_name') IS NOT NULL
-                ) AS product_names,
-
-                -- Countries: from market_intelligence, fallback buyer_intelligence
-                (
-                    SELECT ARRAY_AGG(
-                        COALESCE(mi.country, bi.target_country)
-                        ORDER BY pm.created_at ASC
-                    )
-                    FROM product_info.product_master pm
-                    LEFT JOIN LATERAL (
-                        SELECT NULLIF(TRIM(country), '') AS country
-                        FROM product_info.market_intelligence
-                        WHERE product_id = pm.id AND country IS NOT NULL AND TRIM(country) != ''
-                        ORDER BY created_at ASC LIMIT 1
-                    ) mi ON TRUE
-                    LEFT JOIN LATERAL (
-                        SELECT NULLIF(TRIM(target_country::text, '"'), '') AS target_country
-                        FROM product_info.buyer_intelligence
-                        WHERE product_id = pm.id AND target_country IS NOT NULL
-                        ORDER BY created_at ASC LIMIT 1
-                    ) bi ON TRUE
-                    WHERE pm.job_id::text = pj.id::text
-                      AND pm.created_by::text = $1
-                ) AS product_countries,
-
-                -- Total products confirmed for this job
-                (
-                    SELECT COUNT(*) FROM product_info.product_master pm
-                    WHERE pm.job_id::text = pj.id::text
-                      AND pm.created_by::text = $1
-                ) AS total_products,
-
-                -- Products with intelligence fully done
-                (
-                    SELECT COUNT(*) FROM product_info.product_master pm
-                    WHERE pm.job_id::text = pj.id::text
-                      AND pm.created_by::text = $1
-                      AND pm.status = 'intelligence_completed'
-                ) AS intel_completed_count,
-
-                -- Products currently running intelligence
-                (
-                    SELECT COUNT(*) FROM product_info.product_master pm
-                    WHERE pm.job_id::text = pj.id::text
-                      AND pm.created_by::text = $1
-                      AND pm.status = 'intelligence_processing'
-                ) AS intel_processing_count,
-
-                -- Current engine being run (written directly by the runner callback)
-                (
-                    SELECT pm.current_engine
-                    FROM product_info.product_master pm
-                    WHERE pm.job_id::text = pj.id::text
-                      AND pm.created_by::text = $1
-                      AND pm.status = 'intelligence_processing'
-                      AND pm.current_engine IS NOT NULL
-                    ORDER BY pm.updated_at DESC
-                    LIMIT 1
-                ) AS current_engine_db
-
-            FROM core_tables.pipeline_jobs pj
-            WHERE pj.user_id::text = $1
-            ORDER BY pj.created_at DESC
-            LIMIT 5
-        """, user_id)
-
-        # ── 8. AI Insights (urgent_note + action_cards from intelligence) ──────
-        insights_rows = await conn.fetch("""
-            SELECT pm.product_name, oi.urgent_note, mi.country
-            FROM product_info.overall_intelligence_scores oi
-            JOIN product_info.product_master pm ON pm.id = oi.product_id
-            LEFT JOIN LATERAL (
-                SELECT country FROM product_info.market_intelligence
-                WHERE product_id = oi.product_id AND country IS NOT NULL
-                ORDER BY created_at ASC LIMIT 1
-            ) mi ON TRUE
-            WHERE pm.created_by = $1
-              AND oi.urgent_note IS NOT NULL
-            ORDER BY oi.overall_score DESC NULLS LAST
-            LIMIT 4
-        """, user_id)
-
-        ai_insights = []
-        for r in insights_rows:
-           # action_cards = _parse(r["action_cards"]) or []
-            ai_insights.append({
-                "product_name": r["product_name"],
-                "country":      r["country"],
-                "urgent_note":  r["urgent_note"],
-               # "actions":      action_cards[:2],
-            })
+            if len(opportunity_hub) < 5:
+                opportunity_hub.append({
+                    "product_id":   str(p["id"]),
+                    "product_name": p["product_name"],
+                    "buyers_count": p["buyers_count"],
+                    "top_markets":  list(p["top_markets"]) if p["top_markets"] else [],
+                    "score":        p["overall_score"],
+                    "label":        score_label(p["overall_score"]),
+                    "initiated_at": p["created_at"].isoformat() if p["created_at"] else None,
+                })
+            if p["urgent_note"] and len(ai_insights) < 4:
+                ai_insights.append({
+                    "product_name": p["product_name"],
+                    "country":      p["country"],
+                    "urgent_note":  p["urgent_note"],
+                })
 
         return {
             "success": True,
             "full_name": full_name,
-            "user_id": user_row["user_id"] if user_row else user_id,
-             "current_datetime": datetime.now(timezone.utc).isoformat(),
+            "user_id": user_id,
+            "current_datetime": datetime.now(timezone.utc).isoformat(),
             "stats": [
-                {"key": "Products Tracked",  "total": products_total,   "this_week": products_this_week},
-                {"key": "Buyers Discovered", "total": buyers_total,     "this_week": buyers_this_week},
-                {"key": "Emails Generated",  "total": emails_total,     "this_week": emails_this_week},
-                {"key": "Reports Completed", "total": reports_completed, "period": "this billing cycle"},
+                {"key": "Products Tracked",  "total": products_total,    "this_week": products_this_week},
+                {"key": "Buyers Discovered", "total": buyers_total,      "this_week": buyers_this_week},
+                {"key": "Emails Generated",  "total": emails_total,      "this_week": emails_this_week},
+                {"key": "Reports Completed", "total": reports_completed,  "period": "this billing cycle"},
             ],
-            "opportunity_hub":  opportunity_hub,
-            "ai_insights":      ai_insights,
+            "opportunity_hub": opportunity_hub,
+            "ai_insights":     ai_insights,
         }
 
     except Exception as e:
