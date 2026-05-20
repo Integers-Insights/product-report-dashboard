@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Flag from "./Flag";
+import {Link} from 'react-router-dom';
 
 export default function Opportunity({
   opportunity_hubData,
@@ -11,10 +12,10 @@ export default function Opportunity({
         <div className="flex justify-between w-full">
           <div className="text-13 text-[#5F6368]">OPPORTUNITY HUB</div>
           <div className="text-[#0284C7] text-xs">
-            <a href="">View All</a>
+            <Link to={"/product"}>View All</Link>
           </div>
         </div>
-        {opportunity_hubData?.map((item, index) => {
+        {opportunity_hubData?.slice(0,10)?.map((item, index) => {
           return (
             <div
               className="border-b-1 border-[#E0F5FF] pb-1.5 flex justify-between items-center mt-3"

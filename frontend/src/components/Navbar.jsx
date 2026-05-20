@@ -44,7 +44,7 @@ export default function Navbar() {
           className={`w-full max-w-6xl flex items-center justify-between px-5 h-14 rounded-2xl transition-all duration-500`}
         >
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="h-10 w-30">
+            <div className="h-10 w-30" onClick={()=>navigate("/")}>
               <img
                 src={report_inshort_logo}
                 alt="logo"

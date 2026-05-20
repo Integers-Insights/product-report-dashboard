@@ -32,7 +32,7 @@ const GoogleAuthButton = () => {
         toast.error(data?.detail);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Something went wrong: ", error.message);
     }
   };
 
