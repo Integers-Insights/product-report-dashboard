@@ -2,19 +2,19 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import APIRouter, Depends,Request,Response,Body,BackgroundTasks
+from fastapi import APIRouter, Depends, Request, Response, Body, BackgroundTasks, Query
 from fastapi.responses import RedirectResponse,StreamingResponse
 from schemas.onbording_schema import *
 from utils.jwt_utils import *
 from db.database import get_pool
 from schemas.auth_service import send_data_export_email,send_data_export_request_email,signup_user,login_user,update_company_profile,change_user_password,google_signup_login,get_user_profile,get_company_users,update_user_profile,create_user,delete_user
-from services.onboarding_service import ensure_onboarding_completed,resolve_company_id,upsert_company_for_user, update_step2, update_step3,upsert_research_preferences,insert_selected_products_v2
+from services.onboarding_service import ensure_onboarding_completed,resolve_company_id,upsert_company_for_user, update_step2, update_step3,insert_selected_products_v2
 from db.database import get_db
 import asyncpg
 from services.module_data_service import build_module_inputs
 import uuid
 from module_runner import ModuleRunner
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta, timezone
 from utils.service import get_current_user
 from utils.subscription_service import (
     get_company_plan,
@@ -38,6 +38,11 @@ import traceback
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 EXPIRE_URL = os.getenv("EXPIRE_URL") or FRONTEND_URL
+
+# in-memory cache for /pipeline/run  key = "user_id:normalized_url"
+# value = {"job_id": str, "ts": datetime}   TTL = 5 minutes
+_pipeline_run_cache: dict = {}
+_PIPELINE_CACHE_TTL = timedelta(minutes=5)
 
 router = APIRouter()
 #--------------------
@@ -190,6 +195,7 @@ async def google_auth(
     except Exception as e:
         print("GOOGLE AUTH ERROR:", str(e))
         raise HTTPException(status_code=500, detail={"success": False, "error": "Google authentication failed", "detail": str(e)})
+
 
 # @router.post("/internal/company/enrich")
 # async def enrich_company(
@@ -422,8 +428,8 @@ async def logout(
 #             WHERE session_id = $4
 #             """,
 #             new_refresh,
-#             datetime.utcnow(),
-#             datetime.utcnow() + timedelta(days=7),
+#             datetime.now(timezone.utc),
+#             datetime.now(timezone.utc) + timedelta(days=7),
 #             session["session_id"]
 #         )
 
@@ -838,12 +844,13 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 # @router.post("/research-preferences")
 # async def save_research_preferences(
 #     request: ResearchPreferencesRequest,
+#     job_id: str,   # ✅ ADD THIS (IMPORTANT)
 #     conn=Depends(get_db),
 #     current_user=Depends(get_current_user)
 # ):
 #     try:
-#        user_id = current_user["user_id"]
-
+#         # user_id = current_user["sub"]
+#         user_id = current_user["user_id"]
 #         # =========================================================
 #         # ✅ 1. SAVE PREFERENCES
 #         # =========================================================
@@ -854,293 +861,221 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
 #         )
 
 #         # =========================================================
-#         # ✅ 2. GET COMPANY
+#         # ✅ 2. GET COMPANY + CHECK SUBSCRIPTION
 #         # =========================================================
 #         company_id = await get_company_id(conn, user_id)
 
+#         if not company_id:
+#             raise HTTPException(status_code=404, detail="Company not found")
+
 #         # =========================================================
-#         # ✅ 3. GET ONLY SELECTED PRODUCTS (CRITICAL FIX)
+#         # ✅ 3. VALIDATE PRODUCTS FOR THIS JOB ONLY
 #         # =========================================================
+#         # First try exact job match, then fall back to any company product
 #         products = await conn.fetch("""
-#             SELECT id, product_name, description, hs_code
-#             FROM product_info.product_master
-#             WHERE company_id = $1
-#             AND created_by = $2
-#             AND is_selected = TRUE
-#         """, company_id, user_id)
+#             SELECT id FROM product_info.product_master
+#             WHERE company_id = $1 AND job_id = $2
+#         """, company_id, job_id)
 
 #         if not products:
-#             raise HTTPException(400, "No selected products found")
+#             # Auto-confirm temp products for this job (any status) if not yet in product_master
+#             temp_rows = await conn.fetch("""
+#                 SELECT product_data
+#                 FROM product_info.pipeline_temp_products
+#                 WHERE job_id = $1 AND user_id = $2
+#             """, job_id, user_id)
+
+#             if temp_rows:
+#                 await insert_selected_products_v2(conn, user_id, company_id, temp_rows, job_id)
+#                 await conn.execute("""
+#                     UPDATE product_info.pipeline_temp_products
+#                     SET status = 'processed', updated_at = NOW()
+#                     WHERE job_id = $1 AND user_id = $2
+#                 """, job_id, user_id)
+
+#             # Re-fetch after auto-confirm attempt; fall back to all company products
+#             products = await conn.fetch("""
+#                 SELECT id FROM product_info.product_master
+#                 WHERE company_id = $1 AND job_id = $2
+#             """, company_id, job_id)
+
+#         if not products:
+#             # Final fallback: run intelligence on all existing company products
+#             products = await conn.fetch("""
+#                 SELECT id FROM product_info.product_master
+#                 WHERE company_id = $1
+#             """, company_id)
+
+#         if not products:
+#             return {
+#                 "success": True,
+#                 "message": "Preferences saved. No products found for this company — add and confirm products first.",
+#                 "intelligence_started": False,
+#             }
 
 #         # =========================================================
-#         # ✅ 4. UPDATE STATUS
+#         # ✅ 4. UPDATE STATUS → PROCESSING (ONLY THIS JOB)
 #         # =========================================================
 #         await conn.execute("""
 #             UPDATE product_info.product_master
-#             SET status = 'market_intelligence_processed',
+#             SET status = 'intelligence_processing',
 #                 updated_at = NOW()
 #             WHERE company_id = $1
-#             AND created_by = $2
-#             AND is_selected = TRUE
-#         """, company_id, user_id)
+#             AND id = ANY($2::uuid[])
+#         """, company_id, [r["id"] for r in products])
+
+#         print(f"🚀 Starting intelligence | job_id={job_id} | products={len(products)}")
 
 #         # =========================================================
-#         # 🚀 5. TRIGGER ENGINE (ONLY SELECTED PRODUCTS)
+#         # ✅ 5. CHECK LIMITS BEFORE STARTING (plan-aware)
 #         # =========================================================
-#         print(f"🚀 Triggering Market Intelligence for {len(products)} products")
+#         from datetime import datetime, timezone
+#         from utils.subscription_service import PLAN_CONFIG as _PC
+#         now   = datetime.now(timezone.utc)
+#         today = now.date()
 
+#         subscription = await conn.fetchrow("""
+#             SELECT sp.plan_name, sp.query_limit, cs.start_date, cs.end_date
+#             FROM core_auth_table.company_subscriptions cs
+#             JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
+#             WHERE cs.company_id = $1 AND cs.status = 'active'
+#             ORDER BY cs.created_at DESC LIMIT 1
+#         """, company_id)
+
+#         plan_name   = subscription["plan_name"]   if subscription else "trial"
+#         daily_limit = subscription["query_limit"] if subscription else None
+#         unlimited   = (daily_limit is None or daily_limit == -1)
+
+#         plan_cfg   = _PC.get(plan_name, {})
+#         limit_type = plan_cfg.get("limit_type", "daily")
+
+#         addon_remaining = 0
+#         addon_row = await conn.fetchrow("""
+#             SELECT COALESCE(SUM(credits - credits_used), 0) AS addon_left
+#             FROM core_auth_table.company_addon_purchases
+#             WHERE company_id = $1 AND payment_status = 'paid'
+#         """, company_id)
+#         addon_remaining = int(addon_row["addon_left"]) if addon_row else 0
+
+#         can_run = len(products)
+
+#         if not unlimited:
+#             if limit_type == "daily":
+#                 # ── TRIAL: daily reset check ───────────────────────────────
+#                 used_row = await conn.fetchrow("""
+#                     SELECT COALESCE(SUM(usage_count), 0) AS total_used
+#                     FROM core_auth_table.company_usage
+#                     WHERE company_id = $1 AND usage_date = $2
+#                       AND module_code NOT LIKE 'addon_%'
+#                 """, company_id, today)
+#                 used_today = int(used_row["total_used"]) if used_row else 0
+#                 effective_remaining = (daily_limit - used_today) + addon_remaining
+
+#                 if effective_remaining <= 0:
+#                     return {
+#                         "success":        False,
+#                         "error":          "daily_limit_reached",
+#                         "message":        f"Daily limit of {daily_limit} queries reached. Resets tomorrow at midnight UTC.",
+#                         "used_today":     used_today,
+#                         "daily_limit":    daily_limit,
+#                         "addon_credits":  addon_remaining,
+#                         "can_run":        0,
+#                         "products_count": len(products),
+#                     }
+#                 can_run = min(len(products), effective_remaining)
+
+#             else:
+#                 # ── BASIC / PRO: product cap per day + monthly pool ────────
+#                 product_limit_per_day = plan_cfg.get("product_limit_per_day", -1)
+
+#                 if product_limit_per_day != -1:
+#                     prod_row = await conn.fetchrow("""
+#                         SELECT COALESCE(SUM(usage_count), 0) AS total
+#                         FROM core_auth_table.company_usage
+#                         WHERE company_id = $1
+#                           AND module_code = 'product_intelligence'
+#                           AND usage_date = $2
+#                     """, company_id, today)
+#                     products_used_today = int(prod_row["total"]) if prod_row else 0
+#                     products_remaining  = product_limit_per_day - products_used_today
+
+#                     if products_remaining <= 0:
+#                         return {
+#                             "success":                 False,
+#                             "error":                   "daily_product_limit_reached",
+#                             "message":                 "Daily product limit has reached. Resets tomorrow at midnight UTC.",
+#                             "product_limit_per_day":   product_limit_per_day,
+#                             "products_used_today":     products_used_today,
+#                             "addon_credits":           addon_remaining,
+#                             "can_run":                 0,
+#                             "products_count":          len(products),
+#                         }
+#                     can_run = min(len(products), products_remaining)
+
+#                 # Monthly pool check
+#                 start_date_only = subscription["start_date"]
+#                 if hasattr(start_date_only, "date"):
+#                     start_date_only = start_date_only.date()
+#                 month_row = await conn.fetchrow("""
+#                     SELECT COALESCE(SUM(usage_count), 0) AS total_used
+#                     FROM core_auth_table.company_usage
+#                     WHERE company_id = $1
+#                       AND usage_date >= $2
+#                       AND module_code NOT LIKE 'addon_%'
+#                 """, company_id, start_date_only)
+#                 used_this_cycle = int(month_row["total_used"]) if month_row else 0
+#                 end_date = subscription["end_date"]
+#                 if end_date and start_date_only:
+#                     days_in_cycle = max((end_date.date() - start_date_only).days, 1)
+#                 else:
+#                     days_in_cycle = 30
+#                 monthly_limit = daily_limit * days_in_cycle
+#                 cycle_remaining = (monthly_limit - used_this_cycle) + addon_remaining
+
+#                 if cycle_remaining <= 0:
+#                     return {
+#                         "success":          False,
+#                         "error":            "monthly_limit_reached",
+#                         "message":          f"Monthly query limit of {monthly_limit} reached. Purchase add-on credits to continue.",
+#                         "monthly_limit":    monthly_limit,
+#                         "used_this_month":  used_this_cycle,
+#                         "addon_credits":    addon_remaining,
+#                         "can_run":          0,
+#                         "products_count":   len(products),
+#                     }
+
+#         # =========================================================
+#         # 🚀 6. SAFE BACKGROUND EXECUTION
+#         # =========================================================
 #         asyncio.create_task(
-#             trigger_market_intelligence(
-#                 company_id=company_id,
-#                 user_id=user_id,
-#                 products=[dict(p) for p in products]   # 🔥 PASS PRODUCTS
-#             )
+#             run_intelligence_background(company_id, job_id)
 #         )
 
+#         # =========================================================
+#         # ✅ 7. RESPONSE
+#         # =========================================================
+
 #         return {
-#             "success": True,
-#             "message": "Preferences saved & Market Intelligence started",
-#             "products_count": len(products)
+#             "success":        True,
+#             "message":        "Preferences saved & intelligence started",
+#             "company_id":     company_id,
+#             "job_id":         job_id,
+#             "products_count": len(products),
+#             "can_run":        can_run,
+#             "addon_credits":  addon_remaining,
 #         }
 
+#     except HTTPException:
+#         raise
+
 #     except Exception as e:
-#         print("PREFERENCES ERROR:", str(e))
-#         raise HTTPException(500, "Failed to save research preferences")
+#         print("❌ PREFERENCES ERROR:", str(e))
+#         raise HTTPException(
+#             status_code=500,
+#             detail="Failed to save research preferences"
+#         )
 
 
-@router.post("/research-preferences")
-async def save_research_preferences(
-    request: ResearchPreferencesRequest,
-    job_id: str,   # ✅ ADD THIS (IMPORTANT)
-    conn=Depends(get_db),
-    current_user=Depends(get_current_user)
-):
-    try:
-        # user_id = current_user["sub"]
-        user_id = current_user["user_id"]
-        # =========================================================
-        # ✅ 1. SAVE PREFERENCES
-        # =========================================================
-        await upsert_research_preferences(
-            conn=conn,
-            user_id=user_id,
-            data=request
-        )
-
-        # =========================================================
-        # ✅ 2. GET COMPANY + CHECK SUBSCRIPTION
-        # =========================================================
-        company_id = await get_company_id(conn, user_id)
-
-        if not company_id:
-            raise HTTPException(status_code=404, detail="Company not found")
-
-        # =========================================================
-        # ✅ 3. VALIDATE PRODUCTS FOR THIS JOB ONLY
-        # =========================================================
-        # First try exact job match, then fall back to any company product
-        products = await conn.fetch("""
-            SELECT id FROM product_info.product_master
-            WHERE company_id = $1 AND job_id = $2
-        """, company_id, job_id)
-
-        if not products:
-            # Auto-confirm temp products for this job (any status) if not yet in product_master
-            temp_rows = await conn.fetch("""
-                SELECT product_data
-                FROM product_info.pipeline_temp_products
-                WHERE job_id = $1 AND user_id = $2
-            """, job_id, user_id)
-
-            if temp_rows:
-                await insert_selected_products_v2(conn, user_id, company_id, temp_rows, job_id)
-                await conn.execute("""
-                    UPDATE product_info.pipeline_temp_products
-                    SET status = 'processed', updated_at = NOW()
-                    WHERE job_id = $1 AND user_id = $2
-                """, job_id, user_id)
-
-            # Re-fetch after auto-confirm attempt; fall back to all company products
-            products = await conn.fetch("""
-                SELECT id FROM product_info.product_master
-                WHERE company_id = $1 AND job_id = $2
-            """, company_id, job_id)
-
-        if not products:
-            # Final fallback: run intelligence on all existing company products
-            products = await conn.fetch("""
-                SELECT id FROM product_info.product_master
-                WHERE company_id = $1
-            """, company_id)
-
-        if not products:
-            return {
-                "success": True,
-                "message": "Preferences saved. No products found for this company — add and confirm products first.",
-                "intelligence_started": False,
-            }
-
-        # =========================================================
-        # ✅ 4. UPDATE STATUS → PROCESSING (ONLY THIS JOB)
-        # =========================================================
-        await conn.execute("""
-            UPDATE product_info.product_master
-            SET status = 'intelligence_processing',
-                updated_at = NOW()
-            WHERE company_id = $1
-            AND id = ANY($2::uuid[])
-        """, company_id, [r["id"] for r in products])
-
-        print(f"🚀 Starting intelligence | job_id={job_id} | products={len(products)}")
-
-        # =========================================================
-        # ✅ 5. CHECK LIMITS BEFORE STARTING (plan-aware)
-        # =========================================================
-        from datetime import datetime, timezone
-        from utils.subscription_service import PLAN_CONFIG as _PC
-        now   = datetime.now(timezone.utc)
-        today = now.date()
-
-        subscription = await conn.fetchrow("""
-            SELECT sp.plan_name, sp.query_limit, cs.start_date, cs.end_date
-            FROM core_auth_table.company_subscriptions cs
-            JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
-            WHERE cs.company_id = $1 AND cs.status = 'active'
-            ORDER BY cs.created_at DESC LIMIT 1
-        """, company_id)
-
-        plan_name   = subscription["plan_name"]   if subscription else "trial"
-        daily_limit = subscription["query_limit"] if subscription else None
-        unlimited   = (daily_limit is None or daily_limit == -1)
-
-        plan_cfg   = _PC.get(plan_name, {})
-        limit_type = plan_cfg.get("limit_type", "daily")
-
-        addon_remaining = 0
-        addon_row = await conn.fetchrow("""
-            SELECT COALESCE(SUM(credits - credits_used), 0) AS addon_left
-            FROM core_auth_table.company_addon_purchases
-            WHERE company_id = $1 AND payment_status = 'paid'
-        """, company_id)
-        addon_remaining = int(addon_row["addon_left"]) if addon_row else 0
-
-        can_run = len(products)
-
-        if not unlimited:
-            if limit_type == "daily":
-                # ── TRIAL: daily reset check ───────────────────────────────
-                used_row = await conn.fetchrow("""
-                    SELECT COALESCE(SUM(usage_count), 0) AS total_used
-                    FROM core_auth_table.company_usage
-                    WHERE company_id = $1 AND usage_date = $2
-                      AND module_code NOT LIKE 'addon_%'
-                """, company_id, today)
-                used_today = int(used_row["total_used"]) if used_row else 0
-                effective_remaining = (daily_limit - used_today) + addon_remaining
-
-                if effective_remaining <= 0:
-                    return {
-                        "success":        False,
-                        "error":          "daily_limit_reached",
-                        "message":        f"Daily limit of {daily_limit} queries reached. Resets tomorrow at midnight UTC.",
-                        "used_today":     used_today,
-                        "daily_limit":    daily_limit,
-                        "addon_credits":  addon_remaining,
-                        "can_run":        0,
-                        "products_count": len(products),
-                    }
-                can_run = min(len(products), effective_remaining)
-
-            else:
-                # ── BASIC / PRO: product cap per day + monthly pool ────────
-                product_limit_per_day = plan_cfg.get("product_limit_per_day", -1)
-
-                if product_limit_per_day != -1:
-                    prod_row = await conn.fetchrow("""
-                        SELECT COALESCE(SUM(usage_count), 0) AS total
-                        FROM core_auth_table.company_usage
-                        WHERE company_id = $1
-                          AND module_code = 'product_intelligence'
-                          AND usage_date = $2
-                    """, company_id, today)
-                    products_used_today = int(prod_row["total"]) if prod_row else 0
-                    products_remaining  = product_limit_per_day - products_used_today
-
-                    if products_remaining <= 0:
-                        return {
-                            "success":                 False,
-                            "error":                   "daily_product_limit_reached",
-                            "message":                 "Daily product limit has reached. Resets tomorrow at midnight UTC.",
-                            "product_limit_per_day":   product_limit_per_day,
-                            "products_used_today":     products_used_today,
-                            "addon_credits":           addon_remaining,
-                            "can_run":                 0,
-                            "products_count":          len(products),
-                        }
-                    can_run = min(len(products), products_remaining)
-
-                # Monthly pool check
-                start_date_only = subscription["start_date"]
-                if hasattr(start_date_only, "date"):
-                    start_date_only = start_date_only.date()
-                month_row = await conn.fetchrow("""
-                    SELECT COALESCE(SUM(usage_count), 0) AS total_used
-                    FROM core_auth_table.company_usage
-                    WHERE company_id = $1
-                      AND usage_date >= $2
-                      AND module_code NOT LIKE 'addon_%'
-                """, company_id, start_date_only)
-                used_this_cycle = int(month_row["total_used"]) if month_row else 0
-                end_date = subscription["end_date"]
-                if end_date and start_date_only:
-                    days_in_cycle = max((end_date.date() - start_date_only).days, 1)
-                else:
-                    days_in_cycle = 30
-                monthly_limit = daily_limit * days_in_cycle
-                cycle_remaining = (monthly_limit - used_this_cycle) + addon_remaining
-
-                if cycle_remaining <= 0:
-                    return {
-                        "success":          False,
-                        "error":            "monthly_limit_reached",
-                        "message":          f"Monthly query limit of {monthly_limit} reached. Purchase add-on credits to continue.",
-                        "monthly_limit":    monthly_limit,
-                        "used_this_month":  used_this_cycle,
-                        "addon_credits":    addon_remaining,
-                        "can_run":          0,
-                        "products_count":   len(products),
-                    }
-
-        # =========================================================
-        # 🚀 6. SAFE BACKGROUND EXECUTION
-        # =========================================================
-        asyncio.create_task(
-            run_intelligence_background(company_id, job_id)
-        )
-
-        # =========================================================
-        # ✅ 7. RESPONSE
-        # =========================================================
-
-        return {
-            "success":        True,
-            "message":        "Preferences saved & intelligence started",
-            "company_id":     company_id,
-            "job_id":         job_id,
-            "products_count": len(products),
-            "can_run":        can_run,
-            "addon_credits":  addon_remaining,
-        }
-
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        print("❌ PREFERENCES ERROR:", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to save research preferences"
-        )
 
 @router.post("/pipeline/run")
 async def run_pipeline_endpoint(
@@ -1151,8 +1086,50 @@ async def run_pipeline_endpoint(
 ):
     user_id    = current_user["user_id"]
     company_id = current_user["company_id"]
+    normalized_url = str(request.website_url).rstrip("/").lower()
+    cache_key  = f"{user_id}:{normalized_url}"
 
-    # ✅ debug — check active jobs count
+    # ── 1. Check in-memory cache (5-min TTL) ─────────────────────────────────
+    cached = _pipeline_run_cache.get(cache_key)
+    if cached:
+        age = datetime.now(timezone.utc) - cached["ts"]
+        if age < _PIPELINE_CACHE_TTL:
+            # Verify job still exists and is active
+            job_row = await conn.fetchrow("""
+                SELECT id, status FROM core_tables.pipeline_jobs
+                WHERE id = $1 AND user_id = $2
+            """, cached["job_id"], user_id)
+            if job_row and job_row["status"] in ("pending", "processing", "running", "completed"):
+                return {
+                    "success":  True,
+                    "message":  "Resumed existing pipeline job",
+                    "job_id":   cached["job_id"],
+                    "status":   job_row["status"],
+                    "from_cache": True,
+                }
+
+    # ── 2. Check DB for an active job with same URL (handles server restart) ──
+    existing = await conn.fetchrow("""
+        SELECT id, status FROM core_tables.pipeline_jobs
+        WHERE user_id = $1
+          AND LOWER(RTRIM(website_url, '/')) = $2
+          AND status IN ('pending', 'processing', 'running', 'completed')
+          AND created_at > NOW() - INTERVAL '5 minutes'
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, user_id, normalized_url)
+
+    if existing:
+        _pipeline_run_cache[cache_key] = {"job_id": str(existing["id"]), "ts": datetime.now(timezone.utc)}
+        return {
+            "success":    True,
+            "message":    "Resumed existing pipeline job",
+            "job_id":     str(existing["id"]),
+            "status":     existing["status"],
+            "from_cache": True,
+        }
+
+    # ── 3. No active job — check concurrent limit then create a new job ───────
     active_jobs = await conn.fetchval("""
         SELECT COUNT(*)
         FROM core_tables.pipeline_jobs
@@ -1161,35 +1138,38 @@ async def run_pipeline_endpoint(
     """, user_id)
     print(f"🔍 [concurrent_check] user={user_id} | active_jobs={active_jobs}")
 
-    # ✅ check concurrent job limit
     await check_concurrent_job_limit(conn, company_id, user_id)
+
     try:
-        # =========================================================
-        # ✅ CREATE JOB (INSTEAD OF RUNNING PIPELINE)
-        # =========================================================
         job_id = str(uuid.uuid4())
 
         await conn.execute("""
             INSERT INTO core_tables.pipeline_jobs (
-                id,
-                user_id,
-                website_url,
-                status,
-                created_at,
-                updated_at
-            )
-            VALUES ($1,$2,$3,'pending',NOW(),NOW())
-        """,
-            job_id,
-            user_id,
-            str(request.website_url)
-        )
+                id, user_id, website_url, status, created_at, updated_at
+            ) VALUES ($1, $2, $3, 'pending', NOW(), NOW())
+        """, job_id, user_id, str(request.website_url))
+
+        # ── 4. Store buyer_type in user_research_preferences ─────────────────
+        if request.buyer_type:
+            try:
+                await conn.execute("""
+                    INSERT INTO core_tables.user_research_preferences (user_id, buyer_type)
+                    VALUES ($1, $2)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET buyer_type = EXCLUDED.buyer_type, updated_at = NOW()
+                """, user_id, request.buyer_type.upper().strip())
+            except Exception as pref_err:
+                print(f"⚠️ Could not save buyer_type: {pref_err}")
+
+        # ── 5. Populate cache ─────────────────────────────────────────────────
+        _pipeline_run_cache[cache_key] = {"job_id": job_id, "ts": datetime.now(timezone.utc)}
 
         return {
-            "success": True,
-            "message": "Pipeline started",
-            "job_id": job_id,
-            "status": "pending"
+            "success":    True,
+            "message":    "Pipeline started",
+            "job_id":     job_id,
+            "status":     "pending",
+            "from_cache": False,
         }
 
     except Exception as e:
@@ -1802,7 +1782,7 @@ async def confirm_products(
 
             # ── STEP 2: fetch all selected products ──────────────────────────
             selected_products = await conn.fetch("""
-                SELECT product_data
+                SELECT product_data, status
                 FROM product_info.pipeline_temp_products
                 WHERE job_id = $1 AND user_id = $2 AND is_selected = TRUE
             """, job_id, user_id)
@@ -1817,7 +1797,12 @@ async def confirm_products(
                 )
 
             # ── STEP 3: insert into product_master ───────────────────────────
-            await insert_selected_products_v2(conn, user_id, company_id, selected_products, job_id)
+            # Skip products already marked 'processed' — they were confirmed in a
+            # previous request. This prevents duplicates when the user goes back
+            # and clicks next again.
+            new_products = [p for p in selected_products if p["status"] != "processed"]
+            if new_products:
+                await insert_selected_products_v2(conn, user_id, company_id, new_products, job_id)
 
             # ── STEP 4: mark temp records as processed ───────────────────────
             await conn.execute("""
@@ -1826,21 +1811,169 @@ async def confirm_products(
                 WHERE job_id = $1 AND user_id = $2 AND is_selected = TRUE
             """, job_id, user_id)
 
-        # ── STEP 5: return inserted products ─────────────────────────────────
-        inserted_products = await conn.fetch("""
+        # ── STEP 5: fetch all confirmed products for this job ────────────────
+        confirmed_products = await conn.fetch("""
             SELECT id, product_name
             FROM product_info.product_master
             WHERE job_id = $1 AND created_by = $2 AND company_id = $3
         """, job_id, user_id, company_id)
 
+        if not confirmed_products:
+            return {
+                "success": True,
+                "message": "Products confirmed. No products found to run intelligence.",
+                "count": 0,
+                "products": [],
+                "intelligence_started": False,
+            }
+
+        product_ids_for_job = [r["id"] for r in confirmed_products]
+
+        # ── STEP 6: mark products as intelligence_processing ─────────────────
+        await conn.execute("""
+            UPDATE product_info.product_master
+            SET status = 'intelligence_processing', updated_at = NOW()
+            WHERE company_id = $1 AND id = ANY($2::uuid[])
+        """, company_id, product_ids_for_job)
+
+        print(f"🚀 Starting intelligence | job_id={job_id} | products={len(confirmed_products)}")
+
+        # ── STEP 7: check plan limits before starting ─────────────────────────
+        from datetime import datetime, timezone
+        from utils.subscription_service import PLAN_CONFIG as _PC
+        now   = datetime.now(timezone.utc)
+        today = now.date()
+
+        subscription = await conn.fetchrow("""
+            SELECT sp.plan_name, sp.query_limit, cs.start_date, cs.end_date
+            FROM core_auth_table.company_subscriptions cs
+            JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
+            WHERE cs.company_id = $1 AND cs.status = 'active'
+            ORDER BY cs.created_at DESC LIMIT 1
+        """, company_id)
+
+        plan_name   = subscription["plan_name"]   if subscription else "trial"
+        daily_limit = subscription["query_limit"] if subscription else None
+        unlimited   = (daily_limit is None or daily_limit == -1)
+
+        plan_cfg   = _PC.get(plan_name, {})
+        limit_type = plan_cfg.get("limit_type", "daily")
+
+        addon_row = await conn.fetchrow("""
+            SELECT COALESCE(SUM(credits - credits_used), 0) AS addon_left
+            FROM core_auth_table.company_addon_purchases
+            WHERE company_id = $1 AND payment_status = 'paid'
+        """, company_id)
+        addon_remaining = int(addon_row["addon_left"]) if addon_row else 0
+
+        can_run = len(confirmed_products)
+
+        if not unlimited:
+            if limit_type == "daily":
+                used_row = await conn.fetchrow("""
+                    SELECT COALESCE(SUM(usage_count), 0) AS total_used
+                    FROM core_auth_table.company_usage
+                    WHERE company_id = $1 AND usage_date = $2
+                      AND module_code NOT LIKE 'addon_%'
+                """, company_id, today)
+                used_today = int(used_row["total_used"]) if used_row else 0
+                effective_remaining = (daily_limit - used_today) + addon_remaining
+
+                if effective_remaining <= 0:
+                    return {
+                        "success":               True,
+                        "confirmed":             True,
+                        "intelligence_started":  False,
+                        "error":                 "daily_limit_reached",
+                        "message":               f"Daily limit of {daily_limit} queries reached. Resets tomorrow at midnight UTC.",
+                        "used_today":            used_today,
+                        "daily_limit":           daily_limit,
+                        "addon_credits":         addon_remaining,
+                        "can_run":               0,
+                        "count":                 len(confirmed_products),
+                        "products": [{"product_id": str(r["id"]), "product_name": r["product_name"]} for r in confirmed_products],
+                    }
+                can_run = min(len(confirmed_products), effective_remaining)
+
+            else:
+                product_limit_per_day = plan_cfg.get("product_limit_per_day", -1)
+                if product_limit_per_day != -1:
+                    prod_row = await conn.fetchrow("""
+                        SELECT COALESCE(SUM(usage_count), 0) AS total
+                        FROM core_auth_table.company_usage
+                        WHERE company_id = $1
+                          AND module_code = 'product_intelligence'
+                          AND usage_date = $2
+                    """, company_id, today)
+                    products_used_today = int(prod_row["total"]) if prod_row else 0
+                    products_remaining  = product_limit_per_day - products_used_today
+
+                    if products_remaining <= 0:
+                        return {
+                            "success":               True,
+                            "confirmed":             True,
+                            "intelligence_started":  False,
+                            "error":                 "daily_product_limit_reached",
+                            "message":               "Daily product limit reached. Resets tomorrow at midnight UTC.",
+                            "product_limit_per_day": product_limit_per_day,
+                            "products_used_today":   products_used_today,
+                            "addon_credits":         addon_remaining,
+                            "can_run":               0,
+                            "count":                 len(confirmed_products),
+                            "products": [{"product_id": str(r["id"]), "product_name": r["product_name"]} for r in confirmed_products],
+                        }
+                    can_run = min(len(confirmed_products), products_remaining)
+
+                start_date_only = subscription["start_date"]
+                if hasattr(start_date_only, "date"):
+                    start_date_only = start_date_only.date()
+                month_row = await conn.fetchrow("""
+                    SELECT COALESCE(SUM(usage_count), 0) AS total_used
+                    FROM core_auth_table.company_usage
+                    WHERE company_id = $1
+                      AND usage_date >= $2
+                      AND module_code NOT LIKE 'addon_%'
+                """, company_id, start_date_only)
+                used_this_cycle = int(month_row["total_used"]) if month_row else 0
+                end_date = subscription["end_date"]
+                days_in_cycle = max((end_date.date() - start_date_only).days, 1) if (end_date and start_date_only) else 30
+                monthly_limit = daily_limit * days_in_cycle
+                cycle_remaining = (monthly_limit - used_this_cycle) + addon_remaining
+
+                if cycle_remaining <= 0:
+                    return {
+                        "success":              True,
+                        "confirmed":            True,
+                        "intelligence_started": False,
+                        "error":                "monthly_limit_reached",
+                        "message":              f"Monthly query limit of {monthly_limit} reached. Purchase add-on credits to continue.",
+                        "monthly_limit":        monthly_limit,
+                        "used_this_month":      used_this_cycle,
+                        "addon_credits":        addon_remaining,
+                        "can_run":              0,
+                        "count":                len(confirmed_products),
+                        "products": [{"product_id": str(r["id"]), "product_name": r["product_name"]} for r in confirmed_products],
+                    }
+
+        # ── STEP 8: start intelligence in background ──────────────────────────
+        asyncio.create_task(
+            run_intelligence_background(str(company_id), job_id)
+        )
+
         return {
-            "success": True,
-            "message": "Products moved to main table",
-            "count": len(inserted_products),
+            "success":              True,
+            "confirmed":            True,
+            "intelligence_started": True,
+            "message":              "Products confirmed & intelligence started",
+            "company_id":           str(company_id),
+            "job_id":               job_id,
+            "count":                len(confirmed_products),
+            "can_run":              can_run,
+            "addon_credits":        addon_remaining,
             "products": [
                 {"product_id": str(r["id"]), "product_name": r["product_name"]}
-                for r in inserted_products
-            ]
+                for r in confirmed_products
+            ],
         }
 
     except HTTPException:
@@ -2009,12 +2142,12 @@ async def get_product_intelligence(
         })
 
     plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
-    print(f"🔒 Applying plan visibility | plan={plan_name} | company={company_id}")
+   # print(f"🔒 Applying plan visibility | plan={plan_name} | company={company_id}")
     market_raw = data.get("market_intelligence", {})
-    print(f"🔒 market_info count before mask: {len(market_raw.get('market_info', []))}")
+    #print(f"🔒 market_info count before mask: {len(market_raw.get('market_info', []))}")
     data = apply_plan_visibility(data, plan_name)
     market_masked = data.get("market_intelligence", {})
-    print(f"🔒 market_info count after mask: {len(market_masked.get('market_info', []))}")
+    #print(f"🔒 market_info count after mask: {len(market_masked.get('market_info', []))}")
     data["plan"] = plan_name
 
     return data
@@ -2022,6 +2155,7 @@ async def get_product_intelligence(
 
 @router.get("/products-overview")
 async def get_all_products_overview(
+    job_id: str = Query(None),
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
 ):
@@ -2029,7 +2163,37 @@ async def get_all_products_overview(
         user_id    = current_user["user_id"]
         company_id = current_user.get("company_id")
 
-        data = await fetch_all_products_overview(conn, user_id)
+        # ── WAIT until intelligence completes for this job ────────────────────
+        if job_id:
+            MAX_WAIT_SECONDS = 600   # 10 min — intelligence takes longer than crawl
+            POLL_INTERVAL    = 3
+            waited           = 0
+
+            while waited < MAX_WAIT_SECONDS:
+                status_rows = await conn.fetch("""
+                    SELECT status
+                    FROM product_info.product_master
+                    WHERE created_by = $1
+                      AND job_id::text = $2
+                """, user_id, job_id)
+
+                if not status_rows:
+                    # Products not yet inserted — keep waiting briefly
+                    await asyncio.sleep(POLL_INTERVAL)
+                    waited += POLL_INTERVAL
+                    continue
+
+                statuses = [r["status"] for r in status_rows]
+                still_processing = any(s == "intelligence_processing" for s in statuses)
+
+                if not still_processing:
+                    break  # all done (completed or failed)
+
+                await asyncio.sleep(POLL_INTERVAL)
+                waited += POLL_INTERVAL
+            # If we timed out, fall through and return whatever data is available
+
+        data = await fetch_all_products_overview(conn, user_id, job_id=job_id)
 
         if not data.get("success"):
             raise HTTPException(status_code=500, detail={

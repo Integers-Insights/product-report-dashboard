@@ -460,20 +460,15 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
         user_id = str(rows[0]["created_by"])
         print(f"✅ Found {len(rows)} products for job | user_id: {user_id}")
 
-        user_id = str(rows[0]["created_by"])
-        print(f"✅ Found {len(rows)} products for job | user_id: {user_id}")
-
-        # ✅ debug — confirm what's in DB
+        # Fetch buyer_type from company_preferences
         prefs = await conn.fetchrow("""
             SELECT user_id, buyer_type,target_country
             FROM core_tables.user_research_preferences
             WHERE user_id = $1
         """, user_id)
 
-        print(f"🔍 prefs row: {dict(prefs) if prefs else None}")  # ← add this
-
-        buyer_type = str(prefs["buyer_type"]).upper().strip() if prefs else "B2B"
-        print(f"📋 buyer_type from preferences: '{buyer_type}'")
+        buyer_type = str(prefs["buyer_type"]).upper().strip() if (prefs and prefs["buyer_type"]) else "B2B"
+        print(f"📋 buyer_type from company_preferences: '{buyer_type}'")
 
         # ✅ build inputs AFTER reading fresh buyer_type
         inputs = build_module_inputs(rows)

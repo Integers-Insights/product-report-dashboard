@@ -253,6 +253,16 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                     WHERE co.product_id = $1 LIMIT 1)                                             AS competitor,
                 (SELECT row_to_json(mk) FROM product_info.marketing_intelligence mk
                     WHERE mk.product_id = $1 LIMIT 1)                                             AS marketing,
+                (SELECT COALESCE(SUM(
+                        CASE WHEN mk.high_volume_buyer_intent IS NOT NULL AND jsonb_typeof(mk.high_volume_buyer_intent) = 'array'
+                             THEN jsonb_array_length(mk.high_volume_buyer_intent) ELSE 0 END
+                      + CASE WHEN mk.low_competition_gaps IS NOT NULL AND jsonb_typeof(mk.low_competition_gaps) = 'array'
+                             THEN jsonb_array_length(mk.low_competition_gaps) ELSE 0 END
+                      + CASE WHEN mk.multilingual IS NOT NULL AND jsonb_typeof(mk.multilingual) = 'array'
+                             THEN jsonb_array_length(mk.multilingual) ELSE 0 END
+                    ), 0)
+                    FROM product_info.marketing_intelligence mk
+                    WHERE mk.product_id = $1)                                                     AS keywords_total,
                 (SELECT jsonb_agg(row_to_json(pr))
                     FROM product_info.price_intelligence pr
                     WHERE pr.product_id = $1)                                                     AS price,
@@ -273,8 +283,9 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
         b2c_buyers = _parse(row["b2c_buyers"])
         trade      = _parse(row["trade"])
         competitor = _parse(row["competitor"])
-        marketing  = _parse(row["marketing"])
-        price      = [_parse(p) for p in (_parse(row["price"]) or [])]
+        marketing = _parse(row["marketing"])
+        keywords  = int(row["keywords_total"] or 0)
+        price     = [_parse(p) for p in (_parse(row["price"]) or [])]
         overall    = _parse(row["overall"])
         variants   = _parse(row["variants"])
 
@@ -415,8 +426,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
                 "market_country":          [m.get("country") for m in market[:4]],
                 "score":                   overall.get("overall_score") if overall else None,
                 "easy_win":                easy_win_count,
-                "keywords":                len(marketing_data["high_volume_buyer_intent"])
-                                           if marketing_data and marketing_data.get("high_volume_buyer_intent") else 0,
+                "keywords":                keywords,
                 "market_range":            price_data[0].get("market_range") if price_data else None,
                 "global_trade":            trade_data["global_trade_value"].get("yoy_growth")
                                            if trade_data and trade_data.get("global_trade_value") else None,
@@ -694,65 +704,70 @@ async def get_buyer_list(conn, user_id: str):
             "code": "BUILD_ERROR",
         })
 
-async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
+async def fetch_all_products_overview(conn, user_id: str, job_id: str = None) -> Dict[str, Any]:
     """
     Returns overview cards for ALL products belonging to this user.
     Each card has: product_id, name, overall score, 6 dimension scores, urgent_note.
     Powers the product listing UI.
     """
 
+    # Build job-scoped subquery clause when job_id is provided
+    job_clause   = "AND job_id::text = $2" if job_id else ""
+    query_args   = [user_id, job_id] if job_id else [user_id]
+
     try:
-        # ── 1. All products for this user ────────────────────────────────────
-        products = await conn.fetch("""
+        # ── 1. Products (scoped to job when job_id given) ─────────────────────
+        products = await conn.fetch(f"""
             SELECT pm.id, pm.product_name, pm.hs_code
             FROM product_info.product_master pm
-            WHERE pm.created_by = $1
+            WHERE pm.created_by = $1 {job_clause}
             ORDER BY pm.created_at DESC
-        """, user_id)
+        """, *query_args)
 
         if not products:
             return {"success": True, "products": [], "total": 0}
 
-        # ── 2. Bulk fetch scores — scoped to user via subquery ───────────────
-        scores_rows = await conn.fetch("""
+        # ── 2. Bulk fetch scores ──────────────────────────────────────────────
+        scores_rows = await conn.fetch(f"""
             SELECT oi.product_id, oi.overall_score, oi.scores, oi.urgent_note, oi.action_cards, oi.total_elapsed_sec
             FROM product_info.overall_intelligence_scores oi
             WHERE oi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
-        """, user_id)
+        """, *query_args)
 
-        # ── 3. Bulk fetch top market countries — scoped to user ───────────────
-        market_rows = await conn.fetch("""
+        # ── 3. Bulk fetch top market countries ───────────────────────────────
+        market_rows = await conn.fetch(f"""
             SELECT DISTINCT ON (mi.product_id) mi.product_id, mi.country
             FROM product_info.market_intelligence mi
             WHERE mi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
             AND mi.country IS NOT NULL
             ORDER BY mi.product_id, mi.created_at ASC
-        """, user_id)
+        """, *query_args)
 
-        # ── 4. Bulk fetch price range — scoped to user ────────────────────────
-        price_rows = await conn.fetch("""
+        # ── 4. Bulk fetch price range ─────────────────────────────────────────
+        price_rows = await conn.fetch(f"""
             SELECT pi.product_id, pi.top_metrics
             FROM product_info.price_intelligence pi
             WHERE pi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
-        """, user_id)
-                # ── 6. Bulk fetch keyword counts ─────────────────────────────────
-        keyword_rows = await conn.fetch("""
+        """, *query_args)
+
+        # ── 5. Bulk fetch keyword counts ──────────────────────────────────────
+        keyword_rows = await conn.fetch(f"""
             SELECT product_id, high_volume_buyer_intent
             FROM product_info.marketing_intelligence
             WHERE product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
-        """, user_id)
+        """, *query_args)
 
-        # ── 7. Bulk fetch market counts ───────────────────────────────────
-        market_count_rows = await conn.fetch("""
-            SELECT 
+        # ── 6. Bulk fetch market counts ───────────────────────────────────────
+        market_count_rows = await conn.fetch(f"""
+            SELECT
                 product_id,
                 COUNT(*) AS market_count,
                 AVG(
@@ -766,44 +781,54 @@ async def fetch_all_products_overview(conn, user_id: str) -> Dict[str, Any]:
                 ) AS avg_yoy
             FROM product_info.market_intelligence
             WHERE product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
             AND country IS NOT NULL
             AND demand_growth->>'value' IS NOT NULL
             AND demand_growth->>'value' != ''
             GROUP BY product_id
-        """, user_id)
+        """, *query_args)
 
-        # ── 5. Bulk fetch buyer counts — B2B + B2C ───────────────────────
-        b2b_buyer_rows = await conn.fetch("""
+        # ── 7. Bulk fetch buyer counts — B2B + B2C ────────────────────────────
+        b2b_buyer_rows = await conn.fetch(f"""
             SELECT bi.product_id, bi.buyers_count
             FROM product_info.b2b_buyer_intelligence bi
             WHERE bi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
-        """, user_id)
+        """, *query_args)
 
-        b2c_buyer_rows = await conn.fetch("""
+        b2c_buyer_rows = await conn.fetch(f"""
             SELECT bi.product_id,
                 jsonb_array_length(COALESCE(bi.leading_brands, '[]'::jsonb)) AS buyers_count
             FROM product_info.b2c_buyer_intelligence bi
             WHERE bi.product_id IN (
-                SELECT id FROM product_info.product_master WHERE created_by = $1
+                SELECT id FROM product_info.product_master WHERE created_by = $1 {job_clause}
             )
-        """, user_id)
-        meta = await conn.fetchrow("""
+        """, *query_args)
+
+        meta = await conn.fetchrow(f"""
             SELECT MAX(updated_at) AS last_run
             FROM product_info.product_master
-            WHERE created_by = $1
-        """, user_id)
+            WHERE created_by = $1 {job_clause}
+        """, *query_args)
 
-        # fetch total pages crawled across all jobs for this user
-        crawl_meta = await conn.fetchrow("""
-            SELECT COALESCE(SUM(pages_crawled), 0) AS total_pages_crawled
-            FROM core_tables.pipeline_jobs
-            WHERE user_id = $1
-            AND status = 'completed'
-        """, user_id)
+        # pages crawled — scoped to this job when job_id given, else all jobs
+        if job_id:
+            crawl_meta = await conn.fetchrow("""
+                SELECT COALESCE(SUM(pages_crawled), 0) AS total_pages_crawled
+                FROM core_tables.pipeline_jobs
+                WHERE user_id = $1
+                  AND id::text = $2
+                  AND status = 'completed'
+            """, user_id, job_id)
+        else:
+            crawl_meta = await conn.fetchrow("""
+                SELECT COALESCE(SUM(pages_crawled), 0) AS total_pages_crawled
+                FROM core_tables.pipeline_jobs
+                WHERE user_id = $1
+                  AND status = 'completed'
+            """, user_id)
 
         pages_crawled = crawl_meta["total_pages_crawled"] if crawl_meta else 0
     except Exception as e:
@@ -1009,7 +1034,7 @@ async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
         opportunity_hub = []
         ai_insights     = []
         for p in products_rows:
-            if len(opportunity_hub) < 5:
+            if len(opportunity_hub) < 10:
                 opportunity_hub.append({
                     "product_id":   str(p["id"]),
                     "product_name": p["product_name"],
@@ -1037,7 +1062,7 @@ async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
                 {"key": "Emails Generated",  "total": emails_total,      "this_week": emails_this_week},
                 {"key": "Reports Completed", "total": reports_completed,  "period": "this billing cycle"},
             ],
-            "opportunity_hub": opportunity_hub,
+            "opportunity_hub": opportunity_hub[:],
             "ai_insights":     ai_insights,
         }
 

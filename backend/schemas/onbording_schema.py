@@ -61,9 +61,8 @@ class CertificationSchema(BaseModel):
     technology_digital: Optional[List[str]] = None
 
 class Step3Request(BaseModel):
-    primary_goal: List[str]
-    certifications: Optional[CertificationSchema]
-    referral_source: Optional[str]
+    primary_goal: Optional[List[str]] = None
+    referral_source: Optional[str] = None
 
 class SignupRequest(BaseModel):
     email:              str
@@ -103,7 +102,8 @@ class UpdateProfileRequest(BaseModel):
     phone: Optional[str] = None
 
 class PipelineRequest(BaseModel):
-    website_url: HttpUrl   # better than str (validates URL)
+    website_url: HttpUrl
+    buyer_type: Optional[str] = None   # B2B / B2C / BOTH
 
 class MissingFieldSchema(BaseModel):
     field:      str

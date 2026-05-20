@@ -164,57 +164,26 @@ async def update_step2(conn, user_id, company_id, data):
 
 async def update_step3(conn, user_id, company_id, data):
 
-    certifications_json = None
+    primary_goal = ", ".join(data.primary_goal) if data.primary_goal else None
 
-    if data.certifications:
-        certifications_json = json.dumps(
-            data.certifications.dict(exclude_none=True)
-        )
+    await conn.execute("""
+        INSERT INTO product_info.company_preferences
+            (company_id, primary_goal, referral_source, onboarding_completed, created_by, updated_by)
+        VALUES ($1, $2, $3, TRUE, $4, $4)
+        ON CONFLICT (company_id)
+        DO UPDATE SET
+            primary_goal         = EXCLUDED.primary_goal,
+            referral_source      = EXCLUDED.referral_source,
+            onboarding_completed = TRUE,
+            updated_by           = EXCLUDED.updated_by,
+            updated_at           = NOW()
+    """, company_id, primary_goal, data.referral_source, user_id)
 
-    query = """
-    INSERT INTO product_info.company_preferences
-    (
-        company_id,
-        primary_goal,
-        certifications,
-        referral_source,
-        onboarding_completed,
-        created_by,
-        updated_by
-    )
-    VALUES ($1,$2,$3,$4,TRUE,$5,$5)
-
-    ON CONFLICT (company_id)
-    DO UPDATE SET
-        primary_goal = EXCLUDED.primary_goal,
-        certifications = EXCLUDED.certifications,
-        referral_source = EXCLUDED.referral_source,
-        onboarding_completed = TRUE,
-        updated_by = EXCLUDED.updated_by,
-        updated_at = NOW()
-    """
-    if data.primary_goal is None:
-        primary_goal = None
-    elif isinstance(data.primary_goal, list):
-        primary_goal = ", ".join(data.primary_goal)
-    else:
-        primary_goal = str(data.primary_goal)
-
-    await conn.execute(
-        query,
-        company_id,
-        primary_goal,
-        certifications_json,
-        data.referral_source,
-        user_id
-    )
-        # ✅ Update core_auth_table
-    update_auth_query = """
-            UPDATE core_auth_table.auth_user
-            SET is_submitted = TRUE
-            WHERE user_id = $1
-    """
-    await conn.execute(update_auth_query, user_id)
+    await conn.execute("""
+        UPDATE core_auth_table.auth_user
+        SET is_submitted = TRUE
+        WHERE user_id = $1
+    """, user_id)
 
 
 async def ensure_onboarding_completed(
