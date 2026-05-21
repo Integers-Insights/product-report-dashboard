@@ -20,13 +20,14 @@ app.include_router(admin.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "* ",
         "http://localhost:5173",
+        "http://localhost:3000",
+        "https://reportinshort.com",
         "https://www.reportinshort.com",
+        "https://reportinshort-backend.reportinshort.com",
         "https://product-insight.integerstech.com",
         "https://product-insight-backend.integermarket.com",
-        "https://dulcet-dragon-bed711.netlify.app"  # ✅ add this
-        "null",
+        "https://dulcet-dragon-bed711.netlify.app",
     ],
     allow_origin_regex=r"https://.*\.trycloudflare\.com",
     allow_methods=["*"],
