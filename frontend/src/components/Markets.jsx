@@ -21,7 +21,7 @@ const Markets = ({ market_data }) => {
           </p>
         </div>
         <div className="bg-[#CCFFCF] text-[#2E7D32] text-sm font-medium py-0.5 px-3 rounded-2xl">
-          4 Easy Win Markets
+          {market_data?.length ?? "--"} Easy Win Markets
         </div>
       </div>
       <div className="grid grid-cols-3 gap-6 mt-4">

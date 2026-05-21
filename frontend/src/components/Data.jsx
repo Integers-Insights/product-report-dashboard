@@ -273,18 +273,14 @@ export const platforms = [
 ];
 
 export const ind = [
-  "Food & Drink",
+  "Food & Drinks",
   "Beauty & Personal Care",
-  "Household",
-  "Pharmaceuticals",
-  "Nutraceuticals",
-  "Medical Nutrition",
-  "Vitamins & Minerals",
-  "Amino Acids",
-  "Herbal Extracts",
-  "Functional Ingredients",
+  "Health & Wellness",
   "Chemicals",
   "Agriculture",
+  "Household",
+  "Packaging",
+  "Pets"
 ];
 
 export const yearsInIndustry = [
@@ -464,34 +460,14 @@ export const companyType = [
   },
   {
     id: "5",
-    label: "Software/SaaS",
-    icon: CommandLineIcon,
-  },
-  {
-    id: "6",
-    label: "Service Provider",
-    icon: RectangleGroupIcon,
-  },
-  {
-    id: "7",
     label: "B2C/D2C Retail",
     icon: ShoppingCartIcon,
   },
   {
-    id: "8",
+    id: "6",
     label: "R&D/Startup",
     icon: RocketLaunchIcon,
-  },
-  {
-    id: "9",
-    label: "Conglomerate/Group",
-    icon: UserGroupIcon,
-  },
-  {
-    id: "10",
-    label: "Printing/Media/Social",
-    icon: FilmIcon,
-  },
+  }
 ];
 
 export const faq_data = [

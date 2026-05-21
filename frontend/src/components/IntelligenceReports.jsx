@@ -39,7 +39,7 @@ const IntelligenceReportsComponent = ({
         </div>
       </div>
       <p className="mt-4 text-sm text-[#5F6368]">
-        2 completed reports · Viewing reports is always free
+        {allReportData?.length ?? "--"} completed reports · Viewing reports is always free
       </p>
 
       <div className="flex flex-col gap-6 mt-6">
@@ -143,7 +143,7 @@ const IntelligenceReportsComponent = ({
         )}
       </div>
 
-      <div className="border border-dashed border-gray-300 bg-white rounded-lg mt-6 flex justify-center items-center py-8">
+      {/* <div className="border border-dashed border-gray-300 bg-white rounded-lg mt-6 flex justify-center items-center py-8">
         <div className="flex flex-col gap-2 items-center">
           <div className="bg-[#E0F5FF] h-10 w-10 rounded-lg flex justify-center items-center">
             <BoltIcon className="h-6 w-6 text-[#0284C7]" />
@@ -159,7 +159,7 @@ const IntelligenceReportsComponent = ({
             Start New Run →
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

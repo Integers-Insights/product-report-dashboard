@@ -62,7 +62,7 @@ const App = () => {
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route element={<PrivateComponent />}>
-              <Route path="/overview" element={<OverViewPage />} />
+              <Route path="/app" element={<OverViewPage />} />
               <Route path="/discover" element={<DiscoverProducts />} />
               <Route path="/full-report/:id" element={<FullReport />} />
               <Route path="/product" element={<MyProduct />} />
@@ -91,6 +91,9 @@ const App = () => {
             <Route path="/data-policy" element={<DataPolicy />} />
             <Route path="/gdpr" element={<GDPR />} />
             <Route path="/payment-refund" element={<PaymentRefund />} />
+
+
+           
           </Routes>
         </Suspense>
       </BrowserRouter>

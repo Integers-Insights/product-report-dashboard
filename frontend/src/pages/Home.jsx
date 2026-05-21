@@ -114,8 +114,8 @@ const modules = [
   },
   {
     icon: Search,
-    title: "Keyword Intelligence",
-    desc: "Exact search terms buyers use globally - by country and language, ready for ads.",
+    title: "Variants & Price Intelligence",
+    desc: "Exact variants and prices globally - by country and currency, ready to position.",
     color: "from-sky-400/20 to-sky-500/5",
     iconColor: "text-sky-500",
   },
@@ -199,8 +199,10 @@ export default function Home() {
 
   const handleClick = () => {
     let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-    authToken ? navigate("/overview") : navigate("/login");
+    authToken ? navigate("/app") : navigate("/signup");
   };
+
+  let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
 
   return (
     <>
@@ -322,9 +324,9 @@ export default function Home() {
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={handleClick}
-                className="btn-shimmer relative group flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-glow-green transition-all duration-300"
+                className="btn-shimmer relative group flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-glow-green transition-all duration-300 cursor-pointer"
               >
-                <span>Start for free</span>
+                <span>{userProfile?"Explore Dashboard":"Start for free"}</span>
                 <ArrowRight
                   size={16}
                   className="group-hover:translate-x-0.5 transition-transform"
@@ -334,7 +336,7 @@ export default function Home() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate("/how-it-works")}
-                className="flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 font-medium text-base px-8 py-3.5 rounded-2xl transition-all duration-200 shadow-sm"
+                className="flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200 hover:border-brand-300 text-slate-700 hover:text-brand-700 font-medium text-base px-8 py-3.5 rounded-2xl transition-all duration-200 shadow-sm cursor-pointer"
               >
                 See how it works
               </motion.button>
@@ -683,9 +685,10 @@ export default function Home() {
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={handleClick}
-                    className="btn-shimmer shrink-0 flex items-center gap-1.5 bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-glow-green-sm"
+                    className="btn-shimmer shrink-0 flex items-center gap-1.5 bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-glow-green-sm cursor-pointer"
                   >
-                    Run yours free <ArrowRight size={12} />
+                    {userProfile?"Explore Dashboard":"Run yours free"}<ArrowRight size={12} />
+                    {/* Run yours free  */}
                   </motion.button>
                 </div>
               </div>
@@ -880,14 +883,14 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => navigate("/")}
-                className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold text-base px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200"
+                className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold text-base px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
               >
                 Create free account <ArrowRight size={16} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 onClick={() => navigate("/pricing")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-medium text-base px-8 py-4 rounded-2xl transition-all duration-200"
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-medium text-base px-8 py-4 rounded-2xl transition-all duration-200 cursor-pointer"
               >
                 View pricing
               </motion.button>

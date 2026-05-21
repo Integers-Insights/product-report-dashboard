@@ -148,8 +148,8 @@ const PriceAnalysis = ({ price_intelligence_data }) => {
                 className="border-b border-[#E6E6E6] py-3  text-center flex justify-between"
               >
                 <p className="blur-sm">Lorem ipsum dolor sit amet.</p>
-                <div className="blur-sm">$5–$9/kg</div>
-                <div className="blur-sm pl-10">30–38%</div>
+                <div className="blur-sm">Lorem ipsum</div>
+                <div className="blur-sm pl-10">Lorem</div>
                 <div className="text-sm font-medium">
                   <button className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap">
                     🔒 {item.message} +
