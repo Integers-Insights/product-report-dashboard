@@ -213,7 +213,7 @@ export default function Pricing() {
 
       if (result.success) {
         toast.success("Payment successful");
-        navigate("/overview");
+        navigate("/app");
       } else {
         toast.error("Verification failed");
       }
@@ -225,7 +225,7 @@ export default function Pricing() {
   const handleRedirect = (cta) => {
     const authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
     if (cta === "Get started free") {
-      authToken ? navigate("/overview") : navigate("/login");
+      authToken ? navigate("/app") : navigate("/login");
       return;
     }
     if (cta === "Talk to our team →") {

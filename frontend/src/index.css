@@ -734,12 +734,9 @@
   }
 }
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0%         { background-position: -200% 0; }
+  25%        { background-position:  200% 0; }
+  25.1%, 100% { background-position: -200% 0; }
 }
 @keyframes gradient-x {
   0%,
@@ -806,7 +803,7 @@ linear-gradient(
 );
   }
 
-  .btn-shimmer {
+  /* .btn-shimmer {
     @apply relative overflow-hidden;
   }
   .btn-shimmer::after {
@@ -820,6 +817,17 @@ linear-gradient(
     );
     background-size: 200% 100%;
     animation: shimmer 2.5s linear infinite;
+  } */
+
+  .btn-shimmer {
+    @apply relative overflow-hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
+    background-size: 200% 100%;
+    animation: shimmer 6s ease-in-out infinite;
   }
 
   .bg-grid {
