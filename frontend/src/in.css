@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 @import "tailwindcss";
 
@@ -37,8 +38,8 @@
 }
 
 @theme {
-  --color-brand-primary: #0284c7;
---color-brand-primary-hover: #0369a1;
+  --color-brand-primary: #3cd690;
+  --color-brand-primary-hover: #2fbf7a;
 
   --color-brand-primary1: #0284c7;
   --color-brand-primary1-hover: #0369a1;
@@ -54,19 +55,15 @@
 
   --color-bg-page: #fafafa;
   --color-bg-surface: #ffffff;
-
-  --color-bg-card1: #dbeafe;
---color-bg-card3: #bfdbfe;
-
+  --color-bg-card1: #aaffd8;
   --color-bg-card2: #f2e2ba;
-
-  --color-bg-section: #eff6ff;
-
+  --color-bg-card3: #baf2d8;
+  --color-bg-section: #ebfbf4;
   --color-bg-card: #d9d9d9;
 
   --color-border-default: #e6e6e6;
 
-  --color-state-success: #0284c7;
+  --color-state-success: #2e7d32;
   --color-state-warning: #f9a925;
   --color-state-error: #c62828;
   --color-state-info: #008acb;
@@ -97,25 +94,21 @@
   --text-15: 0.9375rem;
 
   --text-13: 0.8125rem;
-
-  --color-brand-50: #f0f9ff;
---color-brand-100: #e0f2fe;
---color-brand-200: #bae6fd;
---color-brand-300: #7dd3fc;
---color-brand-400: #38bdf8;
---color-brand-500: #0284c7;
---color-brand-600: #0369a1;
---color-brand-700: #075985;
---color-brand-800: #0c4a6e;
---color-brand-900: #082f49;
+  --color-brand-50: #edfdf6;
+  --color-brand-100: #d4f9e8;
+  --color-brand-200: #adf1d4;
+  --color-brand-300: #76e5b8;
+  --color-brand-400: #3dd196;
+  --color-brand-500: #1aa866;
+  --color-brand-600: #148f57;
+  --color-brand-700: #127347;
+  --color-brand-800: #115c3a;
+  --color-brand-900: #0f4c30;
   --blur-xs: 2px;
 
   --shadow-glow-green:
-0 0 20px rgba(2,132,199,.3),
-0 0 60px rgba(2,132,199,.1);
-
---shadow-glow-green-sm:
-0 0 10px rgba(2,132,199,.2);
+    0 0 20px rgba(26, 168, 102, 0.3), 0 0 60px rgba(26, 168, 102, 0.1);
+  --shadow-glow-green-sm: 0 0 10px rgba(26, 168, 102, 0.2);
   --shadow-glass:
     0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
@@ -709,11 +702,11 @@
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(2,132,199,.4);
+    box-shadow: 0 0 0 0 rgba(26, 168, 102, 0.4);
   }
   50% {
     opacity: 0.7;
-    box-shadow: 0 0 0 8px rgba(2,132,199,0);
+    box-shadow: 0 0 0 8px rgba(26, 168, 102, 0);
   }
 }
 @keyframes ticker {
@@ -771,10 +764,10 @@
 @keyframes border-glow {
   0%,
   100% {
-    border-color: rgba(2,132,199,.3);
+    border-color: rgba(26, 168, 102, 0.3);
   }
   50% {
-    border-color: rgba(2,132,199,.8);
+    border-color: rgba(26, 168, 102, 0.8);
   }
 }
 
@@ -788,22 +781,16 @@
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-   background-image:
-linear-gradient(
-135deg,
-#0284c7 0%,
-#38bdf8 100%
-);
+    background-image: linear-gradient(135deg, #1aa866 0%, #0ea5e9 100%);
   }
   .gradient-text-dark {
     @apply bg-clip-text text-transparent;
-    background-image:
-linear-gradient(
-135deg,
-#0f172a 0%,
-#0284c7 60%,
-#38bdf8 100%
-);
+    background-image: linear-gradient(
+      135deg,
+      #0f172a 0%,
+      #1aa866 60%,
+      #0ea5e9 100%
+    );
   }
 
   .btn-shimmer {
@@ -824,13 +811,13 @@ linear-gradient(
 
   .bg-grid {
     background-image:
-      linear-gradient(rgba(2,132,199,.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(2,132,199,.06) 1px, transparent 1px);
+      linear-gradient(rgba(26, 168, 102, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 168, 102, 0.06) 1px, transparent 1px);
     background-size: 48px 48px;
   }
   .bg-dot {
     background-image: radial-gradient(
-      rgba(2,132,199,.15) 1px,
+      rgba(26, 168, 102, 0.15) 1px,
       transparent 1px
     );
     background-size: 24px 24px;
@@ -838,9 +825,9 @@ linear-gradient(
 
   .glow-ring {
     box-shadow:
-      0 0 0 1px rgba(2,132,199,.2),
-      0 0 20px rgba(2,132,199,.15),
-      0 0 60px rgba(2,132,199,.05);
+      0 0 0 1px rgba(26, 168, 102, 0.2),
+      0 0 20px rgba(26, 168, 102, 0.15),
+      0 0 60px rgba(26, 168, 102, 0.05);
   }
 
   .live-dot {

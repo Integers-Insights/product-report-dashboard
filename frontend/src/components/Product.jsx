@@ -46,7 +46,7 @@ const ProductComponent = ({ productData, productLoading }) => {
       </div>
 
       <p className="my-4 text-sm text-[#5F6368]">
-        4 products · Re-analyze any for 0.5 queries
+        {productData.length || 0} products · Re-analyze any for 0.5 queries
       </p>
 
       <div className="flex gap-3 items-center">

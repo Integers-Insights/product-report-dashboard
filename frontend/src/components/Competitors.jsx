@@ -64,26 +64,23 @@ const Competitors = ({ competitor_data }) => {
                     <div className="flex flex-col gap-1">
                       <div className="flex gap-2 blur-sm">
                         <p className="text-base font-medium text-[#000000]">
-                          Natural Health Distributors Inc.
+                          Lorem ipsum dolor sit amet consectetur.
                         </p>
                         <button className="bg-[#F1FEF2] text-[#2E7D32] text-xs font-medium px-2 py-0.5 rounded-2xl">
-                          Active RFQ
+                          Lorem, ipsum.
                         </button>
                         <button className="bg-[#EDF9FF] text-[#008ACB] text-xs font-medium px-2 py-0.5 rounded-2xl">
-                          🇺🇸 USA
+                          Lorem
                         </button>
                       </div>
                       <div className="text-xs font-light text-[#5F6368] flex gap-5 blur-sm">
-                        <p>Contract Manufacturer</p>
-                        <p>Annual spend $2M–8M</p>
-                        <p>Requires GMP + Organic</p>
-                        <p>New Jersey, USA</p>
+                        <p>Lorem, ipsum dolor.</p>
+                        <p>Lorem, ipsum dolor.</p>
+                        <p>Lorem, ipsum dolor.</p>
+                        <p>Lorem, ipsum dolor.</p>
                       </div>
                       <p className="text-sm font-regular text-[#5F6368] blur-sm">
-                        They likely source Pear Shaped Water Dissolving Film
-                        from India for their water-soluble film production,
-                        indicating a strong relevance in volume and frequency of
-                        use.
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit reprehenderit praesentium, officiis eaque expedita dignissimos deleniti aperiam! Aliquid praesentium impedit autem
                       </p>
                     </div>
                   </div>

@@ -132,9 +132,9 @@ const modules = [
   },
   {
     icon: Search,
-    title: "Keyword Intelligence",
+    title: "Variants & Price Intelligence",
     pills: ["Search volume", "Local languages", "Ad keywords"],
-    desc: "See exactly what terms buyers use globally - by country and language, ready for ads and content.",
+    desc: "Exact variants and prices globally - by country and currency, ready to position.",
     color: "border-sky-200 bg-sky-50/50",
     iconBg: "bg-sky-100",
     iconColor: "text-sky-600",
@@ -182,8 +182,10 @@ export default function HowItWorks() {
 
   const handleClick = () => {
     let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-    authToken ? navigate("/overview") : navigate("/login");
+    authToken ? navigate("/app") : navigate("/signup");
   };
+
+  let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
 
   return (
     <>
@@ -409,14 +411,14 @@ export default function HowItWorks() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={handleClick}
-                className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold px-8 py-4 rounded-2xl shadow-lg"
+                className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold px-8 py-4 rounded-2xl shadow-lg cursor-pointer"
               >
-                Start exploring free <ArrowRight size={16} />
+                {userProfile?"Explore Dashboard":"Start for free"}<ArrowRight size={16} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 onClick={() => navigate("/pricing")}
-                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-medium px-8 py-4 rounded-2xl transition-all"
+                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-medium px-8 py-4 rounded-2xl transition-all cursor-pointer"
               >
                 Compare plans
               </motion.button>

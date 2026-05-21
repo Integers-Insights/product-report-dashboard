@@ -22,9 +22,9 @@ const BuyerListComponent = ({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Buyer List</h1>
         <div className="flex gap-4">
-          <button className="border border-gray-300 bg-white hover:bg-gray-100 px-3 py-1 rounded-lg font-medium cursor-pointer">
+          {/* <button className="border border-gray-300 bg-white hover:bg-gray-100 px-3 py-1 rounded-lg font-medium cursor-pointer">
             ↓ Export CSV 🔒
-          </button>
+          </button> */}
           <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
             ⚡ Find More Buyers
           </button>
@@ -50,10 +50,10 @@ const BuyerListComponent = ({
           </p>
         </div>
         <div>
-          <p className="text-center text-xl font-medium text-[#000000]">🔒</p>
+          {/* <p className="text-center text-xl font-medium text-[#000000]">🔒</p>
           <p className="text-center text-sm font-regular text-[#5F6368]">
             Contact details (Venture+)
-          </p>
+          </p> */}
         </div>
       </div>
       <div className="flex gap-3 items-center">
@@ -248,7 +248,7 @@ const BuyerListComponent = ({
           )}
         </div>
       )}
-      <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF] mt-6">
+      {/* <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF] mt-6">
         <p className="text-sm font-regular text-[#5F6368]">
           Showing 5 of 12 buyers · <span className="font-medium">7 more</span>{" "}
           available with Venture plan
@@ -259,7 +259,7 @@ const BuyerListComponent = ({
         >
           ↑ Upgrade to Venture — $129/mo
         </button>
-      </div>
+      </div> */}
     </>
   );
 };

@@ -446,15 +446,23 @@ async def login_user(conn, data):
     from utils.subscription_service import ensure_active_subscription
     await ensure_active_subscription(conn, company_id)
 
+    plan_name = await conn.fetchval("""
+        SELECT sp.plan_name
+        FROM core_auth_table.company_subscriptions cs
+        JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
+        WHERE cs.company_id = $1 AND cs.status = 'active'
+        ORDER BY cs.created_at DESC LIMIT 1
+    """, company_id) if company_id else None
+
     permissions = await get_user_permissions(conn, user_id)
- 
+
     access_token = create_access_token(
         user_id=user_id,
         company_id=company_id,
         permissions=permissions,
         #expires_delta=timedelta(days=365)
     )
- 
+
     return {
         "success": True,
         "message": "Login successful",
@@ -466,6 +474,7 @@ async def login_user(conn, data):
             "company_name": user["company_name"],
             "isSubmitted": user["is_submitted"],
             "role": user["role"] or "member",
+            "current_plan": plan_name or "trial",
         },
         "access_token": access_token
     }
@@ -1103,6 +1112,14 @@ async def google_signup_login(
 
         is_submitted = bool(user["is_submitted"]) if (user and user["is_submitted"] is not None) else False
 
+        plan_name = await conn.fetchval("""
+            SELECT sp.plan_name
+            FROM core_auth_table.company_subscriptions cs
+            JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
+            WHERE cs.company_id = $1 AND cs.status = 'active'
+            ORDER BY cs.created_at DESC LIMIT 1
+        """, company_id) if company_id else None
+
         return {
             "success": True,
             "message": "Google login successful",
@@ -1113,6 +1130,7 @@ async def google_signup_login(
                 "is_new_user": is_new_user,
                 "name": full_name,
                 "isSubmitted": is_submitted,
+                "current_plan": plan_name or "trial",
             }
         }
 
@@ -1121,6 +1139,7 @@ async def google_signup_login(
     except Exception as e:
         print("GOOGLE AUTH ERROR:", str(e))
         raise HTTPException(500, "Google login failed")
+
 
 # async def get_user_profile(
 #     conn = Depends(get_db),
@@ -1289,11 +1308,18 @@ async def get_user_profile(conn, user_id):
                 c.name as company_name,
                 c.headquarters_country as country,
                 c.company_type as business_type,
-                c.industry
+                c.industry,
+                COALESCE(sp.plan_name, 'trial') as current_plan
             FROM core_auth_table.auth_user u
             LEFT JOIN core_tables.companies_other c
                 ON u.companies_other_id = c.id
+            LEFT JOIN core_auth_table.company_subscriptions cs
+                ON cs.company_id = c.id AND cs.status = 'active'
+            LEFT JOIN core_auth_table.subscription_plans sp
+                ON sp.plan_id = cs.plan_id
             WHERE u.user_id = $1
+            ORDER BY cs.created_at DESC NULLS LAST
+            LIMIT 1
             """,
             user_id
         )

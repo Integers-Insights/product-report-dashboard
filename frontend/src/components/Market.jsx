@@ -63,6 +63,16 @@ const market_data = [
 ];
 
 const MarketComponent = () => {
+
+  let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+  let plan = "";
+  try {
+    const parsed = userProfile ? JSON.parse(userProfile) : null;
+    plan = parsed?.current_plan || "";
+  } catch (e) {
+    console.log("Invalid localStorage data");
+  }
+
   return (
     <>
       <h1 className="text-2xl font-medium">Market Intelligence</h1>
@@ -78,8 +88,8 @@ const MarketComponent = () => {
             <BoltIcon className="h-6 w-6 text-[#0284C7]" />
           </div>
           <div>
-            <p className="font-medium text-[#000000]">
-              Scout Plan — 2 modules active
+            <p className="font-medium text-[#000000] capitalize">
+              {plan || ""} Plan — 2 modules active
             </p>
             <p className="text-xs text-[#5F6368] font-regular mt-1">
               Each run costs 0.5–1 query. Results appear within 3–5 minutes.
@@ -130,9 +140,9 @@ const MarketComponent = () => {
                 <p className="text-xs font-regular text-[#5F6368]">
                   {item.txt3}
                 </p>
-                <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
+                {/* <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
                   Run →
-                </button>
+                </button> */}
               </div>
             </div>
           );

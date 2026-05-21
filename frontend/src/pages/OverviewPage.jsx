@@ -16,6 +16,9 @@ const OverViewPage = () => {
   const [currentDate, setCurrentDate] = useState("");
   const [fullName, setFullName] = useState("");
 
+  const [statsLoading,setStatsLoading] = useState(false);
+  const [recentDataLoading,setRecentDataLoading] = useState(false);
+
   const base_url = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
@@ -40,6 +43,7 @@ const OverViewPage = () => {
 
   const getOverviewData = async () => {
     try {
+      setStatsLoading(true);
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       const response = await fetch(`${base_url}/dashboard`, {
         method: "GET",
@@ -70,11 +74,14 @@ const OverViewPage = () => {
       }
     } catch (error) {
       console.error("Something went wrong:", error.message);
+    }finally{
+      setStatsLoading(false);
     }
   };
 
   const getRecentData = async () => {
     try {
+      setRecentDataLoading(true);
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
 
       const response = await fetch(`${base_url}/dashboard/recent-activity`, {
@@ -99,6 +106,8 @@ const OverViewPage = () => {
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
+    }finally{
+      setRecentDataLoading(false);
     }
   };
 
@@ -136,12 +145,15 @@ const OverViewPage = () => {
               statsData={statsData}
               currentDate={currentDate}
               fullName={fullName}
+              statsLoading={statsLoading}
             />
             <Opportunity
               opportunity_hubData={opportunity_hubData}
               recent_activityData={recent_activityData}
+              statsLoading={statsLoading}
+              recentDataLoading={recentDataLoading}
             />
-            <AiGenerated ai_insightsData={ai_insightsData} />
+            <AiGenerated ai_insightsData={ai_insightsData} statsLoading={statsLoading} />
           </div>
         </div>
       </div>

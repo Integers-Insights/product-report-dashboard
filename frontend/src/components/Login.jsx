@@ -1,5 +1,5 @@
 import { LuChevronDown } from "react-icons/lu";
-import Int_Logo from "../assets/Int_Logo_Main_Fav.png";
+import Int_Logo from "../assets/logo.png";
 import login_img from "../assets/login.png";
 import { useEffect, useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
@@ -78,7 +78,7 @@ const UserLogin = () => {
           email: "",
           password: "",
         });
-        navigate("/overview");
+        navigate("/app");
       } else {
         toast.error(data.detail || "Invalid credentials");
       }
@@ -103,7 +103,7 @@ const UserLogin = () => {
         <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
-              <img alt="Int_Logo" src={Int_Logo} className="h-10 w-auto" />
+              <img alt="Int_Logo" src={Int_Logo} className="h-10 w-auto cursor-pointer" onClick={()=>navigate("/")} />
               <h2 className="mt-8 text-2xl font-bold text-gray-900">
                 Sign in to your account
               </h2>
@@ -202,12 +202,12 @@ const UserLogin = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="mt-6 grid grid-cols-1 gap-4">
                   <div className="flex justify-center">
                     <GoogleAuthButton />
                   </div>
 
-                  <a
+                  {/* <a
                     href="#"
                     className="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50 focus-visible:inset-ring-transparent"
                   >
@@ -224,7 +224,7 @@ const UserLogin = () => {
                       />
                     </svg>
                     <span className="text-sm/6 font-semibold">GitHub</span>
-                  </a>
+                  </a> */}
                 </div>
               </div>
             </div>
