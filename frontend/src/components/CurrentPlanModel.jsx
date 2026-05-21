@@ -126,7 +126,7 @@ export default function CurrentPlanModal({ planName, baseUrl, onClose, onUpgrade
               </motion.button>
 
               <button
-                onClick={() => { onClose(); navigate("/app"); }}
+                onClick={() => { onClose(); }}
                 className="w-full py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-colors"
               >
                 Manage subscription

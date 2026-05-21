@@ -253,7 +253,7 @@ export default function Steps() {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
 
       const response = await fetch(
-        `${base_url}/products-overview?job_id=${joinId}`,
+        `${base_url}/products-overview?job_id=${joinId1}`,
         {
           method: "GET",
           headers: {

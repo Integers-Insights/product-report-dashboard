@@ -101,7 +101,7 @@ const trust = [
   },
   {
     icon: CreditCard,
-    title: "Safe Payments via Stripe",
+    title: "Safe Payments via Stripe and Razorpay",
     desc: "PCI DSS Level 1 certified. We never store your card details.",
   },
 ];
