@@ -1308,11 +1308,18 @@ async def get_user_profile(conn, user_id):
                 c.name as company_name,
                 c.headquarters_country as country,
                 c.company_type as business_type,
-                c.industry
+                c.industry,
+                COALESCE(sp.plan_name, 'trial') as current_plan
             FROM core_auth_table.auth_user u
             LEFT JOIN core_tables.companies_other c
                 ON u.companies_other_id = c.id
+            LEFT JOIN core_auth_table.company_subscriptions cs
+                ON cs.company_id = c.id AND cs.status = 'active'
+            LEFT JOIN core_auth_table.subscription_plans sp
+                ON sp.plan_id = cs.plan_id
             WHERE u.user_id = $1
+            ORDER BY cs.created_at DESC NULLS LAST
+            LIMIT 1
             """,
             user_id
         )

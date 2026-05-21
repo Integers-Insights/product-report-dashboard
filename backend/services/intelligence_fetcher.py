@@ -639,6 +639,7 @@ async def get_buyer_list(conn, user_id: str):
 
     try:
         b2b_buyers = []
+        total_buyers_count = 0
         # b2c_buyers = []
 
         # =====================================================
@@ -651,6 +652,11 @@ async def get_buyer_list(conn, user_id: str):
 
             for buyer in buyers:
                 if not isinstance(buyer, dict):
+                    continue
+
+                total_buyers_count += 1
+
+                if (buyer.get("relevance_score") or 0) < 7:
                     continue
 
                 raw_country = buyer.get("country") or ""
@@ -688,10 +694,11 @@ async def get_buyer_list(conn, user_id: str):
         #     })
 
         return {
-            "success":          True,
-            "total_b2b_buyers": len(b2b_buyers),
+            "success":               True,
+            "total_b2b_buyers":      total_buyers_count,
+            "matched_b2b_buyers":    len(b2b_buyers),
             # "total_b2c_buyers": len(b2c_buyers),
-            "b2b":              b2b_buyers,
+            "b2b":                   b2b_buyers,
             # "b2c":              b2c_buyers,
         }
 
