@@ -13,9 +13,10 @@ import {
 import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
-import CheckoutModal from "../components/CheckoutModal";
 import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
+import CurrentPlanModal from "../components/CurrentPlanModel";
+import CheckoutModal from "../components/CheckoutModal";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -143,6 +144,7 @@ export default function Pricing() {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
+  const [showCurrentPlan, setShowCurrentPlan] = useState(false);
   const [planList, setPlanList] = useState(plans);
   const navigate = useNavigate();
 
@@ -452,13 +454,12 @@ export default function Pricing() {
                     <motion.button
                       whileHover={{ scale: isCurrentPlan ? 1 : 1.03 }}
                       whileTap={{ scale: isCurrentPlan ? 1 : 0.97 }}
-                      onClick={() => !isCurrentPlan && handleRedirect(cta)}
-                      disabled={isCurrentPlan}
+                      onClick={() => isCurrentPlan ? setShowCurrentPlan(true) : handleRedirect(cta)}
                       className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
                         isCurrentPlan
                           ? badge
-                            ? "bg-white/20 text-white border border-white/30 cursor-default"
-                            : "bg-slate-100 text-slate-500 border border-slate-200 cursor-default"
+                            ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
+                            : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
                           : badge
                             ? "bg-white text-brand-600 hover:bg-white/90 shadow-sm"
                             : ctaStyle === "primary"
@@ -578,6 +579,18 @@ export default function Pricing() {
 
         <Footer />
       </PageWrapper>
+
+      {showCurrentPlan && (
+        <CurrentPlanModal
+          planName={currentPlan}
+          baseUrl={base_url}
+          onClose={() => setShowCurrentPlan(false)}
+          onUpgrade={() => {
+            const proplan = planList.find(p => p.name === "Pro");
+            if (proplan) setCheckoutPlan(proplan);
+          }}
+        />
+      )}
 
       {checkoutPlan && (
         <CheckoutModal
