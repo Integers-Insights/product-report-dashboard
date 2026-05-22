@@ -25,9 +25,6 @@ app.add_middleware(
         "https://reportinshort.com",
         "https://www.reportinshort.com",
         "https://reportinshort-backend.reportinshort.com",
-        "https://product-insight.integerstech.com",
-        "https://product-insight-backend.integermarket.com",
-        "https://dulcet-dragon-bed711.netlify.app",
     ],
     allow_origin_regex=r"https://.*\.trycloudflare\.com",
     allow_methods=["*"],
@@ -58,7 +55,6 @@ async def shutdown():
             await asyncio.gather(*tasks, return_exceptions=True)
         except asyncio.CancelledError:
             pass
-
     try:
         await close_pool()
     except Exception:

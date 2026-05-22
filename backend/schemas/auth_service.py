@@ -1304,12 +1304,16 @@ async def get_user_profile(conn, user_id):
                 u.email,
                 u.phone,
                 u.status,
-                u.auth_provider,
                 c.name as company_name,
                 c.headquarters_country as country,
                 c.company_type as business_type,
                 c.industry,
-                COALESCE(sp.plan_name, 'trial') as current_plan
+                COALESCE(sp.plan_name, 'trial')    as current_plan,
+                cs.billing_cycle                    as billing_cycle,
+                cs.end_date                         as expire_date,
+                sp.monthly_price                    as plan_monthly_price,
+                sp.yearly_price                     as plan_yearly_price,
+                sp.query_limit                      as plan_query_limit
             FROM core_auth_table.auth_user u
             LEFT JOIN core_tables.companies_other c
                 ON u.companies_other_id = c.id

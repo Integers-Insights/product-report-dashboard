@@ -451,17 +451,35 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
         traceback.print_exc()
         return {"success": False, "error": "Failed to build response", "detail": str(e), "code": "BUILD_ERROR"}
 
-async def get_all_products(conn, user_id: str):
+async def get_all_products(conn, user_id: str, search: str = None, category: str = None, status: str = None):
 
     try:
         # =====================================================
         # 📦 ALL PRODUCTS FOR THIS USER
         # =====================================================
-        products = await conn.fetch("""
-            SELECT DISTINCT ON (pm.id)
+        filters     = ["pm.created_by = $1", "pm.status != 'inactive'"]
+        query_args  = [user_id]
+
+        if search:
+            query_args.append(f"%{search.strip()}%")
+            filters.append(f"pm.product_name ILIKE ${len(query_args)}")
+
+        if category:
+            query_args.append(category.strip())
+            filters.append(f"pm.category = ${len(query_args)}")
+
+        if status:
+            query_args.append(status.strip())
+            filters.append(f"pm.status = ${len(query_args)}")
+
+        where_clause = " AND ".join(filters)
+
+        products = await conn.fetch(f"""
+            SELECT DISTINCT ON (pm.product_name)
                 pm.id AS product_id,
                 pm.product_name,
                 pm.category,
+                pm.status,
                 pm.updated_at AS last_analyzed_at,
                 co.industry,
                 co.company_type,
@@ -472,13 +490,14 @@ async def get_all_products(conn, user_id: str):
                 ON co.id = pm.company_id
             JOIN core_tables.user_research_preferences ur
                 ON ur.user_id = $1
-            WHERE pm.created_by = $1
-            ORDER BY pm.id, pm.updated_at DESC
-        """, user_id)
+            WHERE {where_clause}
+            ORDER BY pm.product_name, pm.updated_at DESC
+        """, *query_args)
 
         if not products:
             return {
                 "success": True,
+                "has_run_intelligence":False,
                 "total": 0,
                 "products": [],
             }
@@ -553,21 +572,17 @@ async def get_all_products(conn, user_id: str):
             score   = overall["overall_score"] if overall else None
             market_data = market_map.get(pid, {"country_and_score": [], "cert_require": []})  # ✅
             result.append({
-                "product_id":             pid,
-                "name":                   p["product_name"],
-               # "category":               p["category"],
-                "industry" :              p["industry"],
-               # "business_type" :         p["company_type"],
-                "price_positioning": list(set(market_data.get("cert_require", []))),  # ✅
-                "country_and_score": market_data.get("country_and_score", []),
+                "product_id":              pid,
+                "name":                    p["product_name"],
+                "category":                p["category"],
+                "status":                  p["status"],
+                "industry":                p["industry"],
+                "price_positioning":       list(set(market_data.get("cert_require", []))),
+                "country_and_score":       market_data.get("country_and_score", []),
                 "monthly_supply_capacity": p["moq"],
-               # "certifications":         _parse(p["certifications"]),
-                "last_analyzed_at":       p["last_analyzed_at"].isoformat() if p["last_analyzed_at"] else None,
-                #"cert_require":      list(set(market_map.get("cert_require", []))),
-                # overview
-                "score":            overall["overall_score"]    if overall else None,
-                "confidence_label": _confidence_label(score),
-                
+                "last_analyzed_at":        p["last_analyzed_at"].isoformat() if p["last_analyzed_at"] else None,
+                "score":                   overall["overall_score"] if overall else None,
+                "confidence_label":        _confidence_label(score),
             })
 
         return {
@@ -585,7 +600,7 @@ async def get_all_products(conn, user_id: str):
             "code": "BUILD_ERROR",
         })
 
-async def get_buyer_list(conn, user_id: str):
+async def get_buyer_list(conn, user_id: str, search: str = None, product_name: str = None, country: str = None, buyer_type: str = None):
 
     try:
         # =====================================================
@@ -646,12 +661,16 @@ async def get_buyer_list(conn, user_id: str):
         # 🔧 FLATTEN B2B
         # =====================================================
         for row in b2b_rows:
-            buyers       = _parse(row["buyers"]) or []
-            product_name = row["product_name"]
-            product_id   = row["product_id"]
+            buyers            = _parse(row["buyers"]) or []
+            product_name      = row["product_name"]
+            product_id        = row["product_id"]
+            product_name_lower = product_name.lower() if product_name else ""
 
             for buyer in buyers:
                 if not isinstance(buyer, dict):
+                    continue
+
+                if buyer.get("masked"):
                     continue
 
                 total_buyers_count += 1
@@ -660,13 +679,26 @@ async def get_buyer_list(conn, user_id: str):
                     continue
 
                 raw_country = buyer.get("country") or ""
-                country = raw_country if raw_country and raw_country not in ("None", "none", "null") else None
+                resolved_country = raw_country if raw_country and raw_country not in ("None", "none", "null") else None
+                resolved_country = resolved_country or _parse(row["target_country"])
+                resolved_type    = buyer.get("type")
+
+                # ── apply filters ────────────────────────────────────────────
+                if search and not (buyer.get("name") or "").lower().__contains__(search.strip().lower()):
+                    continue
+                if product_name and product_name.strip().lower() != product_name_lower:
+                    continue
+                if country and (resolved_country or "").lower() != country.strip().lower():
+                    continue
+                if buyer_type and (resolved_type or "").lower() != buyer_type.strip().lower():
+                    continue
+
                 b2b_buyers.append({
                     "product_id":      product_id,
                     "product_name":    product_name,
                     "company_name":    buyer.get("name"),
-                    "buyer_type":      buyer.get("type"),
-                    "country":         country or _parse(row["target_country"]),
+                    "buyer_type":      resolved_type,
+                    "country":         resolved_country,
                     "contact":         buyer.get("contact") or None,
                     "notes":           buyer.get("notes"),
                     "relevance_score": buyer.get("relevance_score"),
@@ -693,13 +725,14 @@ async def get_buyer_list(conn, user_id: str):
         #         "market_gap":        row["market_gap"],
         #     })
 
+        top_matches = sum(1 for b in b2b_buyers if (b.get("relevance_score") or 0) >= 7)
+
         return {
-            "success":               True,
-            "total_b2b_buyers":      total_buyers_count,
-            "matched_b2b_buyers":    len(b2b_buyers),
-            # "total_b2c_buyers": len(b2c_buyers),
-            "b2b":                   b2b_buyers,
-            # "b2c":              b2c_buyers,
+            "success":            True,
+            "total_b2b_buyers":   total_buyers_count,
+            "matched_b2b_buyers": len(b2b_buyers),
+            "top_matches":        top_matches,
+            "b2b":                b2b_buyers,
         }
 
     except Exception as e:
@@ -1008,7 +1041,7 @@ async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
     try:
         pool = get_pool()
 
-        # Run 2 queries in parallel on separate pool connections
+        # Run 3 queries in parallel on separate pool connections
         async def _stats():
             async with pool.acquire() as c:
                 return await c.fetchrow(_STATS_SQL, user_id)
@@ -1017,8 +1050,15 @@ async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
             async with pool.acquire() as c:
                 return await c.fetch(_PRODUCTS_SQL, user_id)
 
-        stats_row, products_rows = await asyncio.gather(
-            _stats(), _products()
+        async def _has_run():
+            async with pool.acquire() as c:
+                return await c.fetchval(
+                    "SELECT has_run_intelligence FROM core_auth_table.auth_user WHERE user_id = $1",
+                    user_id
+                )
+
+        stats_row, products_rows, has_run_intelligence = await asyncio.gather(
+            _stats(), _products(), _has_run()
         )
 
         # ── Stats ─────────────────────────────────────────────────────────────
@@ -1062,6 +1102,7 @@ async def fetch_dashboard_data(_conn, user_id: str) -> Dict[str, Any]:
             "success": True,
             "full_name": full_name,
             "user_id": user_id,
+            "has_run_intelligence": bool(has_run_intelligence),
             "current_datetime": datetime.now(timezone.utc).isoformat(),
             "stats": [
                 {"key": "Products Tracked",  "total": products_total,    "this_week": products_this_week},

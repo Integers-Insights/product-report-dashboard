@@ -10,14 +10,20 @@ from typing import Optional
 PLAN_MODULE_LIMITS = {
     "trial": {
         "buyers_intelligence": {"buyers": 1},
-        "price_intelligence":{"variants":2},
-        "market_intelligence":{"market_info":1}
+        "price_intelligence":{"variants":1},
+        "market_intelligence":{"market_info":1},
+        "variants":{"variants_info":1},
+        "trade_intelligence":{"top_exporters":1,"top_importers":1,"export_volume_trend":1},
+        "competitor_intelligence":{"competitors":2}
     },
     "basic": {
-        "buyers_intelligence": {"buyers": 2},
+        "buyers_intelligence": {"buyers": 6},
         "price_intelligence":{"variants":4},
         "market_intelligence":{"market_info":4},
-        "trade_intelligence":{"top_exporters":2,"top_importers":2}
+        "trade_intelligence":{"top_exporters":3,"top_importers":3,"export_volume_trend":5},
+        "variants":{"variants_info":4},
+        "competitor_intelligence":{"competitors":6}
+        
     },
     # pro: no limits — all data shown
 }
@@ -48,30 +54,28 @@ PLAN_MODULE_FIELD_MASKS = {
             "variants_info": ["moq", "price_range"],
         },
     },
-    "basic": {
-        "variants": {
-            "variants_info": ["moq", "price_range"],
-        },
-    },
+    # "basic": {
+    #     "variants": {
+    #         "variants_info": ["moq", "price_range"],
+    #     },
+    # },
     # pro: no field masks
 }
 
 FIELD_MASK_PLACEHOLDER = "Upgrade to unlock"
 
-# Show latest N items with full data; mask specific fields in older items.
-# Structure: { plan: { module_key: { list_field: { show_latest, sort_by, mask_fields } } } }
-PLAN_MODULE_LATEST_MASKS = {
-    "basic": {
-        "trade_intelligence": {
-            "export_volume_trend": {
-                "show_latest": 2,
-                "sort_by": "year",
-                "mask_fields": ["volume_mt", "yoy_growth"],
-            }
-        }
-    }
+# For buyers_intelligence b2c: which top-level b2c fields to show per plan.
+# Fields not listed are replaced with FIELD_MASK_PLACEHOLDER.
+# None entry = show all (pro / basic).
+PLAN_B2C_VISIBLE_FIELDS = {
+    "trial": ["consumer_profile"],   # only consumer_profile shown; rest masked
+    # basic / pro: no restriction
 }
 
+# Within consumer_profile, which keys to keep for each plan.
+PLAN_B2C_CONSUMER_PROFILE_KEYS = {
+    "trial": ["consumer_segment"],   # only consumer_segment; rest masked
+}
 
 PLAN_CONFIG = {
 
@@ -82,7 +86,10 @@ PLAN_CONFIG = {
             "variants",
             "price_intelligence",
             "buyers_intelligence",
-            "market_intelligence"
+            "market_intelligence",
+            "competitor_intelligence",
+            "marketing_intelligence",
+            "trade_intelligence"
         ],
         "daily_query_limit": 5,
         "user_limit": 1,
@@ -97,6 +104,8 @@ PLAN_CONFIG = {
             "buyers_intelligence",
             "trade_intelligence",
             "market_intelligence",
+            "competitor_intelligence",
+            "marketing_intelligence"
         ],
         "daily_query_limit":   10,
         "product_limit_per_day": 10,   # max products per day (no daily query reset)
@@ -320,6 +329,30 @@ def _mask_module_data(module_key: str, module_data: dict, plan_name: str) -> dic
                         updated_rows.append(row)
                     result[top_key] = updated_rows
 
+    # ── b2c field masking (plan-level restriction on b2c fields) ─────────────
+    if module_key == "buyers_intelligence":
+        visible_b2c = PLAN_B2C_VISIBLE_FIELDS.get(plan_name)
+        if visible_b2c is not None:   # None means no restriction for this plan
+            b2c = result.get("b2c")
+            if isinstance(b2c, dict):
+                b2c_copy = {}
+                for field, value in b2c.items():
+                    if field not in visible_b2c:
+                        b2c_copy[field] = FIELD_MASK_PLACEHOLDER
+                    elif field == "consumer_profile":
+                        allowed_keys = PLAN_B2C_CONSUMER_PROFILE_KEYS.get(plan_name)
+                        if allowed_keys is not None and isinstance(value, dict):
+                            masked_profile = {
+                                k: (v if k in allowed_keys else FIELD_MASK_PLACEHOLDER)
+                                for k, v in value.items()
+                            }
+                            b2c_copy[field] = masked_profile
+                        else:
+                            b2c_copy[field] = value
+                    else:
+                        b2c_copy[field] = value
+                result["b2c"] = b2c_copy
+
     # ── 2. Field-level masking ───────────────────────────────────────────────
     field_masks = PLAN_MODULE_FIELD_MASKS.get(plan_name, {}).get(module_key)
     if field_masks:
@@ -349,51 +382,6 @@ def _mask_module_data(module_key: str, module_data: dict, plan_name: str) -> dic
                         top_value[list_field] = _mask_list(top_value[list_field])
                         result[top_key] = top_value
                     break
-
-    # ── 3. Latest-N masking (show newest N items fully, mask fields in older ones) ──
-    latest_masks = PLAN_MODULE_LATEST_MASKS.get(plan_name, {}).get(module_key)
-    if latest_masks:
-        for list_field, cfg in latest_masks.items():
-            show_latest  = cfg.get("show_latest", 2)
-            sort_by      = cfg.get("sort_by")
-            mask_fields  = cfg.get("mask_fields", [])
-
-            # Find the list — top-level or inside a nested dict
-            items      = result.get(list_field)
-            parent_key = None
-            if items is None:
-                for top_key, top_value in result.items():
-                    if isinstance(top_value, dict) and list_field in top_value:
-                        items      = top_value[list_field]
-                        parent_key = top_key
-                        break
-
-            if not isinstance(items, list):
-                continue
-
-            # Sort so latest entries are last, then mask all but the last N
-            if sort_by:
-                try:
-                    items = sorted(items, key=lambda x: x.get(sort_by, 0) if isinstance(x, dict) else 0)
-                except Exception:
-                    pass
-
-            cutoff     = max(0, len(items) - show_latest)
-            new_items  = []
-            for idx, item in enumerate(items):
-                if idx < cutoff and isinstance(item, dict):
-                    item = dict(item)
-                    for f in mask_fields:
-                        if f in item:
-                            item[f] = FIELD_MASK_PLACEHOLDER
-                new_items.append(item)
-
-            if parent_key:
-                parent = dict(result[parent_key])
-                parent[list_field] = new_items
-                result[parent_key] = parent
-            else:
-                result[list_field] = new_items
 
     return result
 

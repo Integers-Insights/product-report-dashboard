@@ -837,6 +837,21 @@ async def run_intelligence_for_company(conn, company_id: str, job_id: str):
                 except Exception as e:
                     print(f"❌ Failed to mark intelligence_completed for {inp.product_id}: {e}")
 
+                # ✅ Flip has_run_intelligence on first completed product
+                try:
+                    await pc.execute("""
+                        UPDATE core_auth_table.auth_user
+                        SET has_run_intelligence = TRUE,
+                            first_run_at = COALESCE(first_run_at, NOW())
+                        WHERE user_id = (
+                            SELECT created_by FROM product_info.product_master
+                            WHERE id = $1 LIMIT 1
+                        )
+                        AND has_run_intelligence = FALSE
+                    """, inp.product_id)
+                except Exception as e:
+                    print(f"❌ Failed to set has_run_intelligence: {e}")
+
             # =================================================
             # 📦 SERIALISE RESPONSE
             # =================================================

@@ -26,7 +26,6 @@ from utils.subscription_service import (
     validate_coupon,
     increment_coupon_usage,
     PLAN_MODULE_LIMITS,
-    MASK_PLACEHOLDER,
 )
 from services.pipeline_service import run_pipeline_and_store
 import asyncio
@@ -36,8 +35,8 @@ from services.intelligence_service import run_intelligence_background
 from services.module_data_service import fetch_module_inputs
 import traceback
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-EXPIRE_URL = os.getenv("EXPIRE_URL") or FRONTEND_URL
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+EXPIRE_URL = os.getenv("EXPIRE_URL")
 
 # in-memory cache for /pipeline/run  key = "user_id:normalized_url"
 # value = {"job_id": str, "ts": datetime}   TTL = 5 minutes
@@ -257,57 +256,6 @@ async def google_auth(
         raise HTTPException(status_code=500, detail={"success": False, "error": "Google authentication failed", "detail": str(e)})
 
 
-# @router.post("/internal/company/enrich")
-# async def enrich_company(
-#     data: dict,
-#     conn = Depends(get_db),
-#     _ = Depends(verify_internal_api)
-# ):
-#     try:
-#         # 🔥 Call your existing function
-#         await upsert_company_metadata(
-#             conn=conn,
-#             user_id=data.get("user_id"),  # optional
-#             data=data
-#         )
-
-#         return {
-#             "success": True,
-#             "message": "Company enrichment successful"
-#         }
-
-#     except Exception as e:
-#         print("ENRICH ERROR:", str(e))
-
-#         raise HTTPException(
-#             status_code=500,
-#             detail={
-#                 "success": False,
-#                 "message": "Enrichment failed"
-#             }
-#         )
-
-# @router.post("/company/enrich")
-# async def enrich_company(
-#     data: PipelineRequest,
-#     current_user = Depends(get_current_user)
-# ):
-#     try:
-#        # user_id = current_user["sub"]
-#         user_id = current_user["user_id"]
-#         asyncio.create_task(
-#             run_pipeline_and_store(
-#                 user_id=user_id,
-#                 website_url=data.website_url
-#             )
-#         )
-#         return {"success": True, "message": "Enrichment started"}
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("COMPANY ENRICH ERROR:", str(e))
-#         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to start enrichment", "detail": str(e)})
-
 @router.post("/change-password")
 async def change_password(
     payload: ChangePasswordRequest,
@@ -427,108 +375,13 @@ async def logout(
         print("LOGOUT ERROR:", str(e))
         raise HTTPException(status_code=500, detail={"success": False, "error": "Logout encountered an error", "detail": str(e)})
 
-# @router.post("/refresh")
-# async def refresh_token(
-#     request: Request,
-#     response: Response,
-#     conn = Depends(get_db)
-# ):
-
-#     old_refresh = request.cookies.get("refresh_token")
-
-#     if not old_refresh:
-#         raise HTTPException(status_code=401, detail="Missing refresh token")
-
-#     try:
-#         payload = verify_token(old_refresh)
-
-#         user_id = payload["sub"]
-#         company_id = payload["company_id"]
-
-#         # 🔎 Find active session
-#         session = await conn.fetchrow(
-#             """
-#             SELECT session_id, is_revoked
-#             FROM core_auth_table.auth_sessions
-#             WHERE refresh_token = $1
-#             """,
-#             old_refresh
-#         )
-
-#         if not session or session["is_revoked"]:
-#             raise HTTPException(status_code=401, detail="Token reuse detected")
-
-#         # 🔄 Rotation
-
-#         # 1️⃣ Revoke old refresh token
-#         await conn.execute(
-#             """
-#             UPDATE core_auth_table.auth_sessions
-#             SET is_revoked = TRUE
-#             WHERE refresh_token = $1
-#             """,
-#             old_refresh
-#         )
-
-#         # 2️⃣ Fetch latest permissions
-#         permissions = await get_user_permissions(conn, user_id)
-
-#         # 3️⃣ Create new tokens
-#         # new_refresh = create_refresh_token(user_id, company_id)
-#         new_access = create_access_token(user_id, company_id, permissions)
-
-#         # 4️⃣ Update session
-#         await conn.execute(
-#             """
-#             UPDATE core_auth_table.auth_sessions
-#             SET refresh_token = $1,
-#                 is_revoked = FALSE,
-#                 last_seen_at = $2,
-#                 expires_at = $3
-#             WHERE session_id = $4
-#             """,
-#             new_refresh,
-#             datetime.now(timezone.utc),
-#             datetime.now(timezone.utc) + timedelta(days=7),
-#             session["session_id"]
-#         )
-
-#         # 🍪 Set cookies
-#         response.set_cookie(
-#             key="access_token",
-#             value=new_access,
-#             httponly=True,
-#             secure=False,
-#             samesite="Lax",
-#             max_age=60 * 10
-#         )
-
-#         response.set_cookie(
-#             key="refresh_token",
-#             value=new_refresh,
-#             httponly=True,
-#             secure=False,
-#             samesite="Lax",
-#             max_age=60 * 60 * 24 * 7
-#         )
-
-#         return {"message": "Token rotated successfully"}
-
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=401, detail={"success": False, "error": "Invalid refresh token"})
-
 
 @router.get("/verify-email")
 async def verify_email(token: str, request: Request, conn=Depends(get_db)):
     try:
         # ==============================
-
         # 🔹 CHECK TOKEN
-
         # ==============================
-
         debug = await conn.fetchrow("""
             SELECT user_id, expires_at, expires_at > NOW() AS valid
             FROM core_auth_table.email_verification_tokens
@@ -539,15 +392,10 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
               f"valid={debug['valid'] if debug else 'N/A'}")
 
         row = await conn.fetchrow("""
-
             SELECT user_id
-
             FROM core_auth_table.email_verification_tokens
-
             WHERE token = $1
-
             AND expires_at > NOW()
-
         """, token)
 
         if not row:
@@ -571,335 +419,110 @@ async def verify_email(token: str, request: Request, conn=Depends(get_db)):
                 )
 
             return RedirectResponse(
-
                 url=f"{EXPIRE_URL}?reason=expired",
-
                 status_code=302
-
             )
- 
-        user_id = str(row["user_id"])
- 
-        # ==============================
 
+        user_id = str(row["user_id"]) 
+        # ==============================
         # 🔹 ACTIVATE USER
-
         # ==============================
-
         company_row = await conn.fetchrow("""
-
             UPDATE core_auth_table.auth_user
-
             SET status = 'active'
-
             WHERE user_id = $1
-
             RETURNING companies_other_id
-
         """, user_id)
  
         if not company_row:
-
             print("VERIFY EMAIL ERROR: user has no company linked", user_id)
 
             return RedirectResponse(
-
                 url=f"{EXPIRE_URL}?reason=error",
-
                 status_code=302
-
             )
- 
         company_id = str(company_row["companies_other_id"])
  
         # ==============================
-
         # 🔹 FETCH MODULES & ASSIGN PERMISSIONS
-
         # ==============================
-
         modules = await conn.fetch("""
-
             SELECT sm.module_code
-
             FROM core_auth_table.company_subscriptions cs
-
             JOIN core_auth_table.subscription_plan_modules spm
-
                 ON cs.plan_id = spm.plan_id
-
             JOIN core_auth_table.subscription_modules sm
-
                 ON sm.module_id = spm.module_id
-
             WHERE cs.company_id = $1
-
             AND cs.status = 'active'
-
             AND spm.is_enabled = TRUE
-
         """, company_id)
- 
+
         for row in modules:
-
             module_code = row["module_code"]
-
             group_name = f"{module_code}.operator"
- 
+
             await conn.execute("""
-
                 INSERT INTO core_auth_table.user_permissions_groups
-
                 (id, user_id, group_id, assigned_at)
-
                 SELECT
-
                     gen_random_uuid(),
-
                     $1,
-
                     pg.group_id,
-
                     NOW()
-
                 FROM core_auth_table.permissions_groups pg
-
                 WHERE pg.group_name = $2
-
                 ON CONFLICT DO NOTHING
-
             """, user_id, group_name)
- 
-        # ==============================
 
+        # ==============================
         # 🔹 CREATE TOKEN
-
         # ==============================
-
         permissions = await get_user_permissions(conn, user_id)
- 
         access_token = create_access_token(
-
             user_id,
-
             company_id,
-
             permissions
-
         )
- 
         # ==============================
-
         # 🔹 CREATE SESSION (FIXED)
-
         # ==============================
-
         session_id = str(uuid.uuid4())
- 
         await conn.execute("""
-
             INSERT INTO core_auth_table.auth_sessions
-
             (session_id, user_id, device, ip_address,
-
              user_agent, refresh_token,
-
              is_revoked, created_at, expires_at, last_seen_at)
-
             VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),NOW()+INTERVAL '7 days',NOW())
-
         """,
-
             session_id,
-
             user_id,
-
             "web",
-
             request.client.host,
-
             request.headers.get("user-agent"),
-
             None,   # ✅ FIX (refresh_token missing issue solved)
-
             False
-
         )
- 
+
         # Token left in DB — expires naturally after 48h.
         # Deleting here would break Gmail link-scanner pre-fetch flow.
  
         # ==============================
-
         # 🔹 REDIRECT WITH TOKEN (IMPORTANT)
-
         # ==============================
-
         redirect = RedirectResponse(
-
             url=f"{FRONTEND_URL}verify-email?verified=true&token={access_token}",
-
             status_code=302
-
         )
- 
         return redirect
- 
     except HTTPException:
-
         raise
- 
     except Exception as e:
-
         print("VERIFY EMAIL ERROR:", str(e))
-
         return RedirectResponse(
-
             url=f"{EXPIRE_URL}?reason=error",
-
             status_code=302
-
         )
- 
-
-# @router.get("/verify-email")
-# async def verify_email(token: str, request: Request, conn=Depends(get_db)):
-#     try:
-#         # check token
-#         row = await conn.fetchrow("""
-#             SELECT user_id
-#             FROM core_auth_table.email_verification_tokens
-#             WHERE token = $1
-#             AND expires_at > NOW()
-#         """, token)
-
-#         if not row:
-#             return RedirectResponse(url=f"{EXPIRE_URL}?reason=expired", status_code=302)
-
-#         user_id = str(row["user_id"])
-
-#         # activate user
-#         company_row = await conn.fetchrow("""
-#             UPDATE core_auth_table.auth_user
-#             SET status = 'active'
-#             WHERE user_id = $1
-#             RETURNING companies_other_id
-#         """, user_id)
-
-#         if not company_row:
-#             print("VERIFY EMAIL ERROR: user has no company linked", user_id)
-#             return RedirectResponse(url=f"{EXPIRE_URL}?reason=error", status_code=302)
-
-#         company_id = str(company_row["companies_other_id"])
-
-#         # ==============================
-#         # FETCH MODULES
-#         # ==============================
-
-#         modules = await conn.fetch("""
-#             SELECT sm.module_code
-#             FROM core_auth_table.company_subscriptions cs
-#             JOIN core_auth_table.subscription_plan_modules spm
-#             ON cs.plan_id = spm.plan_id
-#             JOIN core_auth_table.subscription_modules sm
-#             ON sm.module_id = spm.module_id
-#             WHERE cs.company_id = $1
-#             AND cs.status = 'active'
-#             AND spm.is_enabled = TRUE
-#         """, company_id)
-
-#         for row in modules:
-#             module_code = row["module_code"]
-#             group_name = f"{module_code}.operator"
-
-#             await conn.execute("""
-#                 INSERT INTO core_auth_table.user_permissions_groups
-#                 (id, user_id, group_id, assigned_at)
-#                 SELECT
-#                     gen_random_uuid(),
-#                     $1,
-#                     pg.group_id,
-#                     NOW()
-#                 FROM core_auth_table.permissions_groups pg
-#                 WHERE pg.group_name = $2
-#             """, user_id, group_name)
-
-#         # ==============================
-#         # CREATE TOKENS
-#         # ==============================
-
-#         permissions = await get_user_permissions(conn, user_id)
-
-#         access_token = create_access_token(
-#             user_id,
-#             company_id,
-#             permissions
-#         )
-
-#         # refresh_token = create_refresh_token(
-#         #     user_id,
-#         #     company_id
-#         # )
-
-#         # ==============================
-#         # CREATE SESSION
-#         # ==============================
-
-#         session_id = str(uuid.uuid4())
-
-#         await conn.execute("""
-#             INSERT INTO core_auth_table.auth_sessions
-#             (session_id, user_id, device, ip_address,
-#             user_agent, refresh_token,
-#             is_revoked, created_at, expires_at, last_seen_at)
-#             VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),NOW()+INTERVAL '7 days',NOW())
-#         """,
-#             session_id,
-#             user_id,
-#             "web",
-#             request.client.host,
-#             request.headers.get("user-agent"),
-#             #refresh_token,
-#             None,
-#             False
-#         )
-
-#         # Delete used token
-#         await conn.execute("""
-#             DELETE FROM core_auth_table.email_verification_tokens WHERE token = $1
-#         """, token)
-
-#         #redirect = RedirectResponse(url=f"{FRONTEND_URL}/verify-email?verified=true&user_id={user_id}", status_code=302)
-#         redirect = RedirectResponse(
-#                 url=f"{FRONTEND_URL}/verify-email?verified=true&token={access_token}",
-#                 status_code=302
-#             )
-#         # redirect.set_cookie(
-#         #     key="access_token",
-#         #     value=access_token,
-#         #     httponly=True,
-#         #     secure=False,
-#         #     samesite="Lax",
-#         #     max_age=60 * 30
-#         # )
-
-#         # redirect.set_cookie(
-#         #     key="refresh_token",
-#         #     value=refresh_token,
-#         #     httponly=True,
-#         #     secure=False,
-#         #     samesite="Lax",
-#         #     max_age=60 * 60 * 24 * 7
-#         # )
-
-#         return redirect
-
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("VERIFY EMAIL ERROR:", str(e))
-#         return RedirectResponse(url=f"{EXPIRE_URL}?reason=error", status_code=302)
-
 
 # @router.post("/research-preferences")
 # async def save_research_preferences(
@@ -1400,146 +1023,6 @@ async def get_pipeline_products(
             "error":   "Failed to fetch pipeline products",
             "detail":  str(e)
         })
-
-# @router.get("/pipeline/products/{job_id}")
-# async def get_pipeline_products_live(
-#     job_id: str,
-#     conn=Depends(get_db),
-#     current_user=Depends(get_current_user)
-# ):
-#     user_id = current_user["user_id"]
-#     try:
-#         # =====================================================
-#         # ✅ Fetch job status + products — no waiting
-#         # =====================================================
-#         job = await conn.fetchrow("""
-#             SELECT status, error, products_found
-#             FROM core_tables.pipeline_jobs
-#             WHERE id = $1 AND user_id = $2
-#         """, job_id, user_id)
-
-#         if not job:
-#             raise HTTPException(status_code=404, detail={
-#                 "success": False,
-#                 "error":   "Job not found",
-#                 "code":    "JOB_NOT_FOUND"
-#             })
-
-#         status = job["status"]
-
-#         if status == "failed":
-#             raise HTTPException(status_code=400, detail={
-#                 "success": False,
-#                 "error":   job["error"] or "Pipeline job failed.",
-#                 "code":    "JOB_FAILED"
-#             })
-
-#         # =====================================================
-#         # ✅ Fetch whatever products are stored so far
-#         # =====================================================
-#         rows = await conn.fetch("""
-#             SELECT id, product_data, is_selected, created_at
-#             FROM product_info.pipeline_temp_products
-#             WHERE job_id = $1
-#               AND user_id = $2
-#             ORDER BY created_at ASC
-#         """, job_id, user_id)
-
-#         result = []
-#         for r in rows:
-#             data = r["product_data"]
-#             if isinstance(data, str):
-#                 data = json.loads(data)
-#             result.append({
-#                 "id":          str(r["id"]),
-#                 "is_selected": r["is_selected"],
-#                 **data
-#             })
-
-#         return {
-#             "success":      True,
-#             "status":       status,
-#             "is_completed": status == "completed",
-#             "is_processing": status in ("processing", "pending"),
-#             "products":     result,
-#             "count":        len(result),
-#             "total_expected": job["products_found"] or 0,
-#         }
-
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("GET LIVE PRODUCTS ERROR:", str(e))
-#         raise HTTPException(status_code=500, detail={
-#             "success": False,
-#             "error":   "Failed to fetch live products",
-#             "detail":  str(e)
-#         })
-
-# @router.get("/pipeline/status/{job_id}")
-# async def get_pipeline_status(
-#     job_id: str,
-#     conn=Depends(get_db),
-#     current_user=Depends(get_current_user)
-# ):
-#     # user_id = current_user["sub"]
-#     user_id = current_user["user_id"]
-#     try:
-#         job = await conn.fetchrow("""
-#             SELECT
-#                 id,
-#                 status,
-#                 stage,
-#                 progress,
-#                 retry_count,
-#                 error,
-#                 logs,
-#                 partial_product,
-#                 created_at,
-#                 updated_at
-#             FROM core_tables.pipeline_jobs
-#             WHERE id = $1 AND user_id = $2
-#         """, job_id, user_id)
-
-#         if not job:
-#             raise HTTPException(status_code=404, detail={"success": False, "error": "Job not found", "code": "JOB_NOT_FOUND"})
-
-#         job = dict(job)
-
-#         status = job.get("status") or "pending"
-#         stage = job.get("stage") or "starting"
-#         progress = job.get("progress") or 0
-#         progress = max(0, min(100, progress))
-
-#         logs = job.get("logs") or []
-#         if isinstance(logs, str):
-#             logs = [logs]
-
-#         return {
-#             "success": True,
-#             "job_id": job["id"],
-#             "status": status,
-#             "stage": stage,
-#             "progress": progress,
-#             "retry_count": job.get("retry_count", 0),
-#             "error": job.get("error"),
-#             "logs": logs,
-#             "partial_product": job.get("partial_product"),
-#             "timestamps": {
-#                 "created_at": job.get("created_at"),
-#                 "updated_at": job.get("updated_at"),
-#             },
-#             "is_completed": status == "completed",
-#             "is_failed": status == "failed",
-#             "is_processing": status == "processing"
-#         }
-
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("PIPELINE STATUS ERROR:", str(e))
-#         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to fetch pipeline status", "detail": str(e)})
-
 
 @router.get("/pipeline/stream/{job_id}")
 async def stream_pipeline_status(
@@ -2045,130 +1528,6 @@ async def confirm_products(
         print("CONFIRM ERROR:", str(e))
         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to confirm products", "detail": str(e)})
 
-
-# @router.get("/products/fetched/{id}")
-# async def get_single_product(
-#     id: str,
-#     conn = Depends(get_db),
-#     current_user = Depends(get_current_user)
-# ):
-#     # user_id = current_user["sub"]
-#     user_id = current_user["user_id"]
-#     try:
-#         row = await conn.fetchrow("""
-#             SELECT id, product_data
-#             FROM product_info.pipeline_temp_products
-#             WHERE id = $1 AND user_id = $2
-#         """, id, user_id)
-
-#         if not row:
-#             raise HTTPException(status_code=404, detail={"success": False, "error": "Product not found", "code": "PRODUCT_NOT_FOUND"})
-
-#         data = row["product_data"]
-#         if isinstance(data, str):
-#             data = json.loads(data)
-
-#         return {"success": True, "id": str(row["id"]), **data}
-
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         print("GET PRODUCT ERROR:", str(e))
-#         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to fetch product", "detail": str(e)})
-
-# @router.post("/intelligence/run")
-# async def run_intelligence(
-#     company_id: str,
-#     conn=Depends(get_db)
-# ):
-#     """
-#     Run intelligence modules for all selected products of a company.
-
-#     - Fetches product + company data from DB
-#     - Builds ModuleInput for each product
-#     - Runs all modules
-#     """
-
-#     # =========================================================
-#     # ✅ 1. FETCH DATA FROM DB
-#     # =========================================================
-#     try:
-#         rows = await fetch_module_inputs(conn, company_id)
-
-#         if not rows:
-#             raise HTTPException(
-#                 status_code=404,
-#                 detail="No selected products found for this company"
-#             )
-
-#     except Exception as e:
-#         traceback.print_exc()
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"DB fetch failed: {str(e)}"
-#         )
-
-#     # =========================================================
-#     # ✅ 2. BUILD MODULE INPUTS
-#     # =========================================================
-#     try:
-#         inputs = build_module_inputs(rows)
-
-#         if not inputs:
-#             raise HTTPException(
-#                 status_code=400,
-#                 detail="Failed to build module inputs"
-#             )
-
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=422,
-#             detail=f"Input build failed: {str(e)}"
-#         )
-
-#     # =========================================================
-#     # ✅ 3. RUN MODULES FOR EACH PRODUCT
-#     # =========================================================
-#     results = []
-
-#     try:
-#         runner = ModuleRunner()
-
-#         for inp in inputs:
-#             try:
-#                 result = await runner.run_all(inp)
-
-#                 results.append({
-#                     "product_id": inp.product_id,
-#                     "success": True,
-#                     "data": result
-#                 })
-
-#             except Exception as e:
-#                 traceback.print_exc()
-
-#                 results.append({
-#                     "product_id": inp.product_id,
-#                     "success": False,
-#                     "error": str(e)
-#                 })
-
-#     except Exception as e:
-#         traceback.print_exc()
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"Runner failed: {type(e).__name__}: {str(e)}"
-#         )
-
-#     # =========================================================
-#     # ✅ 4. RETURN RESPONSE
-#     # =========================================================
-#     return {
-#         "company_id": company_id,
-#         "total_products": len(inputs),
-#         "results": results
-#     }
-
 @router.get("/product-intelligence/{product_id}")
 async def get_product_intelligence(
     product_id: str,
@@ -2202,16 +1561,9 @@ async def get_product_intelligence(
         })
 
     plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
-   # print(f"🔒 Applying plan visibility | plan={plan_name} | company={company_id}")
-    market_raw = data.get("market_intelligence", {})
-    #print(f"🔒 market_info count before mask: {len(market_raw.get('market_info', []))}")
     data = apply_plan_visibility(data, plan_name)
-    market_masked = data.get("market_intelligence", {})
-    #print(f"🔒 market_info count after mask: {len(market_masked.get('market_info', []))}")
     data["plan"] = plan_name
-
     return data
-
 
 @router.get("/products-overview")
 async def get_all_products_overview(
@@ -2315,6 +1667,12 @@ async def get_usage_dashboard(
         billing_cycle = subscription["billing_cycle"]
         end_date      = subscription["end_date"]
         unlimited     = (daily_limit is None or daily_limit == -1)
+
+        # If DB has query_limit = 0 (misconfigured), fall back to PLAN_CONFIG
+        if not unlimited and daily_limit == 0:
+            fallback = PLAN_CONFIG.get(plan_name, {}).get("daily_query_limit")
+            if fallback and fallback != -1:
+                daily_limit = fallback
 
         # 2. Modules allowed for this plan (use PLAN_CONFIG as source of truth)
         plan_cfg     = PLAN_CONFIG.get(plan_name, {})
@@ -3032,25 +2390,110 @@ async def delete_user_api(
     return await delete_user(conn, target_user_id, caller_user_id, company_id)
 
 
-@router.get("/my-products")
-async def get_all_products_api(
+@router.get("/my-products/filters")
+async def get_my_products_filters(
     conn=Depends(get_db),
     current_user=Depends(get_current_user),
 ):
     user_id = current_user.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return await get_all_products(conn, user_id)
+    rows = await conn.fetch("""
+        SELECT DISTINCT category, status
+        FROM product_info.product_master
+        WHERE created_by = $1 AND status != 'inactive'
+    """, user_id)
+    categories = sorted({r["category"] for r in rows if r["category"]})
+    statuses   = sorted({r["status"]   for r in rows if r["status"]})
+    return {"success": True, "categories": categories, "statuses": statuses}
+
+
+@router.get("/my-products")
+async def get_all_products_api(
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user),
+    search:   str = Query(None, description="Search by product name"),
+    category: str = Query(None, description="Filter by category"),
+    status:   str = Query(None, description="Filter by status"),
+):
+    user_id = current_user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return await get_all_products(conn, user_id, search=search, category=category, status=status)
+
+@router.get("/buyer-list/filters")
+async def get_buyer_list_filters(
+    conn=Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    user_id    = current_user.get("user_id")
+    company_id = current_user.get("company_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Fetch all buyers in the same order as /buyer-list
+    data = await get_buyer_list(conn, user_id)
+
+    # Apply the same plan-based limit
+    plan_name  = await get_company_plan(conn, str(company_id) if company_id else None)
+    max_buyers = (
+        PLAN_MODULE_LIMITS
+        .get(plan_name or "", {})
+        .get("buyers_intelligence", {})
+        .get("buyers", -1)
+    )
+
+    b2b_list = data.get("b2b") or []
+    if max_buyers != -1:
+        from collections import defaultdict
+        per_product: dict = defaultdict(list)
+        for b in b2b_list:
+            per_product[b.get("product_id")].append(b)
+        limited = []
+        for buyers_for_product in per_product.values():
+            limited.extend(buyers_for_product[:max_buyers])
+        b2b_list = limited
+
+    products  = set()
+    countries = set()
+    types     = set()
+
+    for b in b2b_list:
+        if not isinstance(b, dict):
+            continue
+        pname = b.get("product_name") or ""
+        if pname:
+            products.add(pname)
+        c = b.get("country") or ""
+        if c and c not in ("None", "none", "null"):
+            countries.add(c)
+        t = b.get("type") or ""
+        if t:
+            types.add(t)
+
+    return {
+        "success":   True,
+        "products":  sorted(products),
+        "countries": sorted(countries),
+        "types":     sorted(types),
+        "plan":      plan_name,
+        "max_buyers": max_buyers,
+    }
+
 
 @router.get("/buyer-list")
 async def get_buyer_list_api(
     conn=Depends(get_db),
     current_user=Depends(get_current_user),
+    search:       str = Query(None, description="Search by company name"),
+    product_name: str = Query(None, description="Filter by product name"),
+    country:      str = Query(None, description="Filter by country"),
+    buyer_type:   str = Query(None, description="Filter by buyer type"),
 ):
     user_id = current_user.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    data = await get_buyer_list(conn, user_id)
+    data = await get_buyer_list(conn, user_id, search=search, product_name=product_name, country=country, buyer_type=buyer_type)
 
     company_id = current_user.get("company_id")
     plan_name  = await get_company_plan(conn, str(company_id) if company_id else None)
@@ -3063,10 +2506,20 @@ async def get_buyer_list_api(
     )
 
     if max_buyers != -1 and isinstance(data.get("b2b"), list):
-        b2b     = data["b2b"]
-        visible = b2b[:max_buyers]
-        masked  = [MASK_PLACEHOLDER] * max(0, len(b2b) - max_buyers)
-        data["b2b"] = visible + masked
+        # Apply limit per product, not globally
+        from collections import defaultdict
+        per_product: dict = defaultdict(list)
+        for b in data["b2b"]:
+            per_product[b.get("product_id")].append(b)
+
+        limited = []
+        for buyers_for_product in per_product.values():
+            limited.extend(buyers_for_product[:max_buyers])
+
+        data["b2b"]                = limited
+        data["total_b2b_buyers"]   = len(limited)
+        data["matched_b2b_buyers"] = len(limited)
+        data["top_matches"]        = sum(1 for b in limited if (b.get("relevance_score") or 0) >= 7)
 
     data["plan"] = plan_name
     return data
@@ -3191,6 +2644,16 @@ async def delete_account(
                         )
                     """, company_id)
 
+                # Nullify coupon_codes.created_by before deleting users
+                await conn.execute("""
+                    UPDATE core_auth_table.coupon_codes
+                    SET created_by = NULL
+                    WHERE created_by IN (
+                        SELECT user_id FROM core_auth_table.auth_user
+                        WHERE companies_other_id = $1
+                    )
+                """, company_id)
+
                 await conn.execute("""
                     DELETE FROM core_auth_table.auth_user WHERE companies_other_id = $1
                 """, company_id)
@@ -3206,6 +2669,11 @@ async def delete_account(
                     await conn.execute(f"""
                         DELETE FROM {user_table} WHERE user_id = $1
                     """, target_user_id)
+
+                # Nullify coupon_codes.created_by before deleting user
+                await conn.execute("""
+                    UPDATE core_auth_table.coupon_codes SET created_by = NULL WHERE created_by = $1
+                """, target_user_id)
 
                 await conn.execute("""
                     DELETE FROM core_auth_table.auth_user WHERE user_id = $1
