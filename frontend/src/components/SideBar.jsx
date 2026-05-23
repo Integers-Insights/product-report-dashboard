@@ -21,7 +21,7 @@ import {
   ArrowLeftStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 
-import Int_Logo_Main_Horz from "../assets/Int_Logo_Main_Horz.png";
+import Int_Logo_Main_Horz from "../assets/Report_short.svg";
 import Ellipse_11 from "../assets/Ellipse_11.svg";
 import { useEffect, useState } from "react";
 import Profile from "./Profile";
@@ -77,6 +77,12 @@ const SideBar = () => {
   const [industry, setIndustry] = useState("");
   const [business_type, setBusiness_Type] = useState("");
   const [business_type_data, setBusiness_Type_Data] = useState("");
+
+  const [billingCycle, setBillingCycle] = useState("");
+  const [planPrice, setPlanPrice] = useState(0);
+  const [currentPlan, setCurrentPlan] = useState("");
+  const [expireDate, setExpireDate] = useState("");
+  const [planQueryLimit, setPlanQueryLimit] = useState(0);
 
   const [current_password, setCurrent_password] = useState("");
   const [new_password, setNew_password] = useState("");
@@ -142,6 +148,8 @@ const SideBar = () => {
 
       let data = await response.json();
 
+      console.log("data????: ", data);
+
       if (data?.success) {
         setFullName(data?.data?.full_name);
         setEmail(data?.data?.email);
@@ -151,6 +159,18 @@ const SideBar = () => {
         setIndustry(data?.data?.industry);
         setBusiness_Type(data?.data?.business_type);
         setBusiness_Type_Data(data?.data?.business_type);
+
+        setBillingCycle(data?.data?.billing_cycle);
+        if (data?.data?.billing_cycle === "monthly") {
+          setPlanPrice(data?.data?.plan_monthly_price);
+        } else if (data?.billing_cycle === "yearly") {
+          setPlanPrice(data?.data?.plan_yearly_price);
+        } else {
+          setPlanPrice(0);
+        }
+        setCurrentPlan(data?.data?.current_plan);
+        setExpireDate(data?.data?.expire_date);
+        setPlanQueryLimit(data?.data?.plan_query_limit);
       }
     } catch (err) {
       console.log("Something went wrong.", err);
@@ -287,17 +307,13 @@ const SideBar = () => {
       if (data?.success) {
         setUsage_date(data?.end_date);
         setPlan(data?.plan_name || "");
-
-        if (data?.billing_cycle === "monthly") {
-          setUserData1(data?.usage?.monthly_limit || 0);
-          setUserData2(data?.usage?.monthly_remaining || 0);
-        } else if (data?.billing_cycle === "yearly") {
-          setUserData1(data?.usage?.yearly_limit || 0);
-          setUserData2(data?.usage?.yearly_remaining || 0);
-        } else {
-          setUserData1(data?.usage?.daily_limit || 0);
-          setUserData2(data?.usage?.free_remaining || 0);
-        }
+        // if (data?.billing_cycle === "monthly") {
+        setUserData1(data?.usage?.free_remaining || 0);
+        setUserData2(data?.usage?.daily_limit || 0);
+        // } else {
+        //   setUserData1(data?.usage?.free_remaining || 0);
+        //   setUserData2(data?.usage?.daily_limit || 0);
+        // }
       }
     } catch (err) {
       console.log("something went wrong.", err);
@@ -318,9 +334,16 @@ const SideBar = () => {
     console.log("Invalid localStorage data");
   }
 
-  const total = usage_data1;
-  const remaining = usage_data2;
+  // const total = usage_data1;
+  // const remaining = usage_data2;
+  // const used = total - remaining;
+
+  const total = usage_data2;
+  const remaining = usage_data1;
   const used = total - remaining;
+
+  console.log("usage_data1: ", usage_data1);
+  console.log("usage_data2: ", usage_data2);
 
   const percentage = total
     ? Math.min(100, Math.max(0, (used / total) * 100))
@@ -524,6 +547,11 @@ const SideBar = () => {
               handleProfile2={handleProfile2}
               passError={passError}
               handleProfile3={handleProfile3}
+              billingCycle={billingCycle}
+              planPrice={planPrice}
+              currentPlan={currentPlan}
+              expireDate={expireDate}
+              planQueryLimit={planQueryLimit}
             />
           </div>
         </>

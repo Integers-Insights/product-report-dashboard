@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
-import report_inshort_logo1 from "../assets/Report_inshort_Logo (1).svg";
+import report_inshort_logo1 from "../assets/Report_short_1.svg";
 const cols = [
   {
     title: "Product",

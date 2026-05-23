@@ -41,9 +41,9 @@ const Marketingkit = ({ marketing_kit_data }) => {
             {product_name_data ?? "--"} {buyer_type_data ?? "--"} buyers
           </p>
         </div>
-        <div className="border bg-[#0284C7] text-white text-sm font-medium py-0.5 px-3 rounded-2xl">
+        {/* <div className="border bg-[#0284C7] text-white text-sm font-medium py-0.5 px-3 rounded-2xl">
           ↓ Export Kit
-        </div>
+        </div> */}
       </div>
 
       <div className="border border-[#E6E6E6] grid grid-cols-3 gap-5 p-2 bg-[#EDF9FF] rounded-lg mt-6">

@@ -22,9 +22,9 @@ const Competitors = ({ competitor_data }) => {
             positioning gaps
           </p>
         </div>
-        <div className="bg-red-100 text-red-500 text-sm font-medium py-0.5 px-3 rounded-2xl">
+        {/* <div className="bg-red-100 text-red-500 text-sm font-medium py-0.5 px-3 rounded-2xl">
           1 cert gap identified — act now
-        </div>
+        </div> */}
       </div>
 
       <div className="border flex gap-3 p-3 rounded-lg border-l-3 border-[#0284C7] mt-6">
@@ -33,18 +33,16 @@ const Competitors = ({ competitor_data }) => {
         </div>
         <div>
           <span className="text-sm text-[#0284C7] font-medium">
-            SpiceGuru International lost USDA Organic certification 8 days ago.
+            Your competitors are already selling to your next clients.
           </span>
           <span className="text-sm text-[#5F6368] font-regular">
-            {" "}
-            They supply 44 German buyers and ~20 US buyers. Those buyers are now
-            actively re-sourcing. This window typically lasts 60–90 days before
-            a new supplier qualifies. BioHerb GmbH (score 88) confirmed Q2
-            procurement is open.
+            See exactly who buys from them — their order volumes, certification
+            requirements, and procurement windows — so you can walk into the
+            right conversation at the right time.
           </span>
           <span className="text-sm text-[#0284C7] font-medium">
             {" "}
-            Send Email 1 this week.
+            Turn their buyer list into your pipeline.
           </span>
         </div>
       </div>
@@ -80,7 +78,10 @@ const Competitors = ({ competitor_data }) => {
                         <p>Lorem, ipsum dolor.</p>
                       </div>
                       <p className="text-sm font-regular text-[#5F6368] blur-sm">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit reprehenderit praesentium, officiis eaque expedita dignissimos deleniti aperiam! Aliquid praesentium impedit autem
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Velit reprehenderit praesentium, officiis eaque expedita
+                        dignissimos deleniti aperiam! Aliquid praesentium
+                        impedit autem
                       </p>
                     </div>
                   </div>
@@ -136,7 +137,18 @@ const Competitors = ({ competitor_data }) => {
                   </div>
                 </div>
                 <div>
-                  <button className="cursor-pointer">
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (!item?.website) return;
+
+                      const url = item.website.startsWith("http")
+                        ? item.website
+                        : `https://${item.website}`;
+
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                  >
                     <ArrowTopRightOnSquareIcon className="h-5 w-5 text-green-700" />
                   </button>
                 </div>

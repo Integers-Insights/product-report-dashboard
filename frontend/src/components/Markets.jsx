@@ -25,7 +25,123 @@ const Markets = ({ market_data }) => {
         </div>
       </div>
       <div className="grid grid-cols-3 gap-6 mt-4">
+        {console.log("market: ", market_data)}
+
         {market_data?.map((item, i) => {
+          if (item?.masked) {
+            return (
+              <div
+                className="border border-[#E6E6E6] p-3 rounded-lg card-hover"
+                key={i}
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-3 items-center">
+                    <div className="h-6 w-6 blur-sm">
+                      <Flag country={item.country} />
+                    </div>
+                    <div>
+                      <h2 className="text-[#000000] text-sm font-medium blur-sm">
+                        Lorem, ipsum dolor.
+                      </h2>
+                      <p className="text-[#5F6368] text-xs font-light blur-sm">
+                        HS Lorem
+                      </p>
+                    </div>
+                  </div>
+                  <div className="blur-sm">
+                    <CircularProgress
+                      value={item?.country_and_score?.score || 0}
+                      textColor={
+                        Number(item?.country_and_score?.score) >= 71
+                          ? "#2E7D32"
+                          : Number(item?.country_and_score?.score) >= 31
+                            ? "#D48C15"
+                            : "#C62828"
+                      }
+                      progressColor={
+                        Number(item?.country_and_score?.score) >= 71
+                          ? "#6ED073"
+                          : Number(item?.country_and_score?.score) >= 31
+                            ? "#FBBC05"
+                            : "#C62828"
+                      }
+                      bgColor={
+                        Number(item?.country_and_score?.score) >= 71
+                          ? "#CCFFCF"
+                          : Number(item?.country_and_score?.score) >= 31
+                            ? "#FFF1DA"
+                            : "#FFC4C4"
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 mt-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Demand Growth
+                    </p>
+                    <p className="text-[#2E7D32] text-xs font-regular blur-sm">
+                      Lorem, ipsum dolor.
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Import volume Lorem, ipsum dolor.
+                    </p>
+                    <p className="text-[#1E1E1E] text-xs font-regular">
+                      <span className="blur-sm">Lorem, ipsum dolor.</span>
+                      <span className="blur-sm">Lorem, ipsum dolor.</span>
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Matched buyers
+                    </p>
+                    <p className="text-[#1E1E1E] text-xs font-regular blur-sm">
+                      Lorem, ipsum.
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Peak procurement
+                    </p>
+                    <p className="text-[#1E1E1E] text-xs font-regular blur-sm">
+                      Lorem, ipsum.
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Primary channel
+                    </p>
+                    <p className="text-[#1E1E1E] text-xs font-regular blur-sm">
+                      Lorem ipsum dolor sit amet.
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[#5F6368] text-xs font-light whitespace-nowrap blur-sm">
+                      Lorem, ipsum.
+                    </p>
+                    <p className="text-[#1E1E1E] text-xs font-regular flex gap-1 blur-sm">
+                      Lorem ipsum dolor sit amet.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border flex gap-2.5 p-3 border-[#A5F7A9] text-[#2E7D32] bg-[#F1FEF2] rounded-lg mt-2.5">
+                  <div>
+                    <SparklesIcon className="h-6 w-6 blur-sm" />
+                  </div>
+                  <div className="text-13 font-regular blur-sm">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                    Laboriosam soluta ad, dicta, consectetur sint similique
+                    sapiente voluptatum reiciendis, ut officia esse dolor eos
+                    natus facilis neque earum dignissimos ab eaque.
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
           return (
             <div
               className="border border-[#E6E6E6] p-3 rounded-lg card-hover"

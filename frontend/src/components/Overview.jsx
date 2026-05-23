@@ -27,7 +27,7 @@ const icons = [
 
 const icon = [ClockIcon, CalendarIcon, CalendarDaysIcon];
 
-const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
+const Overview = ({ overview_data, urgent_note_data, actions_data,safeValue }) => {
   const navigate = useNavigate();
 
   return (
@@ -43,7 +43,7 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
           </p>
         </div>
         <div className="bg-[#CCFFCF] text-[#2E7D32] text-sm font-medium py-0.5 px-3 rounded-2xl">
-          Score: 82/100
+          Score: {safeValue || 0}/100
         </div>
       </div>
       <div className="grid grid-cols-4 gap-6 mt-4">
@@ -80,7 +80,7 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
         })}
       </div>
 
-      <div className="flex gap-2.5 mt-6 p-3 border border-[#ADE0AF] rounded-lg">
+      {/* <div className="flex gap-2.5 mt-6 p-3 border border-[#ADE0AF] rounded-lg">
         <div>
           <div className="h-7.5 w-7.5 bg-[#CCFFCF] flex justify-center items-center rounded">
             <ArrowRightStartOnRectangleIcon className="h-5 w-5 text-[#2E7D32] flex-shrink-0" />
@@ -89,7 +89,7 @@ const Overview = ({ overview_data, urgent_note_data, actions_data }) => {
         <div className="text-[#5F6368] text-13 font-regular">
           {urgent_note_data?.message || ""}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-3 gap-6 mt-6">
         {actions_data?.masked ? (

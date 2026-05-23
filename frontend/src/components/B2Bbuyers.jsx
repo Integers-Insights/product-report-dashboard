@@ -14,11 +14,10 @@ const B2Bbuyers = ({ b2b }) => {
             Target Buyers
           </h2>
           <p className="text-[#5F6368] text-13 font-regular">
-            200+ matched companies · Sorted by opportunity score · Contact
-            details on Venture+
+            Sorted by opportunity score
           </p>
         </div>
-        <div className="flex gap-3 items-center">
+        {/* <div className="flex gap-3 items-center">
           <div
             className="bg-[#FFF8EE] text-[#A66A07] text-sm font-medium py-0.5 px-3 rounded-2xl h-6.5 cursor-pointer"
             onClick={() => navigate("/pricing")}
@@ -28,7 +27,7 @@ const B2Bbuyers = ({ b2b }) => {
           <div className="border border-gray-300 text-sm font-medium bg-gray-100 flex gap-2 items-center px-4 py-1.5 rounded-lg cursor-pointer">
             <FunnelIcon className="h-5 w-5" /> Filter
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="flex flex-col gap-6 mt-6">
         {b2b?.buyers?.map((item, index) => {
@@ -72,7 +71,7 @@ const B2Bbuyers = ({ b2b }) => {
                     className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
                     onClick={() => navigate("/pricing")}
                   >
-                    🔒 Venture+
+                    🔒 Upgrade your plan to see more
                   </button>
                 </div>
               </div>
@@ -107,9 +106,23 @@ const B2Bbuyers = ({ b2b }) => {
                       <Flag country={item?.country} />
                     </span>
                   </div>
-                  <div className="text-xs font-light text-[#5F6368] flex gap-5">
-                    <p>{item?.contact ?? "--"}</p>
-                    <p>{item?.type ?? "--"}</p>
+                  <div className="text-xs font-light text-[#0284C7] flex gap-5">
+                    <p>
+                      <a
+                        href={
+                          item?.contact
+                            ? item.contact.startsWith("http")
+                              ? item.contact
+                              : `https://${item.contact}`
+                            : "#"
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item?.contact}
+                      </a>
+                    </p>
+                    <p className="text-[#5F6368]">{item?.type ?? "--"}</p>
                   </div>
                   <p className="text-sm font-regular text-[#5F6368]">
                     {item?.notes ?? "--"}
@@ -129,7 +142,7 @@ const B2Bbuyers = ({ b2b }) => {
         })}
       </div>
 
-      <div className="border border-[#FFDFAB] bg-[#FFF8EE] p-3 rounded-lg mt-6 flex justify-between items-center">
+      {/* <div className="border border-[#FFDFAB] bg-[#FFF8EE] p-3 rounded-lg mt-6 flex justify-between items-center">
         <p>
           🔒 195 more buyers with contact details, procurement emails, LinkedIn
           profiles and RFQ history — unlock on Venture+
@@ -138,9 +151,9 @@ const B2Bbuyers = ({ b2b }) => {
           className="bg-[#D48C15] text-white rounded-lg font-medium px-3 py-1"
           onClick={() => navigate("/pricing")}
         >
-          Upgrade to Venture+ →
+          Upgrade your plan to see more →
         </button>
-      </div>
+      </div> */}
     </>
   );
 };

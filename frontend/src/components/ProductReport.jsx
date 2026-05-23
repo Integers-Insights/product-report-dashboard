@@ -1,4 +1,4 @@
-import banner1 from "../assets/banner01.svg";
+import banner from "../assets/banner.svg";
 import Tab from "./Tab";
 import { useState } from "react";
 import Overview from "./Overview";
@@ -63,7 +63,7 @@ const ProductReport = ({
     <>
       <div
         className="p-6 flex justify-between rounded-xl text-[#FFFFFF] bg-cover bg-center"
-        style={{ backgroundImage: `url(${banner1})` }}
+        style={{ backgroundImage: `url(${banner})` }}
       >
         <div>
           <p className="text-xs font-light">INDIVIDUAL PRODUCT REPORT</p>
@@ -271,6 +271,7 @@ const ProductReport = ({
             overview_data={overview_data}
             urgent_note_data={urgent_note_data}
             actions_data={actions_data}
+            safeValue={safeValue}
           />
         )}
         {activeTab === "Markets" && <Markets market_data={market_data} />}
