@@ -39,10 +39,11 @@ from input_pipeline.config import MARKETING_KIT
 from modules.base_module import BaseModule, call_openai
 
 from modules.marketing_kit.keyword_prompt import BUYER_INTENT_PROMPT, GAP_KEYWORDS_PROMPT, MULTILINGUAL_PROMPT
-# Re-use the same country→language map and data models from v1
+# Re-use data models and language maps from v1
 from modules.marketing_kit.keyword_intel import (
     COUNTRY_LANGUAGE_MAP,
-    DEFAULT_LANGUAGE,
+    COUNTRY_LANGUAGES_MAP,
+    DEFAULT_LANGUAGES,
     KeywordItem,
     MultilingualKeyword,
     KeywordResult,
@@ -147,7 +148,9 @@ class KeywordIntelModule(BaseModule):
             print(f"  ⚠️  [keyword_intel_v2] GPT gap keywords failed: {e}")
             return []
 
-    async def _gpt_multilingual(self, inp, language: str) -> list[str]:
+    async def _gpt_multilingual_one(self, inp, lang_info: dict) -> list[tuple[str, str]]:
+        """Generates keywords for a single language. Returns list of (keyword, language_name)."""
+        language = lang_info["name"]
         prompt = MULTILINGUAL_PROMPT.format(
             product_name=  inp.product_name,
             category=      inp.category,
@@ -159,7 +162,7 @@ class KeywordIntelModule(BaseModule):
             raw = await call_openai(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,
+                max_tokens=600,
                 temperature=0.3,
                 call_type="keyword_multilingual",
                 module="keyword_intel",
@@ -168,12 +171,21 @@ class KeywordIntelModule(BaseModule):
                 product_id=getattr(inp, "product_id", None),
             )
             data = _extract_json(raw.strip() if raw else "")
-            kws  = [k["keyword"] for k in data.get("multilingual", [])[:15]]
-            print(f"     → GPT multilingual ({language}): {len(kws)} keywords generated")
-            return kws
+            pairs = [(k["keyword"], language) for k in data.get("multilingual", [])[:10]]
+            print(f"     → GPT multilingual ({language}): {len(pairs)} keywords generated")
+            return pairs
         except Exception as e:
-            print(f"  ⚠️  [keyword_intel_v2] GPT multilingual failed: {e}")
+            print(f"  ⚠️  [keyword_intel_v2] GPT multilingual ({language}) failed: {e}")
             return []
+
+    async def _gpt_multilingual(self, inp, languages: list[dict]) -> list[tuple[str, str]]:
+        """
+        Generates keywords in all target languages in parallel.
+        Returns flat list of (keyword, language_name) tuples.
+        """
+        results = await asyncio.gather(*[self._gpt_multilingual_one(inp, lang) for lang in languages])
+        combined = [pair for lang_pairs in results for pair in lang_pairs]
+        return combined
 
     # ── Step 2: Ads API — batch enrich ──────────────────────────────────────
 
@@ -335,9 +347,7 @@ class KeywordIntelModule(BaseModule):
             ))
 
         matched.sort(key=lambda k: k.search_volume or 0, reverse=True)
-        result = matched + unmatched
-        print(f"     → multilingual: {len(matched)}/{len(keywords)} enriched with real volume")
-        return result[:10]
+        return matched + unmatched
 
     # ── Main entry point ─────────────────────────────────────────────────────
 
@@ -356,19 +366,21 @@ class KeywordIntelModule(BaseModule):
         customer_id = GOOGLE_ADS["customer_id"]
 
         primary_target = inp.target_country[0] if isinstance(inp.target_country, list) else inp.target_country
-        lang_info  = COUNTRY_LANGUAGE_MAP.get(primary_target, DEFAULT_LANGUAGE)
-        language   = lang_info["name"]
-        lang_const = lang_info["constant"]
+        languages  = COUNTRY_LANGUAGES_MAP.get(primary_target, DEFAULT_LANGUAGES)
         en_const   = "languageConstants/1000"
 
-        print(f"  🔑 [keyword_intel_v2] {inp.product_name} → {primary_target} ({language})")
+        lang_labels = ", ".join(l["name"] for l in languages)
+        print(f"  🔑 [keyword_intel_v2] {inp.product_name} → {primary_target} ({lang_labels})")
 
-        # ── Step 1: Generate all keyword lists in parallel (3 GPT calls) ─────
-        buyer_kws, gap_kws, ml_kws = await asyncio.gather(
+        # ── Step 1: Generate all keyword lists in parallel ────────────────────
+        # buyer-intent, gap: 1 GPT call each (English)
+        # multilingual: 1 GPT call per language, all in parallel
+        buyer_kws, gap_kws, ml_pairs = await asyncio.gather(
             self._gpt_buyer_intent(inp),
             self._gpt_gap_keywords(inp),
-            self._gpt_multilingual(inp, language),
+            self._gpt_multilingual(inp, languages),
         )
+        # ml_pairs: [(keyword, language_name), ...]
 
         if not buyer_kws and not gap_kws:
             print(f"  ❌ [keyword_intel_v2] GPT returned no keywords")
@@ -380,51 +392,62 @@ class KeywordIntelModule(BaseModule):
             )
 
         # ── Step 2: Ads API enrichment ────────────────────────────────────────
-        # English batch: buyer-intent + gap + multilingual (if English market) in one call
-        if lang_info["iso"] == "en":
-            # For English markets, multilingual keywords are also English — enrich together
-            all_english = list(dict.fromkeys(buyer_kws + gap_kws + ml_kws))
-        else:
-            all_english = list(dict.fromkeys(buyer_kws + gap_kws))
+        # English batch: buyer-intent + gap keywords
+        en_ml_kws = [kw for kw, lang in ml_pairs if lang == "English"]
+        all_english = list(dict.fromkeys(buyer_kws + gap_kws + en_ml_kws))
 
         try:
             english_metrics = await asyncio.to_thread(
-                self._ads_enrich_batch,
-                all_english,
-                en_const,
-                yaml_path,
-                customer_id,
+                self._ads_enrich_batch, all_english, en_const, yaml_path, customer_id,
             )
         except Exception as e:
             print(f"  ⚠️  [keyword_intel_v2] English Ads enrichment failed: {e} — using GPT keywords only")
             english_metrics = {}
 
-        # Multilingual Ads batch — always run for non-English markets
-        ml_metrics: dict[str, dict] = {}
-        if lang_info["iso"] != "en" and ml_kws:
+        # Non-English multilingual: one Ads API call per language (in sequence to avoid rate limits)
+        ml_metrics_by_lang: dict[str, dict] = {"English": english_metrics}
+
+        non_en_langs = [l for l in languages if l["iso"] != "en"]
+        for lang_info in non_en_langs:
+            lang_name = lang_info["name"]
+            lang_kws  = [kw for kw, ln in ml_pairs if ln == lang_name]
+            if not lang_kws:
+                continue
             try:
-                ml_metrics = await asyncio.to_thread(
+                ml_metrics_by_lang[lang_name] = await asyncio.to_thread(
                     self._ads_enrich_batch,
-                    ml_kws,
-                    lang_const,
+                    lang_kws,
+                    lang_info["constant"],
                     yaml_path,
                     customer_id,
                 )
             except Exception as e:
-                print(f"  ⚠️  [keyword_intel_v2] Multilingual Ads enrichment failed: {e} — using GPT keywords only")
+                print(f"  ⚠️  [keyword_intel_v2] Multilingual Ads ({lang_name}) failed: {e}")
+                ml_metrics_by_lang[lang_name] = {}
 
         # ── Step 3: Match-back ────────────────────────────────────────────────
         buyer_intent_items = self._match_back_english(buyer_kws, english_metrics, "buyer_intent")
         gap_items          = self._match_back_english(gap_kws,   english_metrics, "gap")
 
-        if lang_info["iso"] == "en":
-            # English market: match multilingual against the same english_metrics batch
-            multilingual_items = self._match_back_multilingual(ml_kws, english_metrics, language)
-        else:
-            multilingual_items = self._match_back_multilingual(ml_kws, ml_metrics, language)
+        # Group ml_pairs by language, match-back each, then combine and rank by volume
+        from collections import defaultdict
+        lang_to_kws: dict[str, list[str]] = defaultdict(list)
+        for kw, lang in ml_pairs:
+            lang_to_kws[lang].append(kw)
+
+        all_ml_items: list[MultilingualKeyword] = []
+        for lang_name, kws in lang_to_kws.items():
+            metrics = ml_metrics_by_lang.get(lang_name, {})
+            items   = self._match_back_multilingual(kws, metrics, lang_name)
+            all_ml_items.extend(items)
+
+        # Sort by search_volume descending — language doesn't matter, top volume wins
+        all_ml_items.sort(key=lambda k: k.search_volume or 0, reverse=True)
+        multilingual_items = all_ml_items[:10]
 
         print(f"     → Final: {len(buyer_intent_items)} buyer-intent | "
-              f"{len(gap_items)} gaps | {len(multilingual_items)} multilingual")
+              f"{len(gap_items)} gaps | {len(multilingual_items)} multilingual "
+              f"({len(set(k.language for k in multilingual_items))} language(s))")
 
         return KeywordResult(
             success=True,

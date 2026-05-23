@@ -295,27 +295,27 @@ class B2BBuyersModule(BaseModule):
         Returns:
             BuyerDiscoveryResult with real Apollo company data
         """
-        # target_country can be a list or None — normalise to a plain non-empty string
+        # Normalise target_country to a plain non-empty string — use local var, never mutate inp
         tc = inp.target_country
         if isinstance(tc, list):
             tc = tc[0] if tc else None
-        inp.target_country = str(tc) if tc and str(tc) not in ("None", "none", "null") else ""
+        target_country = str(tc) if tc and str(tc) not in ("None", "none", "null") else ""
 
-        print(f"\n  🏭 [b2b_buyers] {inp.product_name} → {inp.target_country}")
+        print(f"\n  🏭 [b2b_buyers] {inp.product_name} → {target_country}")
 
         # Step 1 — GPT generates keyword sets
         keyword_sets = await self._generate_keywords(inp)
 
         # Step 2 — Apollo org search (concurrent per keyword set)
         try:
-            orgs = await self._search_all(keyword_sets, inp.target_country)
+            orgs = await self._search_all(keyword_sets, target_country)
         except Exception as e:
             print(f"  ❌ [b2b_buyers] Apollo API error: {e}")
             return BuyerDiscoveryResult(
                 success=False,
                 product_id=inp.product_id,
                 product_name=inp.product_name,
-                target_country=inp.target_country,
+                target_country=target_country,
                 error=f"Apollo API error: {e}",
             )
 
@@ -324,7 +324,7 @@ class B2BBuyersModule(BaseModule):
                 success=False,
                 product_id=inp.product_id,
                 product_name=inp.product_name,
-                target_country=inp.target_country,
+                target_country=target_country,
                 error="Apollo returned no companies for these keywords",
             )
 
@@ -340,7 +340,7 @@ class B2BBuyersModule(BaseModule):
         entries = [
             BuyerEntry(
                 name=            b.get("name", ""),
-                country=         _clean_country(b.get("country"), inp.target_country),
+                country=         _clean_country(b.get("country"), target_country),
                 website=         b.get("website"),
                 buyer_type=      b.get("buyer_type"),
                 notes=           b.get("notes"),
@@ -356,6 +356,6 @@ class B2BBuyersModule(BaseModule):
             success=True,
             product_id=inp.product_id,
             product_name=inp.product_name,
-            target_country=inp.target_country,
+            target_country=target_country,
             buyers=entries,
         )

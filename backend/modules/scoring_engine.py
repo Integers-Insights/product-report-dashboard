@@ -32,6 +32,24 @@ from typing import Optional
 from modules.scoring_prompts import SCORING_PROMPT
 from modules.base_module import call_openai
 
+# Weights must sum to 1.0
+_WEIGHTS: dict[str, float] = {
+    "market_demand":    0.20,
+    "trade_activity":   0.20,
+    "price_fit":        0.15,
+    "buyer_availability": 0.15,
+    "variants_formats": 0.15,
+    "competition":      0.15,
+}
+
+def _compute_overall(scores: list) -> int:
+    """Weighted average of dimension scores (1–10) scaled to 0–100."""
+    total = sum(
+        s.score * _WEIGHTS.get(s.dimension, 0)
+        for s in scores
+    )
+    return round(total * 10)
+
 
 # ─────────────────────────────────────────────
 #  DATA MODELS
@@ -302,8 +320,8 @@ class ScoringEngine:
                 for a in data.get("action_cards", [])
             ]
 
-            overall = int(data.get("overall_score", 0))
-            print(f"     → Overall score: {overall}/100  |  "
+            overall = _compute_overall(scores)
+            print(f"     → Overall score: {overall}/100 (Python weighted)  |  "
                   f"scores: {[f'{s.dimension}={s.score}' for s in scores]}")
 
             return ScoringResult(

@@ -38,16 +38,12 @@ Color:
 - "yellow" if score 5–6
 - "red"    if score ≤ 4
 
-TASK 2: Overall score (0–100) — weighted average, round to nearest integer.
-Weights: market_demand 20%, buyer_availability 20%, price_fit 15%,
-         trade_activity 15%, variants_formats 15%, competition 15%
-
-TASK 3: Urgent opportunity note (1–3 sentences).
+TASK 2: Urgent opportunity note (1–3 sentences).
 - Must reference a SPECIFIC insight from the module data
 - Should create urgency or highlight a time-sensitive window
 - Bold the action recommendation using **bold** markdown
 
-TASK 4: Three action cards.
+TASK 3: Three action cards.
 - "Do now"       : immediate action this week
 - "This month"   : 30-day priority
 - "This quarter" : 90-day strategic move
@@ -55,7 +51,6 @@ Each card: title (3–5 words) + body (2 sentences max, specific to module data)
 
 Return ONLY valid JSON, no explanation:
 {{
-  "overall_score": integer,
   "scores": [
     {{
       "dimension": "market_demand",

@@ -452,9 +452,15 @@ class BaseModule:
             "demand_growth", "import_volume", "matched_buyers",
             "peak_procurement", "primary_channel", "cert_require", "cert_gap"
         }
+        def _has_real_value(v) -> bool:
+            if v is None: return False
+            if isinstance(v, dict): return not all(x is None for x in v.values())
+            if isinstance(v, list): return len(v) > 0
+            if isinstance(v, str):  return bool(v.strip())
+            return True
         field_count = sum(
             1 for k, v in structured_data.items()
-            if k in CORE_FIELDS and v is not None
+            if k in CORE_FIELDS and _has_real_value(v)
         )
         print(f"  ✅ [{self.module_name()}] {field_count} fields extracted")
 
