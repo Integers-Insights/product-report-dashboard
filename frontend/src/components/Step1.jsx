@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import CircularProgress from "./CircularProgress";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Step1 = ({
   nextStep,
@@ -21,11 +22,23 @@ const Step1 = ({
   setUrl,
   agree1,
   setAgree1,
-  agree2,
-  setAgree2,
+  buyerType={buyerType},
+  setBuyerType={setBuyerType},
+  // agree2,
+  // setAgree2,
   loading1,
   handleFetchProducts,
 }) => {
+
+
+  const navigate = useNavigate();
+
+  const notificationMethods = [
+  { id: "b2b", title: "B2B" },
+  { id: "b2c", title: "B2C" },
+  { id: "both", title: "Both" },
+];
+
   return (
     <>
       <h1 className="text-[28px] font-semibold text-[#000000]">
@@ -140,16 +153,16 @@ const Step1 = ({
                         By clicking Fetch Products I allow INTRADE24 to process
                         this URL to generate market intelligence for my personal
                         use. I agree to the
-                        <span className="text-[#0284C7]">
+                        <span className="text-[#0284C7] cursor-pointer" onClick={()=>navigate("/terms")}>
                           {" "}
                           Terms & Conditions{" "}
                         </span>
                         and
-                        <span className="text-[#0284C7]"> Privacy Policy</span>.
+                        <span className="text-[#0284C7] cursor-pointer" onClick={()=>navigate("/privacy-policy")}> Privacy Policy</span>.
                       </label>
                     </div>
                   </div>
-                  <div className="flex gap-3">
+                  {/* <div className="flex gap-3">
                     <div className="flex h-6 shrink-0 items-center">
                       <div className="group grid size-4 grid-cols-1">
                         <input
@@ -193,18 +206,109 @@ const Step1 = ({
                         validate it before analysis begins.
                       </label>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </fieldset>
+            </div>
+
+            <div className="flex mt-3 gap-24">
+              <div>
+                <fieldset>
+                  <legend className="text-base font-semibold text-[#001413]">
+                    Buyer Type
+                  </legend>
+                  <div className="mt-1 space-y-6 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
+                    {notificationMethods.map((notificationMethod, index) => (
+                      <div
+                        key={notificationMethod.id}
+                        className="flex items-center"
+                      >
+                        <input
+                          id={notificationMethod.id}
+                          name="notification-method"
+                          type="radio"
+                          value={notificationMethod.id}
+                          checked={buyerType === notificationMethod.id}
+                          onChange={(e) => setBuyerType(e.target.value)}
+                          className="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-[#0284C7] checked:bg-[#0284C7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284C7] disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden"
+                        />
+                        <label
+                          htmlFor={notificationMethod.id}
+                          className="ml-3 block text-sm/6 font-medium text-gray-900"
+                        >
+                          {notificationMethod.title}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+              {/* <div>
+                <fieldset>
+                  <legend className="text-base font-semibold text-[#001413]">
+                    Price Positioning
+                  </legend>
+
+                  <div className="flex gap-6 mt-1">
+                    {priceOptions.map((item) => (
+                      <div key={item} className="flex gap-1">
+                        <div className="flex h-6 shrink-0 items-center">
+                          <div className="group grid size-4 grid-cols-1">
+                            <input
+                              id={item}
+                              type="checkbox"
+                              value={item}
+                              checked={priceType.includes(item)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setPriceType([...priceType, item]);
+                                } else {
+                                  setPriceType(
+                                    priceType.filter((i) => i !== item),
+                                  );
+                                }
+                              }}
+                              className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-[#0284C7] checked:bg-[#0284C7]"
+                            />
+
+                            <svg
+                              fill="none"
+                              viewBox="0 0 14 14"
+                              className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white"
+                            >
+                              <path
+                                d="M3 8L6 11L11 3.5"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="opacity-0 group-has-checked:opacity-100"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+
+                        <div className="text-sm/6">
+                          <label
+                            htmlFor={item}
+                            className="font-medium text-gray-900"
+                          >
+                            {item}
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </fieldset>
+              </div> */}
             </div>
 
             <div className="flex gap-2.5 items-center mt-6">
               <div>
                 <button
                   type="button"
-                  disabled={!agree1 || !agree2 || loading1}
+                  disabled={!agree1 || loading1}
                   onClick={handleFetchProducts}
-                  className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-base font-semibold text-white shadow-xs ${!agree1 || !agree2 || loading1 ? "bg-gray-400 cursor-not-allowed" : "bg-[#0284C7] hover:bg-[#0273AE] cursor-pointer"}`}
+                  className={`inline-flex items-center gap-x-1.5 rounded-md px-3 py-2 text-base font-semibold text-white shadow-xs ${!agree1 || loading1 ? "bg-gray-400 cursor-not-allowed" : "bg-[#0284C7] hover:bg-[#0273AE] cursor-pointer"}`}
                 >
                   {loading1 ? "Fetching..." : "Fetch Products"}
                 </button>

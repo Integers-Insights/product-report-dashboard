@@ -36,7 +36,7 @@ const channels = [
     icon: Mail,
     title: "Email Us",
     desc: "For general inquiries and support",
-    value: "info@integersinsights.com",
+    value: "support@reportinshort.com",
     color: "bg-brand-50",
     iconColor: "text-brand-500",
   },
@@ -44,7 +44,7 @@ const channels = [
     icon: Headphones,
     title: "Support",
     desc: "Technical help & account questions",
-    value: "+91 9518349134",
+    value: "+91 9321256706",
     color: "bg-sky-50",
     iconColor: "text-sky-500",
   },
@@ -52,7 +52,7 @@ const channels = [
     icon: Users,
     title: "Enterprise Sales",
     desc: "Custom plans for large teams",
-    value: "info@integersinsights.com",
+    value: "support@reportinshort.com",
     color: "bg-violet-50",
     iconColor: "text-violet-500",
   },
@@ -254,7 +254,7 @@ export default function Contact() {
                       type="submit"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      className="btn-shimmer w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition-colors shadow-glow-green-sm"
+                      className="btn-shimmer w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition-colors shadow-glow-green-sm cursor-pointer"
                     >
                       Send message <Send size={15} />
                     </motion.button>
@@ -271,7 +271,7 @@ export default function Contact() {
                     className="text-brand-500 shrink-0 mt-0.5"
                   />
                   <span>
-                    Integers Insights Private Limited Unit No 28, 2nd Floor,
+                    Integers Insights Private Limited <br /> Unit No 28, 2nd Floor,
                     Vicino Building, New Link Road, Goregaon (Mumbai), Goregaon
                     West, Maharashtra, 400104, India
                   </span>

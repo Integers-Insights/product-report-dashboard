@@ -7,15 +7,15 @@ import {
 
 import Step1 from "./Step1";
 import Step2 from "./Step2";
+// import Step3 from "./Step3";
 import Step3 from "./Step3";
-import Step4 from "./Step4";
 import toast from "react-hot-toast";
 
 const steps = [
   { id: "01", name: "Products Fetch" },
   { id: "02", name: "Validate" },
-  { id: "03", name: "Profile" },
-  { id: "04", name: "Opportunities" },
+  // { id: "03", name: "Profile" },
+  { id: "03", name: "Opportunities" },
 ];
 
 export default function Steps() {
@@ -32,9 +32,11 @@ export default function Steps() {
 
   const [url, setUrl] = useState("");
   const [agree1, setAgree1] = useState(false);
-  const [agree2, setAgree2] = useState(false);
+  // const [agree2, setAgree2] = useState(false);
   const [loading1, setLoading1] = useState(false);
   const [joinId, setJobId] = useState("");
+
+  const [joinId1, setJobId1] = useState("");
 
   const [products, setProducts] = useState([]);
   const [usage_summary_data, setUsage_summary_data] = useState(0);
@@ -42,18 +44,18 @@ export default function Steps() {
 
   let selectedProductId = selectedProducts?.map((v) => v.id) || [];
 
-  const [selectedGoal, setSelectedGoal] = useState([]);
+  // const [selectedGoal, setSelectedGoal] = useState([]);
   const [buyerType, setBuyerType] = useState("");
-  const [priceType, setPriceType] = useState([]);
-  const [capacity, setCapacity] = useState("");
-  const [selected, setSelected] = useState([]);
-  const [certifications, setCertifications] = useState({
-    quality_manufacturing: [],
-    food_agriculture_organic: [],
-    pharma_health_safety: [],
-    religion_ethics_lifestyle: [],
-    technology_digital: [],
-  });
+  // const [priceType, setPriceType] = useState([]);
+  // const [capacity, setCapacity] = useState("");
+  // const [selected, setSelected] = useState([]);
+  // const [certifications, setCertifications] = useState({
+  //   quality_manufacturing: [],
+  //   food_agriculture_organic: [],
+  //   pharma_health_safety: [],
+  //   religion_ethics_lifestyle: [],
+  //   technology_digital: [],
+  // });
 
   const [productsData, setProductsData] = useState([]);
   const [banner_summary, setBanner_summary] = useState([]);
@@ -63,7 +65,9 @@ export default function Steps() {
   const [pages_crawled_data, setPages_crawled_data] = useState(0);
 
   const [loading2, setLoading2] = useState(false);
-  const [fetching_allProducts, setFetching_allProducts] = useState(true);
+  const [fetching_allProducts, setFetching_allProducts] = useState(false);
+
+  const [cardDataLoading, setCardDataLoading] = useState(false);
 
   const handleFetchProducts = async () => {
     if (!url) {
@@ -82,7 +86,10 @@ export default function Steps() {
 
       let payload = {
         website_url: url,
+        buyer_type: buyerType,
       };
+
+      // console.log("step1 data: ",payload);
 
       const response = await fetch(`${base_url}/pipeline/run`, {
         method: "POST",
@@ -98,6 +105,8 @@ export default function Steps() {
       }
 
       const data = await response.json();
+
+      console.log("jobId data: ", data);
       if (data.success) {
         setJobId(data?.job_id);
         toast.success(data?.message);
@@ -171,7 +180,13 @@ export default function Steps() {
       }
 
       const data = await response.json();
-      // console.log("products data:", data);
+
+      console.log("Post data: ",data);
+
+      if (data.success) {
+        setJobId1(data?.job_id || "");
+      }
+      console.log("products data:", data);
     } catch (error) {
       console.log("Something went wrong:", error.message);
       throw error;
@@ -180,73 +195,81 @@ export default function Steps() {
     }
   };
 
-  const payloadData = {
-    goals: selectedGoal,
+  // const payloadData = {
+  //   goals: selectedGoal,
 
-    buyer_type: buyerType,
+  //   buyer_type: buyerType,
 
-    price_positioning: priceType,
+  //   price_positioning: priceType,
 
-    monthly_supply_capacity: capacity,
+  //   monthly_supply_capacity: capacity,
 
-    target_country: selected,
+  //   target_country: selected,
 
-    certifications: {
-      quality_manufacturing: certifications.quality_manufacturing,
-      food_agriculture_organic: certifications.food_agriculture_organic,
-      pharma_health_safety: certifications.pharma_health_safety,
-      religion_ethics_lifestyle: certifications.religion_ethics_lifestyle,
-      technology_digital: certifications.technology_digital,
-    },
-  };
+  //   certifications: {
+  //     quality_manufacturing: certifications.quality_manufacturing,
+  //     food_agriculture_organic: certifications.food_agriculture_organic,
+  //     pharma_health_safety: certifications.pharma_health_safety,
+  //     religion_ethics_lifestyle: certifications.religion_ethics_lifestyle,
+  //     technology_digital: certifications.technology_digital,
+  //   },
+  // };
 
-  const researchGoals = async () => {
+  // const researchGoals = async () => {
+  //   try {
+  //     setLoading2(true);
+
+  //     const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+  //     const response = await fetch(
+  //       `${base_url}/research-preferences?job_id=${joinId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify(payloadData),
+  //       },
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to post products");
+  //     }
+
+  //     const data = await response.json();
+  //   } catch (error) {
+  //     console.log("Something went wrong:", error.message);
+  //     throw error;
+  //   } finally {
+  //     setLoading2(false);
+  //   }
+  // };
+
+  console.log("jobId: ", joinId);
+
+  const getCardData = async () => {
     try {
-      setLoading2(true);
-
+      setCardDataLoading(true);
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+
       const response = await fetch(
-        `${base_url}/research-preferences?job_id=${joinId}`,
+        `${base_url}/products-overview?job_id=${joinId1}`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(payloadData),
         },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to post products");
-      }
-
-      const data = await response.json();
-    } catch (error) {
-      console.log("Something went wrong:", error.message);
-      throw error;
-    } finally {
-      setLoading2(false);
-    }
-  };
-
-  const getCardData = async () => {
-    try {
-      const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-
-      const response = await fetch(`${base_url}/products-overview`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
 
       const data = await response.json();
+
+      console.log("card data: ", data);
       if (data?.success) {
         setProductsData(Array.isArray(data?.products) ? data.products : []);
         setBanner_summary(Array.isArray(data?.summary) ? data.summary : []);
@@ -257,6 +280,8 @@ export default function Steps() {
       }
     } catch (error) {
       console.log("Something went wrong:", error.message);
+    }finally{
+      setCardDataLoading(false);
     }
   };
 
@@ -265,22 +290,12 @@ export default function Steps() {
     getProduct();
   }, [joinId]);
 
+  console.log("jobId1: ",joinId1);
+
   useEffect(() => {
-    let isFetching = false;
+    if (joinId1 === "") return;
     getCardData();
-
-    const interval = setInterval(() => {
-      if (isFetching) return;
-
-      isFetching = true;
-
-      getCardData()
-        .catch((err) => console.log("error:", err))
-        .finally(() => (isFetching = false));
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [joinId1]);
 
   return (
     <div className="w-full">
@@ -364,8 +379,10 @@ export default function Steps() {
               setUrl={setUrl}
               agree1={agree1}
               setAgree1={setAgree1}
-              agree2={agree2}
-              setAgree2={setAgree2}
+              buyerType={buyerType}
+              setBuyerType={setBuyerType}
+              // agree2={agree2}
+              // setAgree2={setAgree2}
               loading1={loading1}
               handleFetchProducts={handleFetchProducts}
             />
@@ -384,7 +401,7 @@ export default function Steps() {
         )}
         {currentStep === 2 && (
           <div>
-            <Step3
+            {/* <Step3
               selectedGoal={selectedGoal}
               setSelectedGoal={setSelectedGoal}
               buyerType={buyerType}
@@ -397,12 +414,22 @@ export default function Steps() {
               setSelected={setSelected}
               certifications={certifications}
               setCertifications={setCertifications}
+             /> */}
+
+            <Step3
+              productsData={productsData}
+              banner_summary={banner_summary}
+              product_analyse_data={product_analyse_data}
+              last_run_data={last_run_data}
+              time_taken_data={time_taken_data}
+              pages_crawled_data={pages_crawled_data}
+              cardDataLoading={cardDataLoading}
             />
           </div>
         )}
-        {currentStep === 3 && (
+        {/* {currentStep === 3 && (
           <div>
-            <Step4
+            <Step3
               productsData={productsData}
               banner_summary={banner_summary}
               product_analyse_data={product_analyse_data}
@@ -411,7 +438,7 @@ export default function Steps() {
               pages_crawled_data={pages_crawled_data}
             />
           </div>
-        )}
+        )} */}
       </div>
       {currentStep !== 0 && (
         <div className="flex justify-between">
@@ -468,6 +495,39 @@ export default function Steps() {
                       return;
                     }
                     await researchGoals();
+                    // console.log("Step 3 API call");
+                    // if (selectedGoal.length === 0) {
+                    //   toast.error("Please select at least one goal");
+                    //   return;
+                    // }
+                    // if (!buyerType) {
+                    //   toast.error("Please select buyer type");
+                    //   return;
+                    // }
+                    // if (priceType.length === 0) {
+                    //   toast.error(
+                    //     "Please select at least one price positioning",
+                    //   );
+                    //   return;
+                    // }
+                    // if (!capacity || Number(capacity) <= 0) {
+                    //   toast.error("Please enter valid monthly supply capacity");
+                    //   return;
+                    // }
+                    // if (selected.length === 0) {
+                    //   toast.error("Please select at least one target country");
+                    //   return;
+                    // }
+                    // const allCategoriesHaveOne = Object.values(
+                    //   certifications,
+                    // ).every((arr) => arr.length > 0);
+                    // if (!allCategoriesHaveOne) {
+                    //   toast.error(
+                    //     "Please select at least one certification from each category",
+                    //   );
+                    //   return;
+                    // }
+                    // await researchGoals();
                   } else if (currentStep === 3) {
                     //console.log("Step 4 API call");
                   }

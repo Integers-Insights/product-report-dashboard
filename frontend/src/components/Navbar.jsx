@@ -27,7 +27,7 @@ export default function Navbar() {
 
   const handleClick = () => {
     let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-    authToken ? navigate("/overview") : navigate("/login");
+    authToken ? navigate("/app") : navigate("/signup");
   };
 
   let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
@@ -83,7 +83,7 @@ export default function Navbar() {
             {!userProfile ? (
               <button
                 onClick={() => navigate("/login")}
-                className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-all duration-200"
+                className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer"
               >
                 Log in
               </button>
@@ -94,9 +94,10 @@ export default function Navbar() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={handleClick}
-              className="btn-shimmer relative flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-1.5 rounded-xl shadow-glow-green-sm transition-colors duration-200"
+              className="btn-shimmer relative flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-4 py-1.5 rounded-xl shadow-glow-green-sm transition-colors duration-200 cursor-pointer"
             >
-              Start free
+              {userProfile?"Explore Dashboard":"Start free"}
+              
               <ChevronRight size={14} />
             </motion.button>
             <button
@@ -136,13 +137,13 @@ export default function Navbar() {
             <div className="flex gap-2 pt-3 border-t border-slate-100">
               <Link
                 to="/login"
-                className="flex-1 text-center text-sm font-medium text-slate-700 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                className="flex-1 text-center text-sm font-medium text-slate-700 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Log in
               </Link>
               <Link
                 to="/login"
-                className="flex-1 text-center text-sm font-semibold text-white py-2 rounded-xl bg-brand-500 hover:bg-brand-600 transition-colors"
+                className="flex-1 text-center text-sm font-semibold text-white py-2 rounded-xl bg-brand-500 hover:bg-brand-600 transition-colors cursor-pointer"
               >
                 Start free
               </Link>

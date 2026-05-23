@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -11,11 +11,12 @@ import {
   Shield,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
-import { useRazorpay } from "../hooks/useRazorpay";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
+import CurrentPlanModal from "../components/CurrentPlanModel";
+import CheckoutModal from "../components/CheckoutModal";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -142,11 +143,52 @@ const faqs = [
 export default function Pricing() {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [checkoutPlan, setCheckoutPlan] = useState(null);
+  const [showCurrentPlan, setShowCurrentPlan] = useState(false);
+  const [planList, setPlanList] = useState(plans);
   const navigate = useNavigate();
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
-  const { openCheckout } = useRazorpay();
+  const [currentPlan, setCurrentPlan] = useState(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("CtKoIC)iR1SP)5mr&R4d")) || {};
+      return (u.current_plan || "").toLowerCase();
+    } catch { return ""; }
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+    if (!token) return;
+    fetch(`${base_url}/profile`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data?.current_plan) {
+          setCurrentPlan(data.data.current_plan.toLowerCase());
+        }
+      })
+      .catch(() => {});
+  }, [base_url]);
+
+  useEffect(() => {
+    fetch(`${base_url}/plans`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) return;
+        const priceMap = {};
+        data.Plans.forEach(p => { priceMap[p.plan_name.toLowerCase()] = p; });
+        setPlanList(plans.map(plan => {
+          const api = priceMap[plan.name.toLowerCase()];
+          if (!api) return plan;
+          return {
+            ...plan,
+            monthlyPrice: api.monthly_price || plan.monthlyPrice,
+            yearlyPrice:  api.yearly_price  || plan.yearlyPrice,
+          };
+        }));
+      })
+      .catch(() => {});
+  }, [base_url]);
 
   const handlePaymentSuccess = async (response) => {
     try {
@@ -171,7 +213,7 @@ export default function Pricing() {
 
       if (result.success) {
         toast.success("Payment successful");
-        navigate("/overview");
+        navigate("/app");
       } else {
         toast.error("Verification failed");
       }
@@ -180,93 +222,25 @@ export default function Pricing() {
     }
   };
 
-  const handleRedirect = async (cta) => {
-    let authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+  const handleRedirect = (cta) => {
+    const authToken = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
     if (cta === "Get started free") {
-      authToken ? navigate("/overview") : navigate("/login");
+      authToken ? navigate("/app") : navigate("/login");
+      return;
     }
     if (cta === "Talk to our team →") {
       navigate("/contact");
+      return;
     }
-
     if (cta === "Start Navigator") {
-      if (authToken) {
-        let cycle = yearly === true ? "yearly" : "monthly";
-        let plan = "Basic";
-        try {
-          console.log("cycle: ", cycle);
-          console.log("plan: ", plan);
-          let response = await fetch(
-            `${base_url}/billing/create-subscription-order?plan_name=${plan}&billing_cycle=${cycle}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${authToken}`,
-              },
-            },
-          );
-          let data = await response.json();
-          if (data.success) {
-            openCheckout({
-              order: {
-                order_id: data.order_id,
-                amount: data.amount,
-                currency: data.currency,
-                description: `${data.plan_name} — ${data.billing_cycle}`,
-              },
-              onSuccess: handlePaymentSuccess,
-            });
-          } else {
-            toast.error(data.message || "Order creation failed");
-          }
-          console.log("price data: ", data);
-        } catch (err) {
-          console.log("Something went wrong ", err);
-        }
-      } else {
-        navigate("/login");
-      }
+      if (!authToken) { navigate("/login"); return; }
+      setCheckoutPlan(planList.find(p => p.name === "Basic"));
+      return;
     }
-
     if (cta === "Start Expedition") {
-      if (authToken) {
-        let cycle = yearly ? "yearly" : "monthly";
-        let plan = "Pro";
-
-        try {
-          let response = await fetch(
-            `${base_url}/billing/create-subscription-order?plan_name=${plan}&billing_cycle=${cycle}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${authToken}`,
-              },
-            },
-          );
-
-          let data = await response.json();
-
-          if (data.success) {
-            openCheckout({
-              order: {
-                order_id: data.order_id,
-                amount: data.amount,
-                currency: data.currency,
-                description: `${plan} — ${cycle}`,
-              },
-              onSuccess: handlePaymentSuccess,
-            });
-          } else {
-            toast.error(data.message);
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      } else {
-        navigate("/login");
-      }
+      if (!authToken) { navigate("/login"); return; }
+      setCheckoutPlan(planList.find(p => p.name === "Pro"));
+      return;
     }
   };
 
@@ -352,7 +326,7 @@ export default function Pricing() {
         <section className="px-4 pb-24">
           <div className="max-w-6xl mx-auto">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {plans.map(
+              {planList.map(
                 (
                   {
                     tier,
@@ -367,7 +341,9 @@ export default function Pricing() {
                     ctaStyle,
                   },
                   i,
-                ) => (
+                ) => {
+                  const isCurrentPlan = name.toLowerCase() === currentPlan;
+                  return (
                   <motion.div
                     key={name}
                     initial={{ opacity: 0, y: 32 }}
@@ -476,23 +452,28 @@ export default function Pricing() {
                     </ul>
 
                     <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => handleRedirect(cta)}
+                      whileHover={{ scale: isCurrentPlan ? 1 : 1.03 }}
+                      whileTap={{ scale: isCurrentPlan ? 1 : 0.97 }}
+                      onClick={() => isCurrentPlan ? setShowCurrentPlan(true) : handleRedirect(cta)}
                       className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                        badge
-                          ? "bg-white text-brand-600 hover:bg-white/90 shadow-sm"
-                          : ctaStyle === "primary"
-                            ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow-green-sm"
-                            : ctaStyle === "ghost"
-                              ? "bg-brand-50 text-brand-600 border border-brand-200 hover:bg-brand-100"
-                              : "bg-slate-50 text-slate-700 border border-slate-200 hover:border-brand-300 hover:text-brand-700"
+                        isCurrentPlan
+                          ? badge
+                            ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
+                            : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                          : badge
+                            ? "bg-white text-brand-600 hover:bg-white/90 shadow-sm"
+                            : ctaStyle === "primary"
+                              ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow-green-sm"
+                              : ctaStyle === "ghost"
+                                ? "bg-brand-50 text-brand-600 border border-brand-200 hover:bg-brand-100"
+                                : "bg-slate-50 text-slate-700 border border-slate-200 hover:border-brand-300 hover:text-brand-700"
                       }`}
                     >
-                      {cta}
+                      {isCurrentPlan ? "Current plan" : cta}
                     </motion.button>
                   </motion.div>
-                ),
+                  );
+                }
               )}
             </div>
 
@@ -598,6 +579,28 @@ export default function Pricing() {
 
         <Footer />
       </PageWrapper>
+
+      {showCurrentPlan && (
+        <CurrentPlanModal
+          planName={currentPlan}
+          baseUrl={base_url}
+          onClose={() => setShowCurrentPlan(false)}
+          onUpgrade={() => {
+            const proplan = planList.find(p => p.name === "Pro");
+            if (proplan) setCheckoutPlan(proplan);
+          }}
+        />
+      )}
+
+      {checkoutPlan && (
+        <CheckoutModal
+          plan={checkoutPlan}
+          initialYearly={yearly}
+          baseUrl={base_url}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setCheckoutPlan(null)}
+        />
+      )}
     </>
   );
 }

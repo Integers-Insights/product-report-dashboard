@@ -31,7 +31,7 @@ import toast from "react-hot-toast";
 const navigation = [
   {
     name: "Overview",
-    href: "/overview",
+    href: "/app",
     icon: CubeTransparentIcon,
     current: true,
   },
@@ -86,37 +86,42 @@ const SideBar = () => {
   const [usage_data1, setUserData1] = useState(0);
   const [usage_data2, setUserData2] = useState(0);
   const [usage_date, setUsage_date] = useState("");
-  const [plan,setPlan] = useState("");
+  const [plan, setPlan] = useState("");
 
   const navigate = useNavigate();
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
   const handleLogout = async () => {
-    try {
-      let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
-      let response = await fetch(`${base_url}/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    let confirmDelete = confirm("Are you sure?");
+    if (confirmDelete) {
+      try {
+        let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+        let response = await fetch(`${base_url}/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        let data = await response.json();
+
+        if (data?.success) {
+          toast.success(data?.message || "Logged out successfully");
+          localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
+          localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
+          navigate("/login");
+        }
+      } catch (err) {
+        console.log("Something went wrong.", err);
       }
-
-      let data = await response.json();
-
-      if (data?.success) {
-        toast.success(data?.message || "Logged out successfully");
-        localStorage.removeItem("CtKoIC)iR1SP)5mr&R4d");
-        localStorage.removeItem("VZyHRIoNN3m)OXhGwCtC");
-        navigate("/login");
-      }
-    } catch (err) {
-      console.log("Something went wrong.", err);
+    } else {
+      toast.error("Logout cancelled.");
     }
   };
 
@@ -324,7 +329,10 @@ const SideBar = () => {
   return (
     <>
       <div className="sidebar sticky top-0 left-0 flex flex-col gap-y-3 bg-[#FFF] px-6 w-64 min-h-screen">
-        <div className="flex h-12 mt-2 shrink-0 items-center cursor-pointer" onClick={()=>navigate("/")}>
+        <div
+          className="flex h-12 mt-2 shrink-0 items-center cursor-pointer"
+          onClick={() => navigate("/")}
+        >
           <img
             alt="Int-Logo"
             src={Int_Logo_Main_Horz}
@@ -408,7 +416,9 @@ const SideBar = () => {
                       <span>
                         <BoltIcon className="h-5 w-5 text-yellow-500" />
                       </span>
-                      <span className="text-[13px] capitalize">{plan} Plan</span>
+                      <span className="text-[13px] capitalize">
+                        {plan} Plan
+                      </span>
                     </div>
                     <div>
                       <span className="text-xl font-semibold">{used}</span>

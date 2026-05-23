@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
+import boto3
 from fastapi import APIRouter, Depends, Request, Response, Body, BackgroundTasks, Query
 from fastapi.responses import RedirectResponse,StreamingResponse
 from schemas.onbording_schema import *
@@ -145,6 +145,66 @@ async def update_company_api(
 ):
     return await update_company_profile(data, conn, current_user)
 
+@router.post("/contact")
+async def contact_form(data: ContactRequest):
+    try:
+        AWS_REGION            = os.getenv("AWS_REGION")
+        AWS_ACCESS_KEY_ID     = os.getenv("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+        SMTP_USER             = os.getenv("SMTP_USER")
+        SUPER_ADMIN_EMAIL     = os.getenv("SUPER_ADMIN_EMAIL")
+
+        ses = boto3.client(
+            "ses",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+
+        html_body = f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:20px;">
+        <div style="max-width:520px;margin:auto;background:#fff;padding:30px;border-radius:10px;border:1px solid #e2e8f0;">
+            <h2 style="color:#0F172A;margin-top:0;">📬 New Contact Form Submission</h2>
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr><td style="padding:10px 8px;color:#64748B;width:120px;">Name</td>
+                    <td style="padding:10px 8px;font-weight:bold;color:#0F172A;">{data.name}</td></tr>
+                <tr style="background:#f8fafc;">
+                    <td style="padding:10px 8px;color:#64748B;">Email</td>
+                    <td style="padding:10px 8px;font-weight:bold;color:#0F172A;">{data.email}</td></tr>
+                <tr><td style="padding:10px 8px;color:#64748B;">Subject</td>
+                    <td style="padding:10px 8px;font-weight:bold;color:#0F172A;">{data.subject}</td></tr>
+            </table>
+            <div style="background:#f8fafc;border-radius:8px;padding:16px;margin-top:8px;">
+                <div style="font-size:12px;color:#64748B;margin-bottom:6px;font-weight:600;">MESSAGE</div>
+                <div style="color:#1e293b;font-size:14px;line-height:1.6;white-space:pre-wrap;">{data.message}</div>
+            </div>
+            <p style="font-size:11px;color:#94a3b8;margin-top:24px;">
+                Sent from reportinshort.com contact form
+            </p>
+        </div>
+        </body>
+        </html>
+        """
+
+        ses.send_email(
+            Source=SMTP_USER,
+            Destination={"ToAddresses": [SUPER_ADMIN_EMAIL]},
+            ReplyToAddresses=[data.email],
+            Message={
+                "Subject": {"Data": f"Contact: {data.subject}"},
+                "Body": {
+                    "Html": {"Data": html_body},
+                    "Text": {"Data": f"From: {data.name} <{data.email}>\nSubject: {data.subject}\n\n{data.message}"},
+                },
+            },
+        )
+        return {"success": True, "message": "Message sent successfully"}
+    except Exception as e:
+        print("CONTACT FORM ERROR:", str(e))
+        raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to send message"})
+
+
 @router.post("/signup")
 async def signup(
     data: SignupRequest,
@@ -164,7 +224,7 @@ async def signup(
 async def login(
     data: LoginRequest,
     # request: Request,
-    # response: Response,
+    # response: Response, 
     conn = Depends(get_db)
 ):
     try:

@@ -26,7 +26,7 @@ const GoogleAuthButton = () => {
         toast.success(data.message || "successful");
         localStorage.setItem("VZyHRIoNN3m)OXhGwCtC", data.access_token);
         localStorage.setItem("CtKoIC)iR1SP)5mr&R4d", JSON.stringify(data.user));
-        navigate("/overview");
+        navigate("/app");
       }
       if (data.detail) {
         toast.error(data?.detail);

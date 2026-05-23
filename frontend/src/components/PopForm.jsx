@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { IoChevronDown } from "react-icons/io5";
-import AccordionCheckBox from "./AccordianCheckBox";
+// import AccordionCheckBox from "./AccordianCheckBox";
 import { countries } from "./Data";
 import {
   companyType,
@@ -58,13 +58,13 @@ export default function PopForm({ setPopupOpen }) {
 
   const [selectedGoals, setSelectedGoals] = useState([]);
 
-  const [certifications, setCertifications] = useState({
-    quality: [],
-    food: [],
-    pharma: [],
-    ethics: [],
-    tech: [],
-  });
+  // const [certifications, setCertifications] = useState({
+  //   quality: [],
+  //   food: [],
+  //   pharma: [],
+  //   ethics: [],
+  //   tech: [],
+  // });
 
   const [platform, setPlatform] = useState("");
 
@@ -160,14 +160,14 @@ export default function PopForm({ setPopupOpen }) {
     });
   };
 
-  const handleCertChange = (category, value) => {
-    setCertifications((prev) => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter((item) => item !== value)
-        : [...prev[category], value],
-    }));
-  };
+  // const handleCertChange = (category, value) => {
+  //   setCertifications((prev) => ({
+  //     ...prev,
+  //     [category]: prev[category].includes(value)
+  //       ? prev[category].filter((item) => item !== value)
+  //       : [...prev[category], value],
+  //   }));
+  // };
 
   const handleStep1Submit = async () => {
     if (!fullName.trim()) {
@@ -303,13 +303,13 @@ export default function PopForm({ setPopupOpen }) {
 
     const payload = {
       primary_goal: selectedGoals,
-      certifications: {
-        quality_manufacturing: certifications.quality,
-        food_agriculture_organic: certifications.food,
-        pharma_health_safety: certifications.pharma,
-        religion_ethics_lifestyle: certifications.ethics,
-        technology_digital: certifications.tech,
-      },
+      // certifications: {
+      //   quality_manufacturing: certifications.quality,
+      //   food_agriculture_organic: certifications.food,
+      //   pharma_health_safety: certifications.pharma,
+      //   religion_ethics_lifestyle: certifications.ethics,
+      //   technology_digital: certifications.tech,
+      // },
       referral_source: platform,
     };
 
@@ -321,6 +321,8 @@ export default function PopForm({ setPopupOpen }) {
         toast.error("User not authenticated");
         return false;
       }
+
+      console.log("payload: ",payload);
 
       const response = await fetch(`${base_url}/step3`, {
         method: "POST",
@@ -403,7 +405,7 @@ export default function PopForm({ setPopupOpen }) {
         <div className="p-6 flex justify-between w-full bg-[linear-gradient(93deg,rgba(2,132,199,0.15)_7.55%,rgba(2,132,199,0.05)_88.45%)]">
           <div>
             <p className="text-xl text-[#000] font-semibold">
-              Welcome to InTrade24
+              Welcome to report inshort
             </p>
             <p className="text-13 text-[#000]">
               Before your first intelligence run, help us personalize your
@@ -557,7 +559,7 @@ export default function PopForm({ setPopupOpen }) {
                       htmlFor="nameInput"
                       className="block text-lg font-semibold text-[#001413]"
                     >
-                      Enter You Name *
+                      Enter your Name *
                     </label>
                     <div>
                       <input
@@ -1095,7 +1097,7 @@ export default function PopForm({ setPopupOpen }) {
                     error &&
                     "Select primary goal "}
                 </p>
-                <div className="flex gap-3 items-center mt-6">
+                {/* <div className="flex gap-3 items-center mt-6">
                   <div>
                     <h1 className="bordertext-[#001413] text-lg font-semibold">
                       Certification You Hold
@@ -1106,14 +1108,14 @@ export default function PopForm({ setPopupOpen }) {
                       Not Yet - I’m working on it
                     </button>
                   </div>
-                </div>
+                </div> */}
                 {/* accordian */}
-                <div className="mt-3">
+                {/* <div className="mt-3">
                   <AccordionCheckBox
                     certifications={certifications}
                     handleCertChange={handleCertChange}
                   />
-                </div>
+                </div> */}
                 <div className="mt-6">
                   <label className="block text-sm/6 font-medium text-gray-900">
                     How did you hear about InTrade24? *

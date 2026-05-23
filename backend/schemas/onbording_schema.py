@@ -64,6 +64,12 @@ class Step3Request(BaseModel):
     primary_goal: Optional[List[str]] = None
     referral_source: Optional[str] = None
 
+class ContactRequest(BaseModel):
+    name: str
+    email: EmailStr
+    subject: str
+    message: str
+
 class SignupRequest(BaseModel):
     email:              str
     password:           str
