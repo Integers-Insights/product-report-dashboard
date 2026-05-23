@@ -41,7 +41,7 @@ EXPIRE_URL = os.getenv("EXPIRE_URL")
 # in-memory cache for /pipeline/run  key = "user_id:normalized_url"
 # value = {"job_id": str, "ts": datetime}   TTL = 5 minutes
 _pipeline_run_cache: dict = {}
-_PIPELINE_CACHE_TTL = timedelta(minutes=5)
+_PIPELINE_CACHE_TTL = timedelta(minutes=15)
 
 router = APIRouter()
 #--------------------
@@ -996,11 +996,16 @@ async def get_pipeline_products(
                     if unlimited:
                         monthly_remaining = -1  # signal for unlimited
                         yearly_remaining  = -1 if billing_cycle_val == "yearly" else 0
-                    elif limit_type != "daily":
-                        monthly_limit     = daily_limit * days_in_cycle
-                        monthly_remaining = max(monthly_limit - free_used_cycle, 0)
-                        yearly_limit      = (daily_limit * days_in_cycle) if billing_cycle_val == "yearly" else 0
-                        yearly_remaining  = max(yearly_limit - free_used_year, 0) if billing_cycle_val == "yearly" else 0
+                    elif limit_type not in ("daily", "total"):
+                        # basic/pro: query_limit is total for period; yearly = query_limit * 12
+                        subscription_limit = daily_limit * 12 if billing_cycle_val == "yearly" else daily_limit
+                        remaining          = max(subscription_limit - free_used_cycle, 0)
+                        if billing_cycle_val == "yearly":
+                            monthly_remaining = 0
+                            yearly_remaining  = remaining
+                        else:
+                            monthly_remaining = remaining
+                            yearly_remaining  = 0
         except Exception as billing_err:
             print("BILLING FETCH ERROR (non-fatal):", str(billing_err))
 
@@ -1412,7 +1417,37 @@ async def confirm_products(
         can_run = len(confirmed_products)
 
         if not unlimited:
-            if limit_type == "daily":
+            if limit_type == "total":
+                # Trial: count all usage since subscription start — no daily reset
+                sub_start = subscription["start_date"]
+                sub_start_date = sub_start.date() if hasattr(sub_start, "date") else sub_start
+                used_row = await conn.fetchrow("""
+                    SELECT COALESCE(SUM(usage_count), 0) AS total_used
+                    FROM core_auth_table.company_usage
+                    WHERE company_id = $1
+                      AND usage_date >= $2
+                      AND module_code NOT LIKE 'addon_%'
+                """, company_id, sub_start_date)
+                used_total = int(used_row["total_used"]) if used_row else 0
+                effective_remaining = (daily_limit - used_total) + addon_remaining
+
+                if effective_remaining <= 0:
+                    return {
+                        "success":               True,
+                        "confirmed":             True,
+                        "intelligence_started":  False,
+                        "error":                 "query_limit_reached",
+                        "message":               f"Your trial limit of {daily_limit} queries has been used. Upgrade to a paid plan to continue.",
+                        "used":                  used_total,
+                        "query_limit":           daily_limit,
+                        "addon_credits":         addon_remaining,
+                        "can_run":               0,
+                        "count":                 len(confirmed_products),
+                        "products": [{"product_id": str(r["id"]), "product_name": r["product_name"]} for r in confirmed_products],
+                    }
+                can_run = min(len(confirmed_products), effective_remaining)
+
+            elif limit_type == "daily":
                 used_row = await conn.fetchrow("""
                     SELECT COALESCE(SUM(usage_count), 0) AS total_used
                     FROM core_auth_table.company_usage
@@ -1439,59 +1474,32 @@ async def confirm_products(
                 can_run = min(len(confirmed_products), effective_remaining)
 
             else:
-                product_limit_per_day = plan_cfg.get("product_limit_per_day", -1)
-                if product_limit_per_day != -1:
-                    prod_row = await conn.fetchrow("""
-                        SELECT COALESCE(SUM(usage_count), 0) AS total
-                        FROM core_auth_table.company_usage
-                        WHERE company_id = $1
-                          AND module_code = 'product_intelligence'
-                          AND usage_date = $2
-                    """, company_id, today)
-                    products_used_today = int(prod_row["total"]) if prod_row else 0
-                    products_remaining  = product_limit_per_day - products_used_today
+                # BASIC / PRO: subscription pool
+                # query_limit from DB = total for period; yearly = query_limit * 12
+                billing_cycle_val = subscription.get("billing_cycle") or "monthly"
+                sub_start = subscription["start_date"]
+                sub_start_date = sub_start.date() if hasattr(sub_start, "date") else sub_start
+                subscription_limit = daily_limit * 12 if billing_cycle_val == "yearly" else daily_limit
 
-                    if products_remaining <= 0:
-                        return {
-                            "success":               True,
-                            "confirmed":             True,
-                            "intelligence_started":  False,
-                            "error":                 "daily_product_limit_reached",
-                            "message":               "Daily product limit reached. Resets tomorrow at midnight UTC.",
-                            "product_limit_per_day": product_limit_per_day,
-                            "products_used_today":   products_used_today,
-                            "addon_credits":         addon_remaining,
-                            "can_run":               0,
-                            "count":                 len(confirmed_products),
-                            "products": [{"product_id": str(r["id"]), "product_name": r["product_name"]} for r in confirmed_products],
-                        }
-                    can_run = min(len(confirmed_products), products_remaining)
-
-                start_date_only = subscription["start_date"]
-                if hasattr(start_date_only, "date"):
-                    start_date_only = start_date_only.date()
                 month_row = await conn.fetchrow("""
                     SELECT COALESCE(SUM(usage_count), 0) AS total_used
                     FROM core_auth_table.company_usage
                     WHERE company_id = $1
                       AND usage_date >= $2
                       AND module_code NOT LIKE 'addon_%'
-                """, company_id, start_date_only)
+                """, company_id, sub_start_date)
                 used_this_cycle = int(month_row["total_used"]) if month_row else 0
-                end_date = subscription["end_date"]
-                days_in_cycle = max((end_date.date() - start_date_only).days, 1) if (end_date and start_date_only) else 30
-                monthly_limit = daily_limit * days_in_cycle
-                cycle_remaining = (monthly_limit - used_this_cycle) + addon_remaining
+                cycle_remaining = (subscription_limit - used_this_cycle) + addon_remaining
 
                 if cycle_remaining <= 0:
                     return {
                         "success":              True,
                         "confirmed":            True,
                         "intelligence_started": False,
-                        "error":                "monthly_limit_reached",
-                        "message":              f"Monthly query limit of {monthly_limit} reached. Purchase add-on credits to continue.",
-                        "monthly_limit":        monthly_limit,
-                        "used_this_month":      used_this_cycle,
+                        "error":                "query_limit_reached",
+                        "message":              f"Your {plan_name} plan limit of {subscription_limit} queries has been used. Purchase add-on credits to continue.",
+                        "query_limit":          subscription_limit,
+                        "used":                 used_this_cycle,
                         "addon_credits":        addon_remaining,
                         "can_run":              0,
                         "count":                len(confirmed_products),
@@ -1753,8 +1761,21 @@ async def get_usage_dashboard(
                 "addon_remaining":      addon_remaining,
             }
 
+        elif limit_type == "total":
+            # ── TRIAL: no reset — lifetime limit ──────────────────────────────
+            free_remaining = max(daily_limit - free_used_cycle, 0)
+            usage_summary = {
+                "daily_limit":      daily_limit,
+                "used_today":       free_used_cycle,   # cumulative since subscription start
+                "free_remaining":   free_remaining,
+                "addon_purchased":  addon_total,
+                "addon_used":       addon_used_all,
+                "addon_remaining":  addon_remaining,
+                "remaining_today":  free_remaining + addon_remaining,
+            }
+
         elif limit_type == "daily":
-            # ── TRIAL: daily reset ─────────────────────────────────────────────
+            # ── legacy daily reset ─────────────────────────────────────────────
             free_remaining = max(daily_limit - free_used_today, 0)
             usage_summary = {
                 "daily_limit":          daily_limit,
@@ -1768,27 +1789,21 @@ async def get_usage_dashboard(
             }
 
         else:
-            # ── BASIC / PRO: monthly pool, no daily reset ──────────────────────
-            monthly_limit         = daily_limit * days_in_cycle
-            monthly_remaining     = max(monthly_limit - free_used_cycle, 0)
-            yearly_limit          = (daily_limit * days_in_cycle) if billing_cycle == "yearly" else 0
-            yearly_remaining      = max(yearly_limit - free_used_year, 0) if billing_cycle == "yearly" else 0
-            product_limit_per_day = plan_cfg.get("product_limit_per_day", 0)
-            products_remaining    = max(product_limit_per_day - products_used_today, 0)
+            # ── BASIC / PRO: subscription pool
+            # query_limit from DB is the total for the billing period
+            # monthly = query_limit  |  yearly = query_limit * 12
+            subscription_limit = daily_limit * 12 if billing_cycle == "yearly" else daily_limit
+            used_queries       = free_used_cycle
+            remaining_queries  = max(subscription_limit - used_queries, 0)
 
             usage_summary = {
-                "monthly_limit":          monthly_limit,
-                "yearly_limit":           yearly_limit,
-                "used_this_month":        free_used_cycle,
-                "used_this_year":         free_used_year,
-                "monthly_remaining":      monthly_remaining,
-                "yearly_remaining":       yearly_remaining,
-                "product_limit_per_day":  product_limit_per_day,
-                "products_used_today":    products_used_today,
-                "products_remaining_today": products_remaining,
-                "addon_purchased":        addon_total,
-                "addon_used":             addon_used_all,
-                "addon_remaining":        addon_remaining,
+                "daily_limit":      subscription_limit,   # reuse key so sidebar stays consistent
+                "used_today":       used_queries,          # cumulative since subscription start
+                "free_remaining":   remaining_queries,
+                "addon_purchased":  addon_total,
+                "addon_used":       addon_used_all,
+                "addon_remaining":  addon_remaining,
+                "remaining_today":  remaining_queries + addon_remaining,
             }
 
         return {

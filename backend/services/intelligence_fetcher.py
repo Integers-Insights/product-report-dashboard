@@ -587,6 +587,7 @@ async def get_all_products(conn, user_id: str, search: str = None, category: str
 
         return {
             "success": True,
+            "has_run_intelligence":True,
             "total":    len(result),
             "products": result,
         }

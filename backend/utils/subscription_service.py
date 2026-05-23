@@ -92,8 +92,9 @@ PLAN_CONFIG = {
             "trade_intelligence"
         ],
         "daily_query_limit": 5,
+        "limit_type": "total",   # no daily reset — once used up, must upgrade
         "user_limit": 1,
-         "concurrent_job_limit": 1,
+        "concurrent_job_limit": 1,
     },
     "basic": {
         "modules": [
@@ -386,6 +387,10 @@ def _mask_module_data(module_key: str, module_data: dict, plan_name: str) -> dic
     return result
 
 
+# Fields that are always returned as-is, regardless of plan.
+ALWAYS_VISIBLE_KEYS = {"urgent_note", "actions"}
+
+
 # =========================================================
 # APPLY PLAN VISIBILITY (filter intelligence response)
 # =========================================================
@@ -396,13 +401,15 @@ def apply_plan_visibility(response_data: dict, plan_name: str) -> dict:
     if allowed_modules == "all":
         # pro/enterprise: still apply data masking if configured
         return {
-            key: _mask_module_data(key, value, plan_name)
+            key: (value if key in ALWAYS_VISIBLE_KEYS else _mask_module_data(key, value, plan_name))
             for key, value in response_data.items()
         }
 
     filtered = {}
     for key, value in response_data.items():
-        if key in allowed_modules:
+        if key in ALWAYS_VISIBLE_KEYS:
+            filtered[key] = value
+        elif key in allowed_modules:
             filtered[key] = _mask_module_data(key, value, plan_name)
         else:
             # Use module-specific locked structure so the frontend still gets
@@ -634,7 +641,7 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str, cou
 
     # 1. Active subscription + plan details
     subscription = await conn.fetchrow("""
-        SELECT sp.plan_name, sp.query_limit, cs.end_date, cs.start_date
+        SELECT sp.plan_name, sp.query_limit, cs.end_date, cs.start_date, cs.billing_cycle
         FROM core_auth_table.company_subscriptions cs
         JOIN core_auth_table.subscription_plans sp ON cs.plan_id = sp.plan_id
         WHERE cs.company_id = $1 AND cs.status = 'active'
@@ -648,6 +655,7 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str, cou
     query_limit      = subscription["query_limit"]
     subscription_end = subscription["end_date"]
     start_date       = subscription["start_date"]
+    billing_cycle    = subscription["billing_cycle"] or "monthly"
 
     # unlimited plans (query_limit = -1 or None) → skip all checks
     if query_limit is None or query_limit == -1:
@@ -656,7 +664,29 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str, cou
     plan_cfg   = PLAN_CONFIG.get(plan_name, {})
     limit_type = plan_cfg.get("limit_type", "daily")   # "daily" for trial, "monthly" for basic/pro
 
-    # ── TRIAL: daily reset logic ──────────────────────────────────────────────
+    # ── TRIAL: total (lifetime) limit — no daily reset ───────────────────────
+    if limit_type == "total":
+        start_date_only = start_date.date() if hasattr(start_date, "date") else start_date
+        usage = await conn.fetchrow("""
+            SELECT COALESCE(SUM(usage_count), 0) AS total_used
+            FROM core_auth_table.company_usage
+            WHERE company_id = $1
+              AND usage_date >= $2
+              AND module_code NOT LIKE 'addon_%'
+        """, company_id, start_date_only)
+        total_used = int(usage["total_used"]) if usage else 0
+
+        if total_used < query_limit:
+            await _record_free_usage(conn, company_id, module_code, today, now, count=count)
+            return {"type": "free", "company_id": company_id, "module_code": module_code, "date": today}
+
+        # Lifetime limit hit → try add-on, else prompt upgrade
+        return await _consume_addon(conn, company_id, module_code, today, now,
+                                    subscription_end, total_used, query_limit,
+                                    error_key="query_limit_reached",
+                                    message=f"Your trial limit of {query_limit} queries has been used. Upgrade to a paid plan to continue.")
+
+    # ── TRIAL (legacy daily): daily reset logic ───────────────────────────────
     if limit_type == "daily":
         usage = await conn.fetchrow("""
             SELECT COALESCE(SUM(usage_count), 0) AS total_used
@@ -677,35 +707,12 @@ async def check_and_increment_usage(conn, company_id: str, module_code: str, cou
                                     error_key="daily_limit_reached",
                                     message=f"Daily limit of {query_limit} queries reached. Resets tomorrow or purchase add-on credits.")
 
-    # ── BASIC / PRO: monthly pool, no daily reset ─────────────────────────────
+    # ── BASIC / PRO: subscription pool — query_limit is the total for the period
+    # monthly: total = query_limit  |  yearly: total = query_limit * 12
     start_date_only = start_date.date() if hasattr(start_date, "date") else start_date
-    monthly_limit   = query_limit * max((subscription_end.date() - start_date_only).days, 1) \
-                      if (subscription_end and start_date) else query_limit * 30
+    monthly_limit   = query_limit * 12 if billing_cycle == "yearly" else query_limit
 
-    # a) Daily product cap (how many products can run per day)
-    product_limit_per_day = plan_cfg.get("product_limit_per_day", -1)
-    if product_limit_per_day != -1 and module_code == "product_intelligence":
-        products_today = await conn.fetchrow("""
-            SELECT COALESCE(SUM(usage_count), 0) AS total
-            FROM core_auth_table.company_usage
-            WHERE company_id = $1
-              AND module_code = 'product_intelligence'
-              AND usage_date = $2
-        """, company_id, today)
-        products_used_today = int(products_today["total"]) if products_today else 0
-
-        if products_used_today >= product_limit_per_day:
-            raise HTTPException(
-                status_code=402,
-                detail={
-                    "error":   "daily_product_limit_reached",
-                    "used":    products_used_today,
-                    "limit":   product_limit_per_day,
-                    "message": f"Daily product limit of {product_limit_per_day} reached. Resets tomorrow.",
-                }
-            )
-
-    # b) Monthly pool check
+    # Pool check — count all usage since subscription start
     usage_month = await conn.fetchrow("""
         SELECT COALESCE(SUM(usage_count), 0) AS total_used
         FROM core_auth_table.company_usage
