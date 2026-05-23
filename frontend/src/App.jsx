@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import PrivateComponent from "./components/PrivateComponent.jsx";
+import NewUserDashboard from "./components/NewUserDashboard.jsx";
+import LoadingCard from "./components/LoadingCard.jsx";
+import NewUserProduct from "./components/NewUserProducts.jsx";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -39,23 +42,23 @@ const GDPR = lazy(() => import("./pages/GDPR"));
 const PaymentRefund = lazy(() => import("./pages/PaymentRefund"));
 
 const App = () => {
-  const [mainLoader, setMainLoader] = useState(true);
+  // const [mainLoader, setMainLoader] = useState(true);
 
-  useEffect(() => {
-    const timeOut = setTimeout(() => {
-      setMainLoader(false);
-    }, 1000);
+  // useEffect(() => {
+  //   const timeOut = setTimeout(() => {
+  //     setMainLoader(false);
+  //   }, 1000);
 
-    return () => clearTimeout(timeOut);
-  }, []);
+  //   return () => clearTimeout(timeOut);
+  // }, []);
 
   return (
     <div>
-      {mainLoader && (
+      {/* {mainLoader && (
         <div className="h-screen bg-surface w-screen fixed top-0 left-0 z-50 flex justify-center items-center">
-          <div className="h-10 w-10 border-4 border-[#5FC4BE] border-t-transparent rounded-full animate-spin"></div>
+          <div className="h-10 w-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      )}
+      )} */}
       <Toaster position="top-right" reverseOrder={false} />
       <BrowserRouter>
         <ScrollToTop />
@@ -92,8 +95,7 @@ const App = () => {
             <Route path="/gdpr" element={<GDPR />} />
             <Route path="/payment-refund" element={<PaymentRefund />} />
 
-
-           
+            <Route path="/new" element={<NewUserProduct/>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

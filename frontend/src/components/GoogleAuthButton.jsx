@@ -42,6 +42,10 @@ const GoogleAuthButton = () => {
       onError={() => {
         console.log("Google Login Failed");
       }}
+      text="signin_with"
+      useOneTap={false}
+      auto_select={false}
+      type="standard"
     />
   );
 };

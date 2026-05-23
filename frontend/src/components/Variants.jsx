@@ -2,8 +2,21 @@ import {
   BuildingStorefrontIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
+
+const MaskedValue = ({ value, fallback = "--" }) => {
+  if (typeof value === "string" && value.toLowerCase().includes("upgrade")) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-0.5 text-xs font-medium whitespace-nowrap">
+        🔒 Upgrade to unlock
+      </span>
+    );
+  }
+  return <>{value ?? fallback}</>;
+};
 
 const Variants = ({ variants_data }) => {
+  const navigate = useNavigate();
   return (
     <>
       <div className="flex justify-between items-center">
@@ -16,7 +29,7 @@ const Variants = ({ variants_data }) => {
             demand
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+        {/* <div className="flex gap-2 items-center">
           <div className="bg-[#2E7D32] h-2 w-2 rounded-xs"></div>
           <p className="text-xs text-[#5F6368] font-regular">Your product</p>
           <div className="bg-[#008ACB] h-2 w-2 rounded-xs"></div>
@@ -25,7 +38,7 @@ const Variants = ({ variants_data }) => {
           <p className="text-xs text-[#5F6368] font-regular">In market</p>
           <div className="bg-[#D48C15] h-2 w-2 rounded-xs"></div>
           <p className="text-xs text-[#5F6368] font-regular">Emerging</p>
-        </div>
+        </div> */}
       </div>
       <div className="flex gap-6 bg-[#F3F3F3] p-3 rounded-lg my-6">
         <span className="text-sm font-medium text-[#000000]">
@@ -52,6 +65,88 @@ const Variants = ({ variants_data }) => {
       </div>
       <div className="flex flex-col gap-6">
         {variants_data?.map((item, index) => {
+          if (item?.masked) {
+            return (
+              <div
+              className={`border border-l-4 p-4 rounded-lg card-hover `}
+              key={index}
+            >
+              <div className="flex justify-between">
+                <div className="flex gap-6 items-center">
+                  <div className="text-sm text-[#000000] font-medium blur-sm">
+                    Lorem ipsum dolor sit
+                  </div>
+                  <div
+                    className="text-sm font-medium px-3 py-0.5 rounded-2xl blur-sm"
+                  >
+                    Lorem, ipsum.
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-center blur-sm">
+                    Lorem, ipsum dolor.
+                  </p>
+                  <p className="text-xs font-medium text-[#5F6368] blur-sm">OPP.</p>
+                </div>
+              </div>
+              <div className="border border-[#E6E6E6] grid grid-cols-3 mt-6 mb-3 rounded-lg">
+                <div className="border border-[#E6E6E6] p-2 rounded-tl-lg">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">Key spec</p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem, ipsum.
+                  </p>
+                </div>
+                <div className="border border-[#E6E6E6] p-2">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">
+                    Price range
+                  </p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem, ipsum.
+                    {/* <MaskedValue value={item?.price_range} /> */}
+                  </p>
+                </div>
+                <div className="border border-[#E6E6E6] p-2 rounded-tr-lg">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">
+                    Min. order qty
+                  </p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem, ipsum dolor.
+                    {/* <MaskedValue value={item?.moq} /> */}
+                  </p>
+                </div>
+                <div className="border border-[#E6E6E6] p-2 rounded-bl-lg">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">
+                    Buyer demand
+                  </p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem, ipsum dolor.
+                  </p>
+                </div>
+                <div className="border border-[#E6E6E6] p-2">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">
+                    Matched buyers
+                  </p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem ipsum dolor sit.
+                  </p>
+                </div>
+                <div className="border border-[#E6E6E6] p-2 rounded-br-lg">
+                  <p className="text-[#5F6368] font-medium text-sm blur-sm">
+                    Lead time
+                  </p>
+                  <p className="text-[#000000] font-regular text-sm blur-sm">
+                    Lorem, ipsum dolor.
+                  </p>
+                </div>
+              </div>
+              <hr className="bg-[#E6E6E6] h-[1px] border-0 my-3" />
+              <p className="text-[#5F6368] font-regular text-sm blur-sm">
+                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Blanditiis consequatur possimus ex ea optio, rerum explicabo aspernatur placeat autem cum, aliquam incidunt reprehenderit minima magnam iste delectus officia. Necessitatibus, deleniti!
+              </p>
+            </div>
+            );
+          }
+
           const score = Math.max(0, Math.min(10, item?.opportunity_score ?? 0));
 
           const borderColor =
@@ -111,6 +206,7 @@ const Variants = ({ variants_data }) => {
                   </p>
                   <p className="text-[#000000] font-regular text-sm">
                     {item?.price_range ?? "--"}
+                    {/* <MaskedValue value={item?.price_range} /> */}
                   </p>
                 </div>
                 <div className="border border-[#E6E6E6] p-2 rounded-tr-lg">
@@ -119,6 +215,7 @@ const Variants = ({ variants_data }) => {
                   </p>
                   <p className="text-[#000000] font-regular text-sm">
                     {item?.moq ?? "--"}
+                    {/* <MaskedValue value={item?.moq} /> */}
                   </p>
                 </div>
                 <div className="border border-[#E6E6E6] p-2 rounded-bl-lg">

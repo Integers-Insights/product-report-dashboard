@@ -32,33 +32,27 @@ const icons = [
 const market_data = [
   {
     txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt2: "Opportunity scores, YoY growth, seasonal patterns for any product x country pair.",
   },
   {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt1: "Variants & Price Intelligence",
+    txt2: "Exact variants and prices globally - by country and currency, ready to position.",
   },
   {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt1: "Buyer Discovery",
+    txt2: "Verified importers actively sourcing your product - emails, LinkedIn, scored.",
   },
   {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt1: "Trade Intelligence",
+    txt2: "Real customs records, HS codes, port volumes - market sizing with hard data.",
   },
   {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt1: "Competitor Intel",
+    txt2: "Who exports your product, what they charge, their market share - find the gaps.",
   },
   {
-    txt1: "Market Demand",
-    txt2: "Demand trends, growth rates, seasonality, and consumption signals across 50+ countries for your product.",
-    txt3: "Uses 0.5Q per run",
+    txt1: "Marketing Blueprint",
+    txt2: "AI-written ad copy, email sequences, landing pages - tailored per country.",
   },
 ];
 
@@ -136,14 +130,6 @@ const MarketComponent = () => {
               </div>
               <p className="font-medium my-2">{item.txt1}</p>
               <p className="text-xs font-regular text-[#5F6368]">{item.txt2}</p>
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-xs font-regular text-[#5F6368]">
-                  {item.txt3}
-                </p>
-                {/* <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
-                  Run →
-                </button> */}
-              </div>
             </div>
           );
         })}

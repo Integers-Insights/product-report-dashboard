@@ -10,7 +10,18 @@ import InitialText from "./InitialText";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
 
-const ProductComponent = ({ productData, productLoading }) => {
+const ProductComponent = ({
+  productData,
+  productLoading,
+  statusData,
+  categoryData,
+  selectedCategory,
+  setSelectedCategory,
+  selectedStatus,
+  setSelectedStatus,
+  searchValue,
+  setSearchValue,
+}) => {
   const [view_com, setView_com] = useState("List");
 
   const navigate = useNavigate();
@@ -36,12 +47,6 @@ const ProductComponent = ({ productData, productLoading }) => {
               Grid
             </button>
           </div>
-          <button className="border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer px-3 py-0.5 rounded font-medium">
-            ↑ Import CSV
-          </button>
-          <button className="border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer px-3 py-0.5 rounded font-medium">
-            + Add Products
-          </button>
         </div>
       </div>
 
@@ -55,6 +60,8 @@ const ProductComponent = ({ productData, productLoading }) => {
             name="search"
             type="search"
             placeholder="Search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             className="col-start-1 row-start-1 block w-full rounded-md bg-white py-1.5 pr-3 pl-10 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
           />
           <MagnifyingGlassIcon
@@ -64,10 +71,18 @@ const ProductComponent = ({ productData, productLoading }) => {
         </div>
 
         <div className="grid grid-cols-1">
-          <select className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6">
-            <option>All Categories</option>
-            <option>Nutraceuticals</option>
-            <option>Agriculture</option>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6"
+          >
+            <option value="">All Categories</option>
+
+            {categoryData?.map((item, index) => (
+              <option key={index} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
           <ChevronDownIcon
             aria-hidden="true"
@@ -77,12 +92,18 @@ const ProductComponent = ({ productData, productLoading }) => {
 
         <div className="grid grid-cols-1">
           <select
-            name="location"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            name="status"
             className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6"
           >
-            <option>All Status</option>
-            <option>Analyzed</option>
-            <option>Pending</option>
+            <option value="">All Status</option>
+
+            {statusData?.map((item, index) => (
+              <option key={index} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
           <ChevronDownIcon
             aria-hidden="true"

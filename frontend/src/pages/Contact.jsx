@@ -44,7 +44,7 @@ const channels = [
     icon: Headphones,
     title: "Support",
     desc: "Technical help & account questions",
-    value: "+91 9321256706",
+    value: "+91 89769 93084",
     color: "bg-sky-50",
     iconColor: "text-sky-500",
   },
@@ -68,6 +68,8 @@ const channels = [
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -75,9 +77,26 @@ export default function Contact() {
     message: "",
   });
 
-  function handleSubmit(e) {
+  const base_url = import.meta.env.VITE_BASE_URL;
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    setSent(true);
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${base_url}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to send message");
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -95,7 +114,10 @@ export default function Contact() {
           property="og:title"
           content="Contact Report InShort – Global Import Export Data Support"
         />
-        <meta property="og:url" content="https://www.reportinshort.com/contact" />
+        <meta
+          property="og:url"
+          content="https://www.reportinshort.com/contact"
+        />
         <meta
           property="og:description"
           content="Contact our team for help with global trade data, buyer discovery, or custom enterprise plans. Email, phone & live support available. Exporters worldwide, reply in 24 hours."
@@ -252,12 +274,32 @@ export default function Contact() {
                     </div>
                     <motion.button
                       type="submit"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      className="btn-shimmer w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition-colors shadow-glow-green-sm cursor-pointer"
+                      whileHover={!loading ? { scale: 1.02 } : {}}
+                      whileTap={!loading ? { scale: 0.97 } : {}}
+                      disabled={loading}
+                      className={`btn-shimmer w-full flex items-center justify-center gap-2 text-white font-bold py-3 rounded-xl transition-all shadow-glow-green-sm
+    ${
+      loading
+        ? "bg-slate-400 cursor-not-allowed"
+        : "bg-brand-500 hover:bg-brand-600 cursor-pointer"
+    }`}
                     >
-                      Send message <Send size={15} />
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          Send message <Send size={15} />
+                        </>
+                      )}
                     </motion.button>
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
+                        {error}
+                      </div>
+                    )}
                   </form>
                 )}
               </div>
@@ -271,9 +313,9 @@ export default function Contact() {
                     className="text-brand-500 shrink-0 mt-0.5"
                   />
                   <span>
-                    Integers Insights Private Limited <br /> Unit No 28, 2nd Floor,
-                    Vicino Building, New Link Road, Goregaon (Mumbai), Goregaon
-                    West, Maharashtra, 400104, India
+                    Integers Insights Private Limited <br /> Unit No 28, 2nd
+                    Floor, Vicino Building, New Link Road, Goregaon (Mumbai),
+                    Goregaon West, Maharashtra, 400104, India
                   </span>
                 </div>
               </div>

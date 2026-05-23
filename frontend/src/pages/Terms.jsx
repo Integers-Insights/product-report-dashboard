@@ -230,7 +230,7 @@ export default function Terms() {
                 info@integersinsights.com
               </p>
               <p className="-mb-0.5">
-                <span className="font-medium">Phone: </span>+91 93212 56706
+                <span className="font-medium">Phone: </span>+91 89769 93084
               </p>
               <p className="-mb-0.5">
                 Integers Insights Private Limited, India

@@ -14,6 +14,19 @@ const BuyerListComponent = ({
   buyer_list,
   total_b2b_buyers_data,
   fetchingBuyerData,
+  countryData,
+  productData,
+  typeData,
+
+  selectedCountry,
+  setSelectedCountry,
+  selectedProduct,
+  setSelectedProduct,
+  selectedType,
+  setSelectedType,
+  searchTerm,
+  setSearchTerm,
+  topMatches,
 }) => {
   const navigate = useNavigate();
 
@@ -31,8 +44,7 @@ const BuyerListComponent = ({
         </div>
       </div>
       <p className="my-4 text-sm text-[#5F6368]">
-        12 companies matched · Sorted by match score · Contact details on
-        Venture+
+        {buyer_list?.length || 0} companies matched · Sorted by match score
       </p>
       <div className="flex justify-around my-10">
         <div>
@@ -44,9 +56,11 @@ const BuyerListComponent = ({
           </p>
         </div>
         <div>
-          <p className="text-center text-xl font-medium text-[#2E7D32]">3</p>
+          <p className="text-center text-xl font-medium text-[#2E7D32]">
+            {topMatches || 0}
+          </p>
           <p className="text-center text-sm font-regular text-[#5F6368]">
-            Top matches (90+)
+            Top matches
           </p>
         </div>
         <div>
@@ -61,6 +75,8 @@ const BuyerListComponent = ({
           <input
             name="search"
             type="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search"
             className="col-start-1 row-start-1 block w-full rounded-md bg-white py-1.5 pr-3 pl-10 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#0284C7] sm:text-sm/6"
           />
@@ -71,11 +87,18 @@ const BuyerListComponent = ({
         </div>
 
         <div className="grid grid-cols-1">
-          <select className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6">
-            <option>All Products</option>
-            <option>Turmeric</option>
-            <option>Ashwagandha</option>
-            <option>Black Pepper</option>
+          <select
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6"
+          >
+            <option value="">All Products</option>
+
+            {productData?.map((product, index) => (
+              <option key={index} value={product}>
+                {product}
+              </option>
+            ))}
           </select>
           <ChevronDownIcon
             aria-hidden="true"
@@ -85,13 +108,18 @@ const BuyerListComponent = ({
 
         <div className="grid grid-cols-1">
           <select
-            name="location"
+            name="country"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
             className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6"
           >
-            <option>All Countries</option>
-            <option>🇺🇸 USA</option>
-            <option>🇩🇪 Germany</option>
-            <option>🇬🇧 UK</option>
+            <option value="">All Countries</option>
+
+            {countryData?.map((country, index) => (
+              <option key={index} value={country}>
+                {country}
+              </option>
+            ))}
           </select>
           <ChevronDownIcon
             aria-hidden="true"
@@ -101,13 +129,17 @@ const BuyerListComponent = ({
 
         <div className="grid grid-cols-1">
           <select
-            name="location"
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
             className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-[#0284C7] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0284C7] sm:text-sm/6"
           >
-            <option>All Types</option>
-            <option>Importer</option>
-            <option>Contract Mfr</option>
-            <option>Distributor</option>
+            <option value="">All Types</option>
+
+            {typeData?.map((type, index) => (
+              <option key={index} value={type}>
+                {type}
+              </option>
+            ))}
           </select>
           <ChevronDownIcon
             aria-hidden="true"
@@ -136,20 +168,21 @@ const BuyerListComponent = ({
                       <div className="flex flex-col gap-1">
                         <div className="flex gap-2 blur-sm">
                           <p className="text-base font-medium text-[#000000]">
-                            Natural Health Distributors Inc.
+                            Lorem ipsum dolor sit amet.
                           </p>
                         </div>
                         <div className="text-xs font-light text-[#5F6368] flex gap-5 blur-sm">
-                          <p>Contract Manufacturer</p>
-                          <p>Annual spend $2M–8M</p>
-                          <p>Requires GMP + Organic</p>
-                          <p>New Jersey, USA</p>
+                          <p>Lorem, ipsum dolor.</p>
+                          <p>Lorem, ipsum dolor.</p>
+                          <p>Lorem ipsum dolor sit.</p>
+                          <p>Lorem, ipsum dolor.</p>
                         </div>
                         <p className="text-sm font-regular text-[#5F6368] blur-sm">
-                          They likely source Pear Shaped Water Dissolving Film
-                          from India for their water-soluble film production,
-                          indicating a strong relevance in volume and frequency
-                          of use.
+                          Lorem ipsum dolor sit amet consectetur, adipisicing
+                          elit. Consectetur laborum, eligendi provident corrupti
+                          eum impedit minus delectus iure et doloribus ullam
+                          repellat velit ipsum repellendus magnam odio debitis
+                          nostrum. Debitis?
                         </p>
                       </div>
                     </div>
@@ -158,7 +191,7 @@ const BuyerListComponent = ({
                         className="text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-1 whitespace-nowrap"
                         onClick={() => navigate("/pricing")}
                       >
-                        🔒 Venture+
+                        🔒 Upgrade your plan to see more
                       </button>
                     </div>
                   </div>

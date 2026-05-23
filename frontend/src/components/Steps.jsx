@@ -69,6 +69,8 @@ export default function Steps() {
 
   const [cardDataLoading, setCardDataLoading] = useState(false);
 
+  const [scoutPlan,setScoutPlan] = useState(0);
+
   const handleFetchProducts = async () => {
     if (!url) {
       toast.error("Please enter URL");
@@ -157,6 +159,9 @@ export default function Steps() {
       setFetching_allProducts(false);
     }
   };
+
+  console.log("selectedProductId: ",selectedProductId);
+  console.log("selectedProductId length: ",selectedProductId?.length);
 
   const postProduct = async () => {
     try {
@@ -285,6 +290,39 @@ export default function Steps() {
     }
   };
 
+
+
+  const getScoutData = async () => {
+      try {
+        let token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
+        let response = await fetch(`${base_url}/billing/usage`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+  
+        let data = await response.json();
+  
+        // console.log("data: ",data);
+  
+        if (data?.success) {
+          setScoutPlan(data?.usage?.daily_limit || 0);
+        }
+      } catch (err) {
+        console.log("something went wrong.", err);
+      }
+    };
+  
+    useEffect(()=>{
+      getScoutData();
+    },[]);
+
   useEffect(() => {
     if (joinId === "") return;
     getProduct();
@@ -396,6 +434,7 @@ export default function Steps() {
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               usage_summary_data={usage_summary_data}
+              scoutPlan={scoutPlan}
             />
           </div>
         )}
