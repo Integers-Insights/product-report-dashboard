@@ -129,42 +129,6 @@ Rules:
   what happened to this market that year , give the label according to the previous years data as well
 """
 
-
-# ─────────────────────────────────────────────
-#  SONAR QUERY 4 — Pricing Tiers
-# ─────────────────────────────────────────────
-
-# QUERY_PRICING = """
-# What is the FOB export price range from {origin_country} for commodity-grade
-# versus certified/organic {product_name} (HS {hs_code})?
-# What drives the price premium for certified or premium grades?
-# """
-
-# EXTRACT_PRICING = """
-# Extract from the research below.
-# Product: {product_name} | Origin: {origin_country}
-
-# Research:
-# {sonar_response}
-
-# Return JSON with EXACTLY this field:
-# {{
-#   "export_pricing_commod": {{
-#     "commodity": {{
-#       "price_range": "string or null — e.g. '$1.20-$2.80/kg FOB'",
-#       "context": "string or null — e.g. 'High volume, race-to-bottom pricing'"
-#     }},
-#     "certified": {{
-#       "price_range": "string or null — e.g. '$8-$16/kg FOB'",
-#       "context": "string or null — e.g. '5-7x commodity floor'"
-#     }}
-#   }}
-# }}
-
-# Rules: null if not found. No text outside JSON.
-# """
-
-
 # ─────────────────────────────────────────────
 #  GPT PROMPT — Pricing (no Sonar, training knowledge only)
 # ─────────────────────────────────────────────

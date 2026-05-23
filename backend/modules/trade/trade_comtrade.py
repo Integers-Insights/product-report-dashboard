@@ -18,9 +18,44 @@ import os
 import requests
 from pathlib import Path
 
+from modules.trade.comtrade_cache import get_comtrade_cache, set_comtrade_cache
+
 COMTRADE_API_KEY = os.getenv("COMTRADE_API_KEY")
 BASE_URL = "https://comtradeapi.un.org/data/v1/get/C/A/HS"
 SLEEP_SEC = 1.2
+
+
+def _get_pool():
+    """Returns the live DB pool, or None if not yet initialised (e.g. in tests)."""
+    try:
+        from db.database import get_pool
+        return get_pool()
+    except Exception:
+        return None
+
+
+async def _cached_fetch(
+    pool,
+    hs_code:       str,
+    reporter_code: str,
+    flow:          str,
+    period:        str,
+    partner_code:  str = "0",
+    product_name:  "str | None" = None,
+) -> "tuple[dict, bool]":
+    """
+    Returns (raw_api_response_dict, from_cache).
+    Checks DB cache first; on miss hits the live API and stores the result.
+    The caller must sleep SLEEP_SEC only when from_cache is False.
+    """
+    cached = await get_comtrade_cache(pool, hs_code, reporter_code, flow, period, partner_code)
+    if cached is not None:
+        return cached, True
+
+    loop = asyncio.get_event_loop()
+    raw  = await loop.run_in_executor(None, _sync_fetch, hs_code, reporter_code, flow, period, partner_code)
+    await set_comtrade_cache(pool, hs_code, reporter_code, flow, period, partner_code, raw, product_name)
+    return raw, False
 
 _REPORTER_MAP: "dict | None" = None
 
@@ -156,10 +191,11 @@ def _aggregate(data: dict) -> dict:
 # ─────────────────────────────────────────────
 
 async def fetch_traders(
-    hs_code:   str,
-    countries: list,
-    flow:      str,
-    year:      str = "2023",
+    hs_code:      str,
+    countries:    list,
+    flow:         str,
+    year:         str = "2024",
+    product_name: "str | None" = None,
 ) -> list:
     """
     Fetches Comtrade data for a list of country names.
@@ -174,8 +210,9 @@ async def fetch_traders(
         List of dicts: {country, value_usd, volume_mt, share_pct}
         Countries with no reporter code are included with null values.
         Calls are serialized with 1.2s sleep to respect rate limits.
+        Cache hits skip the sleep entirely.
     """
-    loop      = asyncio.get_event_loop()
+    pool      = _get_pool()
     results   = []
     total_value = 0.0
     countries = [c for c in countries if c and isinstance(c, str)]
@@ -188,16 +225,19 @@ async def fetch_traders(
             continue
 
         try:
-            raw     = await loop.run_in_executor(None, _sync_fetch, hs_code, str(code), flow, year)
+            raw, from_cache = await _cached_fetch(pool, hs_code, str(code), flow, year, "0", product_name)
             metrics = _aggregate(raw)
             results.append({"country": country, "value_usd": metrics["value_usd"], "volume_mt": metrics["volume_mt"]})
             total_value += metrics["value_usd"]
-            print(f"     → [comtrade] {country}: ${metrics['value_usd']:,.0f} | {metrics['volume_mt']:,.0f} MT")
+            src = "cache" if from_cache else "api"
+            print(f"     → [comtrade/{src}] {country}: ${metrics['value_usd']:,.0f} | {metrics['volume_mt']:,.0f} MT")
         except Exception as e:
             print(f"     ⚠️  [comtrade] {country} ({year}) failed: {e}")
             results.append({"country": country, "value_usd": None, "volume_mt": None})
+            from_cache = False
 
-        await asyncio.sleep(SLEEP_SEC)
+        if not from_cache:
+            await asyncio.sleep(SLEEP_SEC)
 
     # Add share_pct relative to total across fetched countries
     for r in results:
@@ -217,6 +257,7 @@ async def fetch_origin_trend(
     hs_code:        str,
     origin_country: str,
     years:          "list | None" = None,
+    product_name:   "str | None" = None,
 ) -> list:
     """
     Fetches annual export data for origin_country over multiple years.
@@ -224,12 +265,13 @@ async def fetch_origin_trend(
     Args:
         hs_code:        HS code string
         origin_country: Country name, e.g. "India"
-        years:          List of ints, defaults to [2020, 2021, 2022, 2023, 2024]
+        years:          List of ints, defaults to [2019, 2020, 2021, 2022, 2023, 2024]
 
     Returns:
         List of dicts: {year, value_usd, volume_mt, yoy_growth}
         yoy_growth is computed from consecutive volume_mt values.
         Calls are serialized with 1.2s sleep to respect rate limits.
+        Cache hits skip the sleep entirely.
     """
     if years is None:
         years = [2019, 2020, 2021, 2022, 2023, 2024]
@@ -239,13 +281,13 @@ async def fetch_origin_trend(
         print(f"  ⚠️  [comtrade] No reporter code for origin '{origin_country}'")
         return [{"year": y, "value_usd": None, "volume_mt": None, "yoy_growth": None} for y in years]
 
-    loop     = asyncio.get_event_loop()
+    pool     = _get_pool()
     entries  = []
     prev_vol: "float | None" = None
 
     for year in years:
         try:
-            raw     = await loop.run_in_executor(None, _sync_fetch, hs_code, str(code), "X", str(year))
+            raw, from_cache = await _cached_fetch(pool, hs_code, str(code), "X", str(year), "0", product_name)
             metrics = _aggregate(raw)
             vol     = metrics["volume_mt"]
 
@@ -262,12 +304,15 @@ async def fetch_origin_trend(
             })
             if vol:
                 prev_vol = vol
-            print(f"     → [comtrade] {origin_country} {year}: {vol:,.0f} MT")
+            src = "cache" if from_cache else "api"
+            print(f"     → [comtrade/{src}] {origin_country} {year}: {vol:,.0f} MT")
         except Exception as e:
             print(f"     ⚠️  [comtrade] {origin_country} {year} failed: {e}")
             entries.append({"year": year, "value_usd": None, "volume_mt": None, "yoy_growth": None})
+            from_cache = False
 
-        await asyncio.sleep(SLEEP_SEC)
+        if not from_cache:
+            await asyncio.sleep(SLEEP_SEC)
 
     return entries
 
@@ -285,7 +330,8 @@ async def fetch_origin_export_share(
     hs_code:          str,
     origin_country:   str,
     target_countries: "list | None" = None,
-    year:             str = "2023",
+    year:             str = "2024",
+    product_name:     "str | None" = None,
 ) -> dict:
     """
     Calculates origin_country's export share across target markets.
@@ -308,6 +354,7 @@ async def fetch_origin_export_share(
           "share_pct":   "64.2%",
           "per_country": [{"country": "United States", "share_pct": "71.3%"}, ...]
         }
+        Cache hits skip the 1.2s sleep for each call pair.
     """
     if not target_countries:
         target_countries = _DEFAULT_TARGET_MARKETS
@@ -317,31 +364,33 @@ async def fetch_origin_export_share(
         print(f"  ⚠️  [comtrade] No reporter code for origin '{origin_country}'")
         return {}
 
-    loop                   = asyncio.get_event_loop()
-    total_world_value      = 0.0
-    total_origin_value     = 0.0
-    per_country: list      = []
+    pool               = _get_pool()
+    total_world_value  = 0.0
+    total_origin_value = 0.0
+    per_country: list  = []
 
     for target in target_countries:
         target_code = get_reporter_code(target)
-        if not target_code: 
+        if not target_code:
             print(f"     ⚠️  [comtrade] No reporter code for target '{target}' — skipping")
             continue
 
         try:
             # Call 1: target country's total imports from world
-            world_raw   = await loop.run_in_executor(
-                None, _sync_fetch, hs_code, str(target_code), "M", year, "0"
+            world_raw, wc = await _cached_fetch(
+                pool, hs_code, str(target_code), "M", year, "0", product_name
             )
-            world_m     = _aggregate(world_raw)
-            await asyncio.sleep(SLEEP_SEC)
+            world_m = _aggregate(world_raw)
+            if not wc:
+                await asyncio.sleep(SLEEP_SEC)
 
             # Call 2: target country's imports from origin specifically
-            origin_raw  = await loop.run_in_executor(
-                None, _sync_fetch, hs_code, str(target_code), "M", year, str(origin_code)
+            origin_raw, oc = await _cached_fetch(
+                pool, hs_code, str(target_code), "M", year, str(origin_code), product_name
             )
-            origin_m    = _aggregate(origin_raw)
-            await asyncio.sleep(SLEEP_SEC)
+            origin_m = _aggregate(origin_raw)
+            if not oc:
+                await asyncio.sleep(SLEEP_SEC)
 
             share_pct = (
                 round(origin_m["value_usd"] / world_m["value_usd"] * 100, 1)
@@ -351,7 +400,8 @@ async def fetch_origin_export_share(
             total_world_value  += world_m["value_usd"]
             total_origin_value += origin_m["value_usd"]
 
-            print(f"     → [comtrade] {origin_country} share in {target}: {share_pct}%")
+            src = "cache" if (wc and oc) else "api"
+            print(f"     → [comtrade/{src}] {origin_country} share in {target}: {share_pct}%")
 
         except Exception as e:
             print(f"     ⚠️  [comtrade] Export share for '{target}' failed: {e}")

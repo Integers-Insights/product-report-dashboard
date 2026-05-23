@@ -32,7 +32,7 @@ from modules.base_module import BaseModule, ModuleInput, ModuleResult
 # ─────────────────────────────────────────────
 
 COUNTRY_DISCOVERY_PROMPT = """
-Which 2 countries which use {product_name} most?
+Which 10 countries which use {product_name} most?
 """
 
 COUNTRY_LIST_EXTRACTION_PROMPT = """
@@ -50,7 +50,7 @@ Return ONLY valid JSON:
 
 Rules:
 - Country names only — no regions, no blocs (e.g. "EU")
-- Maximum 2 countries
+- Maximum 10 countries
 - If fewer than 2 are mentioned, return only those found
 """
 
@@ -115,6 +115,39 @@ Rules:
 """
 
 #   "analysis_note": "string — 2-3 sentence analyst summary of the opportunity"
+
+# ─────────────────────────────────────────────
+#  GPT FALLBACK — when Sonar returns thin data
+# ─────────────────────────────────────────────
+
+GPT_MARKET_FALLBACK_PROMPT = """
+You are a B2B trade intelligence analyst. Sonar real-time data was unavailable.
+Use your training knowledge to fill ALL null fields below.
+
+Product       : {product_name}
+Origin country: {origin_country}
+Target market : {target_country}
+
+Current extracted data (some fields may be partially filled):
+{current_data}
+
+Fill every null inner value with a realistic estimate. Rules:
+- demand_growth.value   : YoY import growth % for {product_name} in {target_country} e.g. "+12%"
+- demand_growth.period  : "YoY"
+- import_volume.value   : estimated annual import volume as number e.g. "8500"
+- import_volume.unit    : "MT" or "USD million"
+- import_volume.year    : most recent year e.g. 2024
+- matched_buyers.count  : estimated number of active importers e.g. "80-120"
+- peak_procurement.period : peak buying months e.g. "Q1 + Q3"
+- primary_channel.channel : main route to market e.g. "Distributors / health retailers"
+- cert_require.certifications : list of certs buyers commonly require e.g. ["GMP", "USDA Organic"]
+- cert_gap.status       : "Gap detected" or "None detected"
+- cert_gap.detail       : one sentence on the cert opportunity or null
+
+Never overwrite a field that already has a non-null value.
+Return ONLY valid JSON in the exact same nested structure as the input.
+"""
+
 # ─────────────────────────────────────────────
 #  MARKET DEMAND MODULE
 # ─────────────────────────────────────────────
@@ -345,6 +378,22 @@ tier_color: "green" for Easy Win, "yellow" for Needs Work, "red" for Not Yet or 
                 )
                 result = await self.run(country_inp)
                 if result.success:
+                    # GPT fallback: if Sonar left most fields empty, fill from training knowledge
+                    if _count_populated_fields(result.data) < self.MINIMUM_FIELDS_REQUIRED:
+                        import json as _json
+                        print(f"  ⚠️  [market_demand] {country}: thin Sonar data — running GPT fallback")
+                        fallback_prompt = GPT_MARKET_FALLBACK_PROMPT.format(
+                            product_name=base_inp.product_name,
+                            origin_country=base_inp.origin_country,
+                            target_country=country,
+                            current_data=_json.dumps(result.data, indent=2),
+                        )
+                        filled = await self._extract_structured(fallback_prompt)
+                        if filled:
+                            for field, value in filled.items():
+                                if field in result.data and _count_populated_fields({field: result.data[field]}) == 0:
+                                    result.data[field] = value
+                            print(f"     → GPT fill: {_count_populated_fields(result.data)} fields now populated")
                     await self._score_country(result, country_inp)
                 return result
 

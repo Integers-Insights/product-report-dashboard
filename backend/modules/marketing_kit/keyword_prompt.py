@@ -109,14 +109,15 @@ Certifications: {certifications}
 Target country: {target_country}
 Target language: {language}
 
-Generate exactly 15 B2B buyer-intent keywords in {language} that a procurement \
-manager or importer in {target_country} would search when sourcing this product.
+Generate exactly 10 high-value B2B buyer-intent keywords in {language} that a \
+procurement manager or importer in {target_country} would search when sourcing \
+this product. Prioritise terms most likely to have real search volume.
 
 Mix of:
 - Direct product terms in {language}
 - Supplier / wholesale / bulk / certified variants in {language}
 - Certification-specific terms (translate cert names where natural)
-- 3-4 niche phrases that large Western suppliers likely don't target
+- 2-3 niche long-tail phrases that large Western suppliers likely don't target
 
 DO NOT include search volume — that will be fetched from real data.
 Return ONLY valid JSON:
