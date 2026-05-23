@@ -72,8 +72,6 @@ const MarketComponent = () => {
       <h1 className="text-2xl font-medium">Market Intelligence</h1>
       <p className="my-4 text-sm text-[#5F6368]">
         6 AI modules. Each runs a focused analysis for a product × country pair.
-        Active modules are always available — locked modules need Venture or
-        Apex plan.
       </p>
 
       <div className="border border-[#98d6f3] flex justify-between items-center p-3 rounded-lg bg-[#E0F5FF]">
@@ -83,13 +81,12 @@ const MarketComponent = () => {
           </div>
           <div>
             <p className="font-medium text-[#000000] capitalize">
-              {plan || ""} Plan — 2 modules active
+              {plan || ""} Plan
             </p>
             <p className="text-xs text-[#5F6368] font-regular mt-1">
               Each run costs 0.5–1 query. Results appear within 3–5 minutes.
-              Upgrade to Venture to unlock all 6 modules simultaneously.
             </p>
-            <div className="flex gap-3 mt-3">
+            {/* <div className="flex gap-3 mt-3">
               <button className="font-medium text-sm py-0.5 px-2 rounded-2xl bg-[#CCFFCF] text-[#2E7D32]">
                 ✓ Market Demand
               </button>
@@ -102,13 +99,13 @@ const MarketComponent = () => {
               <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] text-white cursor-pointer">
                 Unlock All →
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
-        <div>
+        {/* <div>
           <p className="text-2xl font-bold text-right text-[#2E7D32]">82</p>
           <p className="text-sm font-regular text-[#5F6368]">Score</p>
-        </div>
+        </div> */}
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-6">

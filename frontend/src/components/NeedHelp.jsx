@@ -471,7 +471,7 @@ const NeedHelp = ({ setPopup_Open }) => {
             renews monthly on your plan.
           </p>
 
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          {/* <div className="grid grid-cols-3 gap-3 mt-4">
             <div className="p-2 text-center rounded-lg bg-gray-100">
               <p className="text-base font-medium">Scout</p>
               <p className="text-xl font-medium">100 Q</p>
@@ -487,7 +487,7 @@ const NeedHelp = ({ setPopup_Open }) => {
               <p className="text-xl font-medium">1000 Q</p>
               <p className="text-xs font-regular">per month</p>
             </div>
-          </div>
+          </div> */}
 
           <div className="border border-l-3 border-[#0284C7] bg-gray-100 rounded-lg p-2 mt-4">
             <span className="font-medium">Need more queries mid-month?</span>{" "}
@@ -566,8 +566,7 @@ const NeedHelp = ({ setPopup_Open }) => {
           <p className="mt-4">
             <span className="font-medium">How accurate is the buyer data?</span>
             Buyer data is sourced from live B2B trade portals, customs records,
-            and verified databases. Contact details (email, LinkedIn) are
-            available on Venture+ plan. Company profiles and match scores are
+            and verified databases. Company profiles and match scores are
             available on all plans.
           </p>
           <p className="mt-4">
