@@ -16,7 +16,7 @@ const Keywords = ({
             <FireIcon className="h-5 w-5" /> High-Volume Buyer Intent
           </p>
           <p className="text-[#5F6368] font-regular text-sm">
-            8 keywords · use in email subjects and LinkedIn profiles
+            {high_volume_buyer_intent_data?.length || 0} keywords · use in email subjects and LinkedIn profiles
           </p>
         </div>
         <div className="p-3 flex flex-wrap gap-3 border border-t-0 rounded-b-lg border-[#E6E6E6]">
@@ -62,7 +62,7 @@ const Keywords = ({
             competitors not ranking
           </p>
           <p className="text-[#5F6368] font-regular text-sm">
-            12 keywords · highest conversion potential
+            {low_competition_gaps_data?.length || 0} keywords · highest conversion potential
           </p>
         </div>
         <div className="p-3 flex flex-wrap gap-3 border border-t-0 rounded-b-lg border-[#E6E6E6]">
@@ -101,12 +101,9 @@ const Keywords = ({
       </div>
 
       <div className="mt-6">
-        <div className="border border-[#E6E6E6] rounded-t-lg flex justify-between p-3 bg-[#EDF9FF]">
+        <div className="border border-[#E6E6E6] rounded-t-lg p-3 bg-[#EDF9FF]">
           <p className="text-[#000000] font-medium text-sm flex items-center gap-2">
             <DocumentDuplicateIcon className="h-5 w-5" /> Multilingual
-          </p>
-          <p className="text-[#5F6368] font-regular text-sm">
-            mapped for EU market content
           </p>
         </div>
         <div className="p-3 flex flex-wrap gap-3 border border-t-0 rounded-b-lg border-[#E6E6E6]">

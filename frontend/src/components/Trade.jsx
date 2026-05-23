@@ -112,6 +112,25 @@ const Trade = ({ trade_data }) => {
               </div>
             </div>
             {trade_data?.top_exporters?.map((item, index) => {
+              if (item?.masked) {
+                return (
+                  <div
+                    className=" border-b-[1px] border-gray-300 grid grid-cols-3 gap-8"
+                    key={index}
+                  >
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      Lorem, ipsum.
+                    </div>
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      Lorem, ipsum.
+                    </div>
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      lorem
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   className=" border-b-[1px] border-gray-300 grid grid-cols-3 gap-8"
@@ -152,6 +171,25 @@ const Trade = ({ trade_data }) => {
               </div>
             </div>
             {trade_data?.top_importers?.map((item, index) => {
+              if (item?.masked) {
+                return (
+                  <div
+                    className=" border-b-[1px] border-gray-300 grid grid-cols-3 gap-8"
+                    key={index}
+                  >
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      Lorem, ipsum.
+                    </div>
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      Lorem, ipsum.
+                    </div>
+                    <div className="text-sm text-[#5F6368] text-center wrap-break-word blur-sm">
+                      lorem
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   className="grid grid-cols-3 gap-8 border-b-[1px] border-gray-300"
@@ -178,7 +216,7 @@ const Trade = ({ trade_data }) => {
           India export volume trend — all markets (MT)
         </h2>
         <div className="grid grid-cols-4 gap-6 mt-2">
-          {trade_data?.export_volume_trend?.map((itm, index) => {
+          {/* {trade_data?.export_volume_trend?.map((itm, index) => {
             return (
               <div
                 className="border p-3 border-[#E6E6E6] rounded-lg card-hover"
@@ -188,18 +226,51 @@ const Trade = ({ trade_data }) => {
                   {itm.year ?? 0}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-[#000000] text-center">
-                  {itm.volume_mt ?? "--"}
+                  <MaskedValue value={itm.volume_mt} fallback="--" />
                 </p>
                 <p className="mt-1 text-sm font-medium text-[#000000] text-center">
-                  {itm.yoy_growth === null ? itm.label : itm.yoy_growth}
+                  <MaskedValue
+                    value={itm.yoy_growth === null ? itm.label : itm.yoy_growth}
+                  />
                 </p>
+              </div>
+            );
+          })} */}
+          {trade_data?.export_volume_trend?.map((itm, index) => {
+            const isLocked =
+              typeof itm.volume_mt === "string" &&
+              itm.volume_mt.toLowerCase().includes("upgrade");
+            return (
+              <div
+                className="border p-3 border-[#E6E6E6] rounded-lg card-hover"
+                key={index}
+              >
+                <p className="text-sm font-regular text-[#000000] text-center">
+                  {itm.year ?? 0}
+                </p>
+                {isLocked ? (
+                  <div className="mt-2 flex justify-center">
+                    <span className="inline-flex items-center gap-1 text-[#A66A07] bg-[#FFF8EE] rounded-2xl px-2 py-0.5 text-xs font-medium">
+                      🔒 Upgrade to unlock
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <p className="mt-1 text-xl font-semibold text-[#000000] text-center">
+                      {itm.volume_mt ?? "--"}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-[#000000] text-center">
+                      {itm.yoy_growth === null ? itm.label : itm.yoy_growth}
+                    </p>
+                  </>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <h2 className="text-[#000000] font-medium text-sm">
           India organic turmeric — certified export pricing vs commodity
         </h2>
@@ -237,7 +308,7 @@ const Trade = ({ trade_data }) => {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="mt-6 border border-l-3 border-[#2E7D32] rounded-lg p-3 bg-[#F1FEF2]">
         <p className="text-sm text-[#5F6368] font-regular">

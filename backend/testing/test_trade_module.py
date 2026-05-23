@@ -14,16 +14,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from modules.trade.trade_intel import TradeIntelModule
 from modules.trade.trade_comtrade import get_reporter_code
 from modules.base_module import ModuleInput
+from modules.input_preprocessing import preprocess_module_input
 
 
 async def main():
     module = TradeIntelModule()
 
+    # Use a raw/dirty product name and leave hs_code blank —
+    # preprocess_module_input will clean the name and resolve the HS code.
     inp = ModuleInput(
-        product_id="bb10883c-6b32-42e9-9fae-673cb7d7138c",
-        product_name="Ayurveda Performance Capsule ",
+        product_id="ff20d415-ad9a-40ca-9e17-377ae3aa4089",
+        product_name="Dehydrated Mixed Vegetables",
         category="",
-        hs_code="300450",
+        hs_code="",
         description="Around 20% of men suffer from declining performance and stamina due to work stress, busy schedules and a fast-paced lifestyle. AADAR ayurveda understands the challenges men face in today’s world and formulated a perfect blend with the help of Ayurveda and modern science to help men improve vitality and physical strength.",
         certifications=[],
         origin_country="India",
@@ -43,6 +46,13 @@ async def main():
         code = get_reporter_code(country)
         status = f"✅ {code}" if code else "❌ not found"
         print(f"  {country:<20} {status}")
+
+    print("\n" + "=" * 55)
+    print("  Preprocessing Input (name clean + HS code lookup)")
+    print("=" * 55)
+    print(f"  Before → name={inp.product_name!r}  hs_code={inp.hs_code!r}")
+    inp = await preprocess_module_input(inp)
+    print(f"  After  → name={inp.product_name!r}  hs_code={inp.hs_code!r}")
 
     print("\n" + "=" * 55)
     print("  Testing Trade Intelligence Module")

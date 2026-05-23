@@ -33,7 +33,7 @@ const IntelligenceReportsComponent = ({
               className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
             />
           </div>
-          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white">
+          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white" onClick={()=>navigate("/discover")}>
             ⚡ New Run
           </button>
         </div>

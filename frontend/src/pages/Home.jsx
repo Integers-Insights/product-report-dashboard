@@ -290,7 +290,7 @@ export default function Home() {
                   <motion.path
                     d="M0 6 Q50 2 100 5 Q150 8 200 4"
                     fill="none"
-                    stroke="#1aa866"
+                    stroke="#38bdf8"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                   />

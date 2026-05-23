@@ -192,7 +192,7 @@ Rules:
 #  GPT FALLBACK — fill null fields from training data
 #
 #  Used when Sonar extraction leaves fields null.
-#  matched_buyers is always excluded — it needs real-time data.
+#  All fields including matched_buyers are estimated from training knowledge.
 #  temp=0.0: most statistically likely value, no creativity.
 # ─────────────────────────────────────────────
 
@@ -219,7 +219,8 @@ Field rules:
                   use · separator e.g. 'Curcuminoids ≥95% · moisture <8% · mesh 60'
 - buyer_demand  : EXACTLY one of — High | Medium | Emerging | Low
 - lead_time     : typical production + shipping from {origin_country} e.g. '14–21 days'
-- matched_buyers: ALWAYS null — never fill this field
+- matched_buyers: estimated number of active B2B importers/buyers globally,
+                  with the top destination markets — e.g. '80–120 · USA, Germany, UK'
 
 Critical:
 - Fill EVERY null field with a realistic estimate — do not leave fields null unless
@@ -236,7 +237,7 @@ Return ONLY valid JSON:
       "price_range": "string or null",
       "moq": "string or null",
       "buyer_demand": "High | Medium | Emerging | Low",
-      "matched_buyers": null,
+      "matched_buyers": "string or null",
       "lead_time": "string or null"
     }}
   ]

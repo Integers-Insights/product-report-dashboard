@@ -44,6 +44,7 @@ from input_pipeline.config import MARKETING_KIT
 from modules.base_module import BaseModule
 
 # ── country → language constant + ISO code ──────────────────────────────────
+# Legacy single-language map (kept for v1 backwards compat)
 COUNTRY_LANGUAGE_MAP = {
     "Germany":        {"constant": "languageConstants/1001", "name": "German",     "iso": "de"},
     "France":         {"constant": "languageConstants/1002", "name": "French",     "iso": "fr"},
@@ -59,6 +60,46 @@ COUNTRY_LANGUAGE_MAP = {
     "Canada":         {"constant": "languageConstants/1000", "name": "English",    "iso": "en"},
 }
 DEFAULT_LANGUAGE = {"constant": "languageConstants/1000", "name": "English", "iso": "en"}
+
+_EN = {"constant": "languageConstants/1000", "name": "English",    "iso": "en"}
+_DE = {"constant": "languageConstants/1001", "name": "German",     "iso": "de"}
+_FR = {"constant": "languageConstants/1002", "name": "French",     "iso": "fr"}
+_ES = {"constant": "languageConstants/1003", "name": "Spanish",    "iso": "es"}
+_IT = {"constant": "languageConstants/1004", "name": "Italian",    "iso": "it"}
+_JA = {"constant": "languageConstants/1005", "name": "Japanese",   "iso": "ja"}
+_NL = {"constant": "languageConstants/1010", "name": "Dutch",      "iso": "nl"}
+_KO = {"constant": "languageConstants/1012", "name": "Korean",     "iso": "ko"}
+_PT = {"constant": "languageConstants/1014", "name": "Portuguese", "iso": "pt"}
+_AR = {"constant": "languageConstants/1019", "name": "Arabic",     "iso": "ar"}
+_ZH = {"constant": "languageConstants/1017", "name": "Chinese",    "iso": "zh"}
+
+# Multi-language map used by v2 — generates keywords in every listed language,
+# enriches each with Ads API, then picks the top by search volume.
+COUNTRY_LANGUAGES_MAP: dict[str, list[dict]] = {
+    # Pure English markets — only one language needed
+    "United States":    [_EN],
+    "United Kingdom":   [_EN],
+    "Australia":        [_EN],
+    "Canada":           [_EN],
+    # Single primary + English fallback
+    "Germany":          [_DE, _EN],
+    "France":           [_FR, _EN],
+    "Spain":            [_ES, _EN],
+    "Italy":            [_IT, _EN],
+    "Netherlands":      [_NL, _EN],
+    "Japan":            [_JA, _EN],
+    "South Korea":      [_KO, _EN],
+    "Brazil":           [_PT, _EN],
+    "China":            [_ZH, _EN],
+    "UAE":              [_AR, _EN],
+    "Saudi Arabia":     [_AR, _EN],
+    "Middle East":      [_AR, _EN],
+    # Regional targets — top 3 languages
+    "Europe":           [_DE, _FR, _EN],
+    "Southeast Asia":   [_EN],
+    "Latin America":    [_ES, _PT],
+}
+DEFAULT_LANGUAGES: list[dict] = [_EN]
 
 
 # ── Data models ──────────────────────────────────────────────────────────────

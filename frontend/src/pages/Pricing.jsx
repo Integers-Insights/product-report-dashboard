@@ -44,13 +44,12 @@ const plans = [
     yearlyPrice: null,
     priceLabel: "Free",
     feats: [
-      { text: "3 intelligence reports", ok: true },
-      { text: "1 product at a time", ok: true },
-      { text: "1 module of your choice", ok: true },
-      { text: "Market demand overview", ok: true },
-      { text: "Buyer contact details", ok: false },
-      { text: "PDF/CSV downloads", ok: false },
-      { text: "Demand alerts", ok: false },
+      { text: "3 queries — explore 3 products free", ok: true },
+      { text: "1 market to explore", ok: true },
+      { text: "Surface-level trade overview", ok: true },
+      { text: "1 buyer to evaluate", ok: true },
+      { text: "2 competitors tracked", ok: true },
+      { text: "Verified contacts locked", ok: false },
     ],
     cta: "Get started free",
     ctaStyle: "outline",
@@ -62,13 +61,14 @@ const plans = [
     monthlyPrice: 1499,
     yearlyPrice: 14990,
     feats: [
-      { text: "100 reports / month", ok: true },
-      { text: "Up to 10 products", ok: true },
-      { text: "Any 2 modules", ok: true },
-      { text: "Market demand + keywords", ok: true },
-      { text: "Basic buyer list (names)", ok: true },
-      { text: "Verified buyer contacts", ok: false },
-      { text: "PDF/CSV downloads", ok: false },
+      { text: "50 queries/mo — a new product every working day", ok: true },
+      { text: "16× more usage than Trial", ok: true },
+      { text: "3 markets tracked simultaneously", ok: true },
+      { text: "Deeper trade flow breakdown", ok: true },
+      { text: "Up to 6 buyers per market", ok: true },
+      { text: "3× more competitors tracked", ok: true },
+      { text: "Partial pricing depth", ok: true },
+      { text: "Verified contacts not included", ok: false },
     ],
     cta: "Start Navigator",
     ctaStyle: "outline",
@@ -81,13 +81,15 @@ const plans = [
     yearlyPrice: 29990,
     badge: "Most Popular",
     feats: [
-      { text: "300 reports / month", ok: true },
-      { text: "Up to 25 products", ok: true },
-      { text: "Any 4 modules", ok: true },
-      { text: "Full buyer discovery", ok: true },
-      { text: "Verified emails + LinkedIn", ok: true },
-      { text: "PDF + CSV downloads", ok: true },
-      { text: "Demand alerts", ok: true },
+      { text: "200 queries/mo — built for high-volume research", ok: true },
+      { text: "4× more usage than Basic · 5× more depth", ok: true },
+      { text: "All markets, no restrictions", ok: true },
+      { text: "Complete trade intelligence", ok: true },
+      { text: "Full buyer discovery + verified contacts", ok: true },
+      { text: "5× more competitors tracked vs Basic", ok: true },
+      { text: "Full pricing landscape unlocked", ok: true },
+      { text: "PDF/CSV downloads", ok: true },
+      { text: "Demand alerts when markets move", ok: true },
     ],
     cta: "Start Expedition",
     ctaStyle: "primary",
@@ -154,15 +156,19 @@ export default function Pricing() {
     try {
       const u = JSON.parse(localStorage.getItem("CtKoIC)iR1SP)5mr&R4d")) || {};
       return (u.current_plan || "").toLowerCase();
-    } catch { return ""; }
+    } catch {
+      return "";
+    }
   });
 
   useEffect(() => {
     const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
     if (!token) return;
-    fetch(`${base_url}/profile`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(data => {
+    fetch(`${base_url}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
         if (data.success && data.data?.current_plan) {
           setCurrentPlan(data.data.current_plan.toLowerCase());
         }
@@ -172,20 +178,24 @@ export default function Pricing() {
 
   useEffect(() => {
     fetch(`${base_url}/plans`)
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (!data.success) return;
         const priceMap = {};
-        data.Plans.forEach(p => { priceMap[p.plan_name.toLowerCase()] = p; });
-        setPlanList(plans.map(plan => {
-          const api = priceMap[plan.name.toLowerCase()];
-          if (!api) return plan;
-          return {
-            ...plan,
-            monthlyPrice: api.monthly_price || plan.monthlyPrice,
-            yearlyPrice:  api.yearly_price  || plan.yearlyPrice,
-          };
-        }));
+        data.Plans.forEach((p) => {
+          priceMap[p.plan_name.toLowerCase()] = p;
+        });
+        setPlanList(
+          plans.map((plan) => {
+            const api = priceMap[plan.name.toLowerCase()];
+            if (!api) return plan;
+            return {
+              ...plan,
+              monthlyPrice: api.monthly_price || plan.monthlyPrice,
+              yearlyPrice: api.yearly_price || plan.yearlyPrice,
+            };
+          }),
+        );
       })
       .catch(() => {});
   }, [base_url]);
@@ -233,13 +243,19 @@ export default function Pricing() {
       return;
     }
     if (cta === "Start Navigator") {
-      if (!authToken) { navigate("/login"); return; }
-      setCheckoutPlan(planList.find(p => p.name === "Basic"));
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+      setCheckoutPlan(planList.find((p) => p.name === "Basic"));
       return;
     }
     if (cta === "Start Expedition") {
-      if (!authToken) { navigate("/login"); return; }
-      setCheckoutPlan(planList.find(p => p.name === "Pro"));
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+      setCheckoutPlan(planList.find((p) => p.name === "Pro"));
       return;
     }
   };
@@ -344,136 +360,140 @@ export default function Pricing() {
                 ) => {
                   const isCurrentPlan = name.toLowerCase() === currentPlan;
                   return (
-                  <motion.div
-                    key={name}
-                    initial={{ opacity: 0, y: 32 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      delay: 0.1 + i * 0.08,
-                      duration: 0.5,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    whileHover={{ y: -4 }}
-                    className={`relative rounded-2xl p-6 flex flex-col transition-all duration-300 ${
-                      badge
-                        ? "bg-brand-500 text-white shadow-glow-green border-2 border-brand-400"
-                        : "bg-white border border-slate-200 shadow-card hover:shadow-card-hover hover:border-brand-200"
-                    }`}
-                  >
-                    {badge && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-brand-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow border border-brand-200">
-                        {badge}
+                    <motion.div
+                      key={name}
+                      initial={{ opacity: 0, y: 32 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: 0.1 + i * 0.08,
+                        duration: 0.5,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      whileHover={{ y: -4 }}
+                      className={`relative rounded-2xl p-6 flex flex-col transition-all duration-300 ${
+                        badge
+                          ? "bg-brand-500 text-white shadow-glow-green border-2 border-brand-400"
+                          : "bg-white border border-slate-200 shadow-card hover:shadow-card-hover hover:border-brand-200"
+                      }`}
+                    >
+                      {badge && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-brand-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow border border-brand-200">
+                          {badge}
+                        </div>
+                      )}
+
+                      <div
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${badge ? "text-white/70" : "text-slate-400"}`}
+                      >
+                        {tier}
                       </div>
-                    )}
+                      <div
+                        className={`text-xl font-extrabold mb-1 ${badge ? "text-white" : "text-slate-900"}`}
+                      >
+                        {name}
+                      </div>
+                      <div
+                        className={`text-xs leading-relaxed mb-5 min-h-[36px] ${badge ? "text-white/70" : "text-slate-400"}`}
+                      >
+                        {desc}
+                      </div>
 
-                    <div
-                      className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${badge ? "text-white/70" : "text-slate-400"}`}
-                    >
-                      {tier}
-                    </div>
-                    <div
-                      className={`text-xl font-extrabold mb-1 ${badge ? "text-white" : "text-slate-900"}`}
-                    >
-                      {name}
-                    </div>
-                    <div
-                      className={`text-xs leading-relaxed mb-5 min-h-[36px] ${badge ? "text-white/70" : "text-slate-400"}`}
-                    >
-                      {desc}
-                    </div>
-
-                    <div className="mb-1">
-                      {priceLabel ? (
-                        <span
-                          className={`font-mono text-4xl font-black ${badge ? "text-white" : "text-slate-900"}`}
-                        >
-                          {priceLabel}
-                        </span>
-                      ) : (
-                        <div className="flex items-baseline gap-2">
+                      <div className="mb-1">
+                        {priceLabel ? (
                           <span
                             className={`font-mono text-4xl font-black ${badge ? "text-white" : "text-slate-900"}`}
                           >
-                            ₹
-                            <AnimatePresence mode="wait">
-                              <motion.span
-                                key={yearly ? "y" : "m"}
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 8 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                {yearly ? yearlyPrice : monthlyPrice}
-                              </motion.span>
-                            </AnimatePresence>
+                            {priceLabel}
                           </span>
-                          {yearly && (
+                        ) : (
+                          <div className="flex items-baseline gap-2">
                             <span
-                              className={`text-sm line-through ${badge ? "text-white/40" : "text-slate-300"}`}
+                              className={`font-mono text-4xl font-black ${badge ? "text-white" : "text-slate-900"}`}
                             >
-                              ${monthlyPrice}
+                              ₹
+                              <AnimatePresence mode="wait">
+                                <motion.span
+                                  key={yearly ? "y" : "m"}
+                                  initial={{ opacity: 0, y: -8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 8 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {yearly ? yearlyPrice : monthlyPrice}
+                                </motion.span>
+                              </AnimatePresence>
                             </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className={`text-xs mb-6 ${badge ? "text-white/60" : "text-slate-400"}`}
-                    >
-                      {priceLabel === "Custom"
-                        ? "tailored to your scale"
-                        : priceLabel === "Free"
-                          ? ""
-                          : `per month${yearly ? " · billed annually" : ""}`}
-                    </div>
+                            {yearly && (
+                              <span
+                                className={`text-sm line-through ${badge ? "text-white/40" : "text-slate-300"}`}
+                              >
+                                ${monthlyPrice}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`text-xs mb-6 ${badge ? "text-white/60" : "text-slate-400"}`}
+                      >
+                        {priceLabel === "Custom"
+                          ? "tailored to your scale"
+                          : priceLabel === "Free"
+                            ? ""
+                            : `per month${yearly ? " · billed annually" : ""}`}
+                      </div>
 
-                    <ul className="space-y-2.5 mb-6 flex-1">
-                      {feats.map(({ text, ok }) => (
-                        <li
-                          key={text}
-                          className={`flex items-start gap-2 text-xs ${ok ? (badge ? "text-white/90" : "text-slate-600") : badge ? "text-white/30" : "text-slate-300"}`}
-                        >
-                          {ok ? (
-                            <Check
-                              size={13}
-                              className={`shrink-0 mt-0.5 ${badge ? "text-white" : "text-brand-500"}`}
-                              strokeWidth={2.5}
-                            />
-                          ) : (
-                            <Minus
-                              size={13}
-                              className="shrink-0 mt-0.5"
-                              strokeWidth={2}
-                            />
-                          )}
-                          {text}
-                        </li>
-                      ))}
-                    </ul>
+                      <ul className="space-y-2.5 mb-6 flex-1">
+                        {feats.map(({ text, ok }) => (
+                          <li
+                            key={text}
+                            className={`flex items-start gap-2 text-xs ${ok ? (badge ? "text-white/90" : "text-slate-600") : badge ? "text-white/30" : "text-slate-300"}`}
+                          >
+                            {ok ? (
+                              <Check
+                                size={13}
+                                className={`shrink-0 mt-0.5 ${badge ? "text-white" : "text-brand-500"}`}
+                                strokeWidth={2.5}
+                              />
+                            ) : (
+                              <Minus
+                                size={13}
+                                className="shrink-0 mt-0.5"
+                                strokeWidth={2}
+                              />
+                            )}
+                            {text}
+                          </li>
+                        ))}
+                      </ul>
 
-                    <motion.button
-                      whileHover={{ scale: isCurrentPlan ? 1 : 1.03 }}
-                      whileTap={{ scale: isCurrentPlan ? 1 : 0.97 }}
-                      onClick={() => isCurrentPlan ? setShowCurrentPlan(true) : handleRedirect(cta)}
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                        isCurrentPlan
-                          ? badge
-                            ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
-                            : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
-                          : badge
-                            ? "bg-white text-brand-600 hover:bg-white/90 shadow-sm"
-                            : ctaStyle === "primary"
-                              ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow-green-sm"
-                              : ctaStyle === "ghost"
-                                ? "bg-brand-50 text-brand-600 border border-brand-200 hover:bg-brand-100"
-                                : "bg-slate-50 text-slate-700 border border-slate-200 hover:border-brand-300 hover:text-brand-700"
-                      }`}
-                    >
-                      {isCurrentPlan ? "Current plan" : cta}
-                    </motion.button>
-                  </motion.div>
+                      <motion.button
+                        whileHover={{ scale: isCurrentPlan ? 1 : 1.03 }}
+                        whileTap={{ scale: isCurrentPlan ? 1 : 0.97 }}
+                        onClick={() =>
+                          isCurrentPlan
+                            ? setShowCurrentPlan(true)
+                            : handleRedirect(cta)
+                        }
+                        className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                          isCurrentPlan
+                            ? badge
+                              ? "bg-white/20 text-white border border-white/30 hover:bg-white/30"
+                              : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                            : badge
+                              ? "bg-white text-brand-600 hover:bg-white/90 shadow-sm"
+                              : ctaStyle === "primary"
+                                ? "bg-brand-500 text-white hover:bg-brand-600 shadow-glow-green-sm"
+                                : ctaStyle === "ghost"
+                                  ? "bg-brand-50 text-brand-600 border border-brand-200 hover:bg-brand-100"
+                                  : "bg-slate-50 text-slate-700 border border-slate-200 hover:border-brand-300 hover:text-brand-700"
+                        }`}
+                      >
+                        {isCurrentPlan ? "Current plan" : cta}
+                      </motion.button>
+                    </motion.div>
                   );
-                }
+                },
               )}
             </div>
 
@@ -586,7 +606,7 @@ export default function Pricing() {
           baseUrl={base_url}
           onClose={() => setShowCurrentPlan(false)}
           onUpgrade={() => {
-            const proplan = planList.find(p => p.name === "Pro");
+            const proplan = planList.find((p) => p.name === "Pro");
             if (proplan) setCheckoutPlan(proplan);
           }}
         />

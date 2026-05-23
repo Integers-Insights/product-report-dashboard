@@ -31,6 +31,12 @@ const Profile = ({
   handleProfile2,
   passError,
   handleProfile3,
+
+  billingCycle,
+  planPrice,
+  currentPlan,
+  expireDate,
+  planQueryLimit,
 }) => {
   const [active_tab, setActive_tab] = useState("Personal Info");
   const [editBussinessType, setEditBussinessType] = useState(false);
@@ -451,9 +457,9 @@ const Profile = ({
             <div>
               <div className="border p-3 bg-[#E0F5FF] border-[#0284C7] rounded-lg flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-[#000000]">Scout Plan</p>
+                  <p className="font-medium text-[#000000] capitalize">{currentPlan || ""} Plan</p>
                   <p className="text-sm font-regular text-[#5F6368]">
-                    $49/month · 100 queries · 2 modules
+                    ${planPrice || 0}/{billingCycle || ""} · {planQueryLimit || 0} queries
                   </p>
                 </div>
                 <button
@@ -464,7 +470,12 @@ const Profile = ({
                 </button>
               </div>
               <p className="text-sm font-regular text-[#5F6368] mt-4">
-                Next billing: April 1, 2026 · Cancel anytime.
+                Next billing:&nbsp;
+                {new Date(expireDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </p>
             </div>
           )}

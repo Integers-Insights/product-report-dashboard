@@ -39,8 +39,8 @@ from modules.trade.trade_prompts import (
     TRADE_ANALYST_NOTE_PROMPT,
 )
 
-COMTRADE_YEAR = "2023"
-TREND_YEARS   = [2019, 2020, 2021, 2022, 2023, 2024]  # 2019 is base year for 2020 YoY
+COMTRADE_YEAR = "2024"
+TREND_YEARS   = [2020, 2021, 2022, 2023, 2024]  # 2020 is base year for 2021 YoY
 
 
 class TradeIntelModule(BaseModule):
@@ -92,20 +92,22 @@ class TradeIntelModule(BaseModule):
         raw_importers = []
         raw_trend     = []
 
+        pname = inp.product_name
+
         if exporter_names:
             print(f"     → Comtrade: fetching {len(exporter_names)} exporters...")
-            raw_exporters = await fetch_traders(hs, exporter_names, "X", COMTRADE_YEAR)
+            raw_exporters = await fetch_traders(hs, exporter_names, "X", COMTRADE_YEAR, pname)
 
         if importer_names:
             print(f"     → Comtrade: fetching {len(importer_names)} importers...")
-            raw_importers = await fetch_traders(hs, importer_names, "M", COMTRADE_YEAR)
+            raw_importers = await fetch_traders(hs, importer_names, "M", COMTRADE_YEAR, pname)
 
         print(f"     → Comtrade: fetching {len(TREND_YEARS)}-year trend for {orig}...")
-        raw_trend = await fetch_origin_trend(hs, orig, TREND_YEARS)
+        raw_trend = await fetch_origin_trend(hs, orig, TREND_YEARS, pname)
 
         target_list = inp.target_country if inp.target_country else None
         print(f"     → Comtrade: fetching export share for {orig} in target markets...")
-        raw_export_share = await fetch_origin_export_share(hs, orig, target_list, COMTRADE_YEAR)
+        raw_export_share = await fetch_origin_export_share(hs, orig, target_list, COMTRADE_YEAR, pname)
 
         # ── Stage 3: GPT structuring in parallel ─────────────────────────────
         # Drop the 2019 base entry — it was only needed to compute 2020 YoY

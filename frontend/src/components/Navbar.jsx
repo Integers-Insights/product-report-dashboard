@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, TrendingUp, ChevronRight } from "lucide-react";
-import report_inshort_logo from "../assets/Report_inshort_Logo.svg";
+import report_inshort_logo from "../assets/Report_short.svg";
 
 const navLinks = [
   { to: "/", label: "Home" },

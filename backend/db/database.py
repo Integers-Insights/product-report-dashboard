@@ -80,6 +80,21 @@ async def create_pool():
             ALTER TABLE core_auth_table.company_addon_purchases
             ADD COLUMN IF NOT EXISTS credits_used INTEGER NOT NULL DEFAULT 0
         """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS product_info.comtrade_cache (
+                id            BIGSERIAL    PRIMARY KEY,
+                cache_key     TEXT         NOT NULL UNIQUE,
+                hs_code       TEXT         NOT NULL,
+                reporter_code TEXT         NOT NULL,
+                flow          TEXT         NOT NULL,
+                period        TEXT         NOT NULL,
+                partner_code  TEXT         NOT NULL DEFAULT '0',
+                product_name  TEXT,
+                data          JSONB        NOT NULL,
+                created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+                expires_at    TIMESTAMPTZ  NOT NULL
+            )
+        """)
 
     return db_pool
 
