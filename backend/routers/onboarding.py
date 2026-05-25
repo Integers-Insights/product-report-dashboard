@@ -925,11 +925,36 @@ async def get_pipeline_products(
             ORDER BY created_at DESC
         """, job_id, user_id)
 
+        def _normalize_missing_fields(items):
+            """Convert pipeline string-format missing_fields to proper dicts."""
+            import re
+            normalized = []
+            for item in (items or []):
+                if isinstance(item, dict):
+                    normalized.append(item)
+                elif isinstance(item, str):
+                    obj = {}
+                    m = re.search(r"field='([^']*)'", item)
+                    if m:
+                        obj["field"] = m.group(1)
+                    m = re.search(r"penalty=(\d+)", item)
+                    if m:
+                        obj["penalty"] = int(m.group(1))
+                        obj["required"] = int(m.group(1)) >= 10
+                    m = re.search(r"suggestion='([^']*)'", item)
+                    if m:
+                        obj["suggestion"] = m.group(1)
+                    if obj:
+                        normalized.append(obj)
+            return normalized
+
         result = []
         for r in rows:
             data = r["product_data"]
             if isinstance(data, str):
                 data = json.loads(data)
+            if "missing_fields" in data:
+                data["missing_fields"] = _normalize_missing_fields(data["missing_fields"])
             result.append({
                 "id":          str(r["id"]),
                 "is_selected": r["is_selected"],
@@ -1237,14 +1262,27 @@ async def update_product(
 
         missing_fields = []
 
-        def check(field, label, required):
+        def check(field, label, required, suggestion=""):
             value = p.get(field)
             if value is None or value == "" or value == []:
-                missing_fields.append({"field": field, "label": label, "required": required})
+                missing_fields.append({
+                    "field":      field,
+                    "label":      label,
+                    "required":   required,
+                    "suggestion": suggestion,
+                })
 
-        check("product_name", "Product Name", True)
-        check("description", "Description", True)
-        check("category", "Category", True)
+        # Required
+        check("product_name", "Product Name",  True,  "Enter the product name as it should appear in reports")
+        check("description",  "Description",   True,  "Add 2–3 sentence description")
+        check("category",     "Category",      True,  "Select product category")
+        # Optional
+        check("price",          "Price",          False, "Add your FOB price (e.g. $8.50/kg FOB Mumbai)")
+        check("packaging",      "Packaging",      False, "Describe packaging options (e.g. 500g pouches, 25kg bulk bags)")
+        check("moq",            "MOQ",            False, "Add minimum order quantity (e.g. 500 kg)")
+        check("hs_code",        "HS Code",        False, "Add the HS/HSN code for this product (e.g. 0910.30)")
+        check("ingredients",    "Ingredients",    False, "List the key ingredients or composition")
+        check("specifications", "Specifications", False, "Add technical specifications")
 
         p["missing_fields"] = missing_fields
 

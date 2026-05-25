@@ -676,9 +676,6 @@ async def get_buyer_list(conn, user_id: str, search: str = None, product_name: s
 
                 total_buyers_count += 1
 
-                if (buyer.get("relevance_score") or 0) < 7:
-                    continue
-
                 raw_country = buyer.get("country") or ""
                 resolved_country = raw_country if raw_country and raw_country not in ("None", "none", "null") else None
                 resolved_country = resolved_country or _parse(row["target_country"])
