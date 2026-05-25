@@ -693,6 +693,7 @@ export default function NewUserDashboard() {
                               "linear-gradient(135deg,#0284C7,#0891B2)",
                             boxShadow: "0 2px 7px rgba(2,132,199,.22)",
                           }}
+                          onClick={()=>navigate("/discover")}
                         >
                           {btn}
                         </button>

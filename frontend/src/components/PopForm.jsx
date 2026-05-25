@@ -405,7 +405,7 @@ export default function PopForm({ setPopupOpen }) {
         <div className="p-6 flex justify-between w-full bg-[linear-gradient(93deg,rgba(2,132,199,0.15)_7.55%,rgba(2,132,199,0.05)_88.45%)]">
           <div>
             <p className="text-xl text-[#000] font-semibold">
-              Welcome to report inshort
+              Welcome to Report Inshort
             </p>
             <p className="text-13 text-[#000]">
               Before your first intelligence run, help us personalize your
@@ -1118,7 +1118,7 @@ export default function PopForm({ setPopupOpen }) {
                 </div> */}
                 <div className="mt-6">
                   <label className="block text-sm/6 font-medium text-gray-900">
-                    How did you hear about InTrade24? *
+                    How did you hear about Report Inshort? *
                   </label>
                   <div className="mt-2 grid grid-cols-1">
                     <select

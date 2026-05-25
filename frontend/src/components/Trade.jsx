@@ -140,10 +140,12 @@ const Trade = ({ trade_data }) => {
                     {item?.country ?? "--"}
                   </div>
                   <div className="text-sm text-[#5F6368] text-center wrap-break-word">
-                    {item?.share_pct ?? "--"}
+                    {/* {item?.share_pct ?? "--"} */}
+                    {item?.volume_mt ?? "--"}
                   </div>
                   <div className="text-sm text-[#5F6368] text-center wrap-break-word">
-                    {item?.trad_value ?? "--"}
+                    {/* {item?.trad_value ?? "--"} */}
+                    {item?.value_usd ?? "--"}
                   </div>
                 </div>
               );
@@ -202,7 +204,8 @@ const Trade = ({ trade_data }) => {
                     {item?.volume_mt ?? "--"}
                   </div>
                   <div className="text-sm text-[#5F6368] text-center wrap-break-word">
-                    {item?.yoy_growth ?? "--"}
+                    {/* {item?.yoy_growth ?? "--"} */}
+                    {item?.value_usd ?? "--"}
                   </div>
                 </div>
               );
