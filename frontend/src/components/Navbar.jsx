@@ -135,17 +135,29 @@ export default function Navbar() {
               ))}
             </ul>
             <div className="flex gap-2 pt-3 border-t border-slate-100">
-              <Link
+
+              {!userProfile ? (
+              <button
+                onClick={() => navigate("/login")}
+                className="flex-1 text-center text-sm font-medium text-slate-700 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Log in
+              </button>
+            ) : (
+              ""
+            )}
+
+              {/* <Link
                 to="/login"
                 className="flex-1 text-center text-sm font-medium text-slate-700 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Log in
-              </Link>
+              </Link> */}
               <Link
                 to="/login"
                 className="flex-1 text-center text-sm font-semibold text-white py-2 rounded-xl bg-brand-500 hover:bg-brand-600 transition-colors cursor-pointer"
               >
-                Start free
+                {userProfile?"Explore Dashboard":"Start free"}
               </Link>
             </div>
           </motion.div>

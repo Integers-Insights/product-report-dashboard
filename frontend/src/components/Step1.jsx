@@ -150,7 +150,7 @@ const Step1 = ({
                         htmlFor="comments"
                         className="text-sm text-[#001413]"
                       >
-                        By clicking Fetch Products I allow INTRADE24 to process
+                        By clicking Fetch Products I allow Report Inshort to process
                         this URL to generate market intelligence for my personal
                         use. I agree to the
                         <span className="text-[#0284C7] cursor-pointer" onClick={()=>navigate("/terms")}>

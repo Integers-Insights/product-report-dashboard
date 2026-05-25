@@ -6,6 +6,7 @@ import PrivateComponent from "./components/PrivateComponent.jsx";
 import NewUserDashboard from "./components/NewUserDashboard.jsx";
 import LoadingCard from "./components/LoadingCard.jsx";
 import NewUserProduct from "./components/NewUserProducts.jsx";
+// import EnterProductModal from "./components/EnterProductModal.jsx";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
@@ -95,7 +96,7 @@ const App = () => {
             <Route path="/gdpr" element={<GDPR />} />
             <Route path="/payment-refund" element={<PaymentRefund />} />
 
-            <Route path="/new" element={<NewUserProduct/>} />
+            {/* <Route path="/new" element={<EnterProductModal/>} /> */}
           </Routes>
         </Suspense>
       </BrowserRouter>

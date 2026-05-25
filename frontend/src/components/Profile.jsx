@@ -145,7 +145,7 @@ const Profile = ({
           <p className="flex gap-3 items-center">
             <span>{email}</span>
             <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium">
-              Scout Plan
+              {currentPlan || ""} Plan
             </span>
             <span>Member since March 2026</span>
           </p>

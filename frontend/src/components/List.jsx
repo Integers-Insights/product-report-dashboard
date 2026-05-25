@@ -177,6 +177,7 @@ const List = ({
   products,
   fetching_allProducts,
   handleProductSelect,
+  onEdit,
 }) => {
   return (
     <>
@@ -277,6 +278,7 @@ const List = ({
                         ) : (
                           <button
                             type="button"
+                            onClick={() => onEdit && onEdit(prod)}
                             className={`rounded-lg px-2 py-1 border text-xs font-light shadow-xs hover:bg-[#F5F5F5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F5F5] cursor-pointer ${Number(prod?.confidence_score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
                           >
                             {Number(prod?.confidence_score) >= 31
@@ -287,15 +289,15 @@ const List = ({
                       </div>
 
                       <div className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
-                        <Link
-                          to={"#"}
+                        <button
+                          onClick={() => onEdit && onEdit(prod)}
                           className="text-[#0284C7] hover:text-[#0274AE]"
                         >
                           View fetched data
                           <span className="sr-only">
                             , {prod?.product_name}
                           </span>
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   );

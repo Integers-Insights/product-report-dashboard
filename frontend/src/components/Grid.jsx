@@ -7,6 +7,7 @@ const Grid = ({
   products,
   fetching_allProducts,
   handleProductSelect,
+  onEdit,
 }) => {
   return (
     <>
@@ -92,13 +93,17 @@ const Grid = ({
                         {Number(prod?.confidence_score) >= 71 ? (
                           <div></div>
                         ) : (
-                          <button className="border border-[#E6E6E6] rounded-tl-lg rounded-bl-lg border-r-0 text-[#0284C7] text-xs font-light py-1.5 px-2">
+                          <button
+                            type="button"
+                            onClick={() => onEdit && onEdit(prod)}
+                            className={`rounded-tl-lg rounded-bl-lg px-2 py-1 border text-xs font-light shadow-xs hover:bg-[#F5F5F5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F5F5] cursor-pointer ${Number(prod?.confidence_score) >= 31 ? "text-[#D48C15]" : "text-[#C62828]"}`}
+                          >
                             {Number(prod?.confidence_score) >= 31
                               ? "Review & Update"
                               : "Enter Manually"}
                           </button>
                         )}
-                        <button className="border border-[#E6E6E6] rounded-tr-lg rounded-br-lg text-[#0284C7] text-xs font-light py-1.5 px-1.5">
+                        <button className="border border-[#E6E6E6] rounded-tr-lg rounded-br-lg text-[#0284C7] text-xs font-light py-1.5 px-1.5" onClick={() => onEdit && onEdit(prod)}>
                           View Fetched Data
                         </button>
                       </div>

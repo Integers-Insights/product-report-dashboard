@@ -15,7 +15,7 @@ export default function Header() {
     <Disclosure as="nav" className="relative bg-white shadow-sm pr-8">
       <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div className="flex h-16 justify-between">
-          <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
+          {/* <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
             <div className="grid w-68 grid-cols-1">
               <input
                 name="search"
@@ -28,16 +28,16 @@ export default function Header() {
                 className="pointer-events-none col-start-1 row-start-1 ml-3 size-5 self-center text-[#000000]"
               />
             </div>
-          </div>
+          </div> */}
 
-          <div className="ml-4 flex items-center">
+          {/* <div className="ml-4 flex items-center">
             <button
               type="button"
               className="relative shrink-0 rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-[#0284C7]"
             >
               <BellIcon aria-hidden="true" className="size-6 text-[#000000]" />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </Disclosure>
