@@ -104,7 +104,7 @@ async def get_reports(conn, user_id: str):
                 pm.id                   AS product_id,
                 pm.product_name,
                 pm.updated_at           AS last_analyzed_at,
-
+                pm.product_slug,
                 -- overall
                 ois.overall_score,
                 ois.urgent_note         AS summary_note,
@@ -179,6 +179,7 @@ async def get_reports(conn, user_id: str):
             ) or "Market Demand + Keywords"
             reports.append({
                 "product_id":     row["product_id"],
+                "product_slug": row['product_slug'],
                 "title":          f"{row['product_name']} — {row['target_country']} Market Intelligence"
                                   if row["target_country"]
                                   else f"{row['product_name']} — Market Intelligence",
@@ -227,7 +228,7 @@ async def fetch_product_intelligence(conn, product_id: str, user_id: str) -> Dic
         # Single round-trip: all tables fetched in one CTE query
         row = await conn.fetchrow("""
             WITH prod AS (
-                SELECT u.user_id, pm.product_name, pm.hs_code,
+                SELECT u.user_id, pm.product_name, pm.hs_code,pm.product_slug,
                        co.name AS company_name, co.headquarters_country,
                        ur.buyer_type, ur.price_positioning,
                        ur.monthly_supply_capacity, ur.certifications, ur.target_country
@@ -478,6 +479,7 @@ async def get_all_products(conn, user_id: str, search: str = None, category: str
             SELECT DISTINCT ON (pm.product_name)
                 pm.id AS product_id,
                 pm.product_name,
+                pm.product_slug,
                 pm.category,
                 pm.status,
                 pm.updated_at AS last_analyzed_at,
@@ -573,6 +575,7 @@ async def get_all_products(conn, user_id: str, search: str = None, category: str
             market_data = market_map.get(pid, {"country_and_score": [], "cert_require": []})  # ✅
             result.append({
                 "product_id":              pid,
+                "product_slug":            p["product_slug"],
                 "name":                    p["product_name"],
                 "category":                p["category"],
                 "status":                  p["status"],
@@ -614,7 +617,8 @@ async def get_buyer_list(conn, user_id: str, search: str = None, product_name: s
                 bi.buyers_count,
                 bi.target_country,
                 bi.is_fallback,
-                pm.product_name
+                pm.product_name,
+                pm.product_slug
             FROM product_info.b2b_buyer_intelligence bi
             JOIN product_info.product_master pm
                 ON pm.id = bi.product_id
@@ -665,6 +669,7 @@ async def get_buyer_list(conn, user_id: str, search: str = None, product_name: s
             buyers            = _parse(row["buyers"]) or []
             product_name      = row["product_name"]
             product_id        = row["product_id"]
+            product_slug      = row ["product_slug"]
             product_name_lower = product_name.lower() if product_name else ""
 
             for buyer in buyers:
@@ -693,6 +698,7 @@ async def get_buyer_list(conn, user_id: str, search: str = None, product_name: s
 
                 b2b_buyers.append({
                     "product_id":      product_id,
+                    "product_slug":    product_slug,
                     "product_name":    product_name,
                     "company_name":    buyer.get("name"),
                     "buyer_type":      resolved_type,
@@ -756,7 +762,7 @@ async def fetch_all_products_overview(conn, user_id: str, job_id: str = None) ->
     try:
         # ── 1. Products (scoped to job when job_id given) ─────────────────────
         products = await conn.fetch(f"""
-            SELECT pm.id, pm.product_name, pm.hs_code
+            SELECT pm.id, pm.product_name, pm.hs_code,pm.product_slug
             FROM product_info.product_master pm
             WHERE pm.created_by = $1 {job_clause}
             ORDER BY pm.created_at DESC
@@ -933,6 +939,7 @@ async def fetch_all_products_overview(conn, user_id: str, job_id: str = None) ->
 
             cards.append({
                 "product_id":   pid,
+                "product_slug": p["product_slug"],
                 "product_name": p["product_name"],
                 "hs_code":      p["hs_code"],
                 "overview": {
@@ -1010,7 +1017,7 @@ SELECT
 
 _PRODUCTS_SQL = """
 SELECT
-    pm.id, pm.product_name, pm.created_at,
+    pm.id, pm.product_name, pm.created_at,pm.product_slug
     oi.overall_score, oi.urgent_note,
     COALESCE(bi.buyers_count, 0) AS buyers_count,
     ARRAY(

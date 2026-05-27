@@ -1,6 +1,18 @@
 import json
-import uuid 
+import re
+import uuid
 from utils.company_utils import get_company_id
+
+
+def _slugify(name: str) -> str:
+    """Convert a product name into a URL-safe slug.
+    e.g. 'Organic Turmeric Powder!' → 'organic-turmeric-powder'
+    """
+    slug = name.lower().strip()
+    slug = re.sub(r"[^\w\s-]", "", slug)   # drop special chars
+    slug = re.sub(r"[\s_]+", "-", slug)    # spaces/underscores → hyphen
+    slug = re.sub(r"-+", "-", slug)        # collapse consecutive hyphens
+    return slug.strip("-")
 from utils.service import get_current_user
 from fastapi import Depends,HTTPException
 from db.database import get_db
@@ -453,41 +465,53 @@ async def insert_selected_products(conn, user_id, company_id, products):
 import json
 
 async def insert_selected_products_v2(conn, user_id, company_id, rows, job_id):
+    """
+    Upsert logic:
+      - Same user + same product_name  → UPDATE existing row (keep slug)
+      - Different user + same product_name → INSERT new row with its own slug
+    """
 
-    query = """
+    insert_query = """
         INSERT INTO product_info.product_master (
-            id,
-            company_id,
-            product_name,
-            category,
-            subcategory,
-            description,
-            packaging,
-            certifications,
-            moq,
-            hs_code,
-            ingredients_materials,
-            specifications,
-            variants,
-            images,
-            monthly_capacity,
-            source_url,
-            confidence_score,
-            confidence_tier,
-            extraction_notes,
-            is_ready,
-            is_selected,
-            created_by,
-            data_source,
-            job_id
+            id, company_id, product_name, product_slug,
+            category, subcategory, description, packaging,
+            certifications, moq, hs_code, ingredients_materials,
+            specifications, variants, images, monthly_capacity,
+            source_url, confidence_score, confidence_tier,
+            extraction_notes, is_ready, is_selected,
+            created_by, data_source, job_id
         )
         VALUES (
             gen_random_uuid(),
             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
             $11,$12,$13,$14,$15,$16,$17,$18,$19,
-            $20,$21,$22,$23
+            $20,$21,$22,$23,$24
         )
-        ON CONFLICT (company_id, product_name, created_by) DO NOTHING
+    """
+
+    update_query = """
+        UPDATE product_info.product_master SET
+            category              = $1,
+            subcategory           = $2,
+            description           = $3,
+            packaging             = $4,
+            certifications        = $5,
+            moq                   = $6,
+            hs_code               = $7,
+            ingredients_materials = $8,
+            specifications        = $9,
+            variants              = $10,
+            images                = $11,
+            monthly_capacity      = $12,
+            source_url            = $13,
+            confidence_score      = $14,
+            confidence_tier       = $15,
+            extraction_notes      = $16,
+            is_ready              = TRUE,
+            is_selected           = TRUE,
+            job_id                = $17,
+            updated_at            = NOW()
+        WHERE company_id = $18 AND product_name = $19 AND created_by = $20
     """
 
     inserted_count = 0
@@ -495,48 +519,71 @@ async def insert_selected_products_v2(conn, user_id, company_id, rows, job_id):
     for r in rows:
         raw = r["product_data"]
         p = json.loads(raw) if isinstance(raw, str) else raw
-        base_name = p.get("product_name") or "Untitled Product"
+        product_name = (p.get("product_name") or "Untitled Product").strip()
 
-        # Make product_name unique within this company+user scope
-        product_name = base_name
-        counter = 1
-        while True:
-            exists = await conn.fetchval("""
-                SELECT 1 FROM product_info.product_master
-                WHERE company_id = $1 AND product_name = $2 AND created_by = $3
-                LIMIT 1
-            """, company_id, product_name, user_id)
-            if not exists:
-                break
-            counter += 1
-            product_name = f"{base_name} ({counter})"
+        # ── shared field values ───────────────────────────────────────────────
+        category       = p.get("category")
+        subcategory    = p.get("subcategory")
+        description    = p.get("description")
+        packaging      = p.get("packaging")
+        certifications = p.get("certifications", [])
+        moq            = p.get("moq")
+        hs_code        = p.get("hs_code")
+        ingredients    = json.dumps(p.get("ingredients")) if p.get("ingredients") else None
+        specifications = json.dumps(p.get("specifications") or {})
+        variants       = p.get("variants", [])
+        images         = p.get("images", [])
+        monthly_cap    = p.get("monthly_capacity")
+        source_url     = p.get("source_url")
+        conf_score     = p.get("confidence_score")
+        conf_tier      = p.get("confidence_tier")
+        ext_notes      = p.get("extraction_notes")
 
-        await conn.execute(
-            query,
-            company_id,                          # $1
-            product_name,                        # $2
-            p.get("category"),                   # $3
-            p.get("subcategory"),                # $4
-            p.get("description"),                # $5
-            p.get("packaging"),                  # $6
-            p.get("certifications", []),         # $7
-            p.get("moq"),                        # $8
-            p.get("hs_code"),                    # $9
-            json.dumps(p.get("ingredients")) if p.get("ingredients") else None,  # $10
-            json.dumps(p.get("specifications") or {}),  # $11
-            p.get("variants", []),               # $12
-            p.get("images", []),                 # $13
-            p.get("monthly_capacity"),           # $14
-            p.get("source_url"),                 # $15
-            p.get("confidence_score"),           # $16
-            p.get("confidence_tier"),            # $17
-            p.get("extraction_notes"),           # $18
-            True,                                # $19 → is_ready
-            True,                                # $20 → is_selected
-            user_id,                             # $21 → created_by
-            "pipeline",                          # $22 → data_source
-            job_id                               # $23 → job_id
-        )
+        # ── check: does this user already own a product with this name? ───────
+        existing = await conn.fetchrow("""
+            SELECT id FROM product_info.product_master
+            WHERE company_id = $1 AND product_name = $2 AND created_by = $3
+            LIMIT 1
+        """, company_id, product_name, user_id)
+
+        if existing:
+            # Same user + same product_name → UPDATE, keep existing slug
+            await conn.execute(
+                update_query,
+                category, subcategory, description, packaging,  # $1–$4
+                certifications, moq, hs_code, ingredients,      # $5–$8
+                specifications, variants, images, monthly_cap,  # $9–$12
+                source_url, conf_score, conf_tier, ext_notes,   # $13–$16
+                job_id,                                          # $17
+                company_id, product_name, user_id,              # $18–$20
+            )
+            print(f"♻️  Updated existing product: '{product_name}' for user {user_id}")
+        else:
+            # New product for this user → generate unique slug and INSERT
+            base_slug    = _slugify(product_name)
+            product_slug = base_slug
+            slug_counter = 1
+            while True:
+                slug_taken = await conn.fetchval("""
+                    SELECT 1 FROM product_info.product_master
+                    WHERE product_slug = $1 LIMIT 1
+                """, product_slug)
+                if not slug_taken:
+                    break
+                slug_counter += 1
+                product_slug = f"{base_slug}-{slug_counter}"
+
+            await conn.execute(
+                insert_query,
+                company_id, product_name, product_slug,          # $1–$3
+                category, subcategory, description, packaging,    # $4–$7
+                certifications, moq, hs_code, ingredients,        # $8–$11
+                specifications, variants, images, monthly_cap,    # $12–$15
+                source_url, conf_score, conf_tier, ext_notes,     # $16–$19
+                True, True,                                        # $20–$21 is_ready, is_selected
+                user_id, "pipeline", job_id,                      # $22–$24
+            )
+            print(f"✅ Inserted new product: '{product_name}' → slug: '{product_slug}'")
 
         inserted_count += 1
 

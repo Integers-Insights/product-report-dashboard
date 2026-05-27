@@ -49,11 +49,11 @@ MODULE_LOCKED_STRUCTURE = {
 # Fields to hide (replace with FIELD_MASK_PLACEHOLDER) inside each item of a list.
 # Structure: { plan: { module_key: { list_field: [fields_to_mask] } } }
 PLAN_MODULE_FIELD_MASKS = {
-    "trial": {
-        "variants": {
-            "variants_info": ["moq", "price_range"],
-        },
-    },
+    # "trial": {
+    #     "variants": {
+    #         "variants_info": ["moq", "price_range"],
+    #     },
+    # },
     # "basic": {
     #     "variants": {
     #         "variants_info": ["moq", "price_range"],

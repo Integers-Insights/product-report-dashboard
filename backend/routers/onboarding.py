@@ -1054,185 +1054,185 @@ async def get_pipeline_products(
             "detail":  str(e)
         })
 
-@router.get("/pipeline/stream/{job_id}")
-async def stream_pipeline_status(
-    job_id: str,
-    request: Request,
-    current_user=Depends(get_current_user),
-):
-    user_id = current_user["user_id"]
+# @router.get("/pipeline/stream/{job_id}")
+# async def stream_pipeline_status(
+#     job_id: str,
+#     request: Request,
+#     current_user=Depends(get_current_user),
+# ):
+#     user_id = current_user["user_id"]
 
-    async def event_generator():
-        pool = get_pool()
-        async with pool.acquire() as conn:
-            while True:
-                if await request.is_disconnected():
-                    break
+#     async def event_generator():
+#         pool = get_pool()
+#         async with pool.acquire() as conn:
+#             while True:
+#                 if await request.is_disconnected():
+#                     break
 
-                job = await conn.fetchrow("""
-                    SELECT j.status, j.stage, j.progress, j.logs, j.error,
-                        j.updated_at,
-                        j.pages_crawled, j.total_pages, j.products_found,
-                        ARRAY_AGG(DISTINCT pm.current_engine)
-                            FILTER (WHERE pm.current_engine IS NOT NULL) AS active_engines,
-                        ARRAY_AGG(DISTINCT pm.product_name) AS product_names,
-                        COUNT(pm.id) AS total_products,
-                        COUNT(pm.id) FILTER (
-                            WHERE pm.status = 'intelligence_completed'
-                        ) AS completed_products
-                    FROM core_tables.pipeline_jobs j
-                    LEFT JOIN product_info.product_master pm
-                        ON pm.job_id = j.id
-                    WHERE j.id = $1 AND j.user_id = $2
-                    GROUP BY j.status, j.stage, j.progress, j.logs,
-                            j.error, j.updated_at,
-                            j.pages_crawled, j.total_pages, j.products_found
-                """, job_id, user_id)
+#                 job = await conn.fetchrow("""
+#                     SELECT j.status, j.stage, j.progress, j.logs, j.error,
+#                         j.updated_at,
+#                         j.pages_crawled, j.total_pages, j.products_found,
+#                         ARRAY_AGG(DISTINCT pm.current_engine)
+#                             FILTER (WHERE pm.current_engine IS NOT NULL) AS active_engines,
+#                         ARRAY_AGG(DISTINCT pm.product_name) AS product_names,
+#                         COUNT(pm.id) AS total_products,
+#                         COUNT(pm.id) FILTER (
+#                             WHERE pm.status = 'intelligence_completed'
+#                         ) AS completed_products
+#                     FROM core_tables.pipeline_jobs j
+#                     LEFT JOIN product_info.product_master pm
+#                         ON pm.job_id = j.id
+#                     WHERE j.id = $1 AND j.user_id = $2
+#                     GROUP BY j.status, j.stage, j.progress, j.logs,
+#                             j.error, j.updated_at,
+#                             j.pages_crawled, j.total_pages, j.products_found
+#                 """, job_id, user_id)
 
-                if not job:
-                    yield f"data: {json.dumps({'error': 'Job not found'})}\n\n"
-                    break
+#                 if not job:
+#                     yield f"data: {json.dumps({'error': 'Job not found'})}\n\n"
+#                     break
 
-                status   = job["status"]   or "pending"
-                progress = max(0, min(100, job["progress"] or 0))
-                logs     = job["logs"] or []
-                if isinstance(logs, str):
-                    logs = [logs]
+#                 status   = job["status"]   or "pending"
+#                 progress = max(0, min(100, job["progress"] or 0))
+#                 logs     = job["logs"] or []
+#                 if isinstance(logs, str):
+#                     logs = [logs]
 
-                data = {
-                    "job_id":             job_id,
-                    "status":             status,
-                    "stage":              job["stage"] or "starting",
-                    "progress":           progress,
-                    "logs":               logs,
-                    "error":              job["error"],
+#                 data = {
+#                     "job_id":             job_id,
+#                     "status":             status,
+#                     "stage":              job["stage"] or "starting",
+#                     "progress":           progress,
+#                     "logs":               logs,
+#                     "error":              job["error"],
 
-                    # ✅ crawl progress
-                    "pages_crawled":      job["pages_crawled"]  or 0,
-                    "total_pages":        job["total_pages"]    or 0,
-                    "products_found":     job["products_found"] or 0,
+#                     # ✅ crawl progress
+#                     "pages_crawled":      job["pages_crawled"]  or 0,
+#                     "total_pages":        job["total_pages"]    or 0,
+#                     "products_found":     job["products_found"] or 0,
 
-                    # ✅ intelligence progress
-                    "active_engines":     job["active_engines"] or [],
-                    "product_names":      job["product_names"]  or [],
-                    "total_products":     job["total_products"] or 0,
-                    "completed_products": job["completed_products"] or 0,
+#                     # ✅ intelligence progress
+#                     "active_engines":     job["active_engines"] or [],
+#                     "product_names":      job["product_names"]  or [],
+#                     "total_products":     job["total_products"] or 0,
+#                     "completed_products": job["completed_products"] or 0,
 
-                    "is_completed":       status == "completed",
-                    "is_failed":          status == "failed",
-                    "is_processing":      status == "processing",
-                }
+#                     "is_completed":       status == "completed",
+#                     "is_failed":          status == "failed",
+#                     "is_processing":      status == "processing",
+#                 }
 
-                print(f"📡 [stream] job={job_id} | status={status} | progress={progress}%")
-                yield f"data: {json.dumps(data, default=str)}\n\n"
+#                 print(f"📡 [stream] job={job_id} | status={status} | progress={progress}%")
+#                 yield f"data: {json.dumps(data, default=str)}\n\n"
 
-                if status in ("completed", "failed"):
-                    break
+#                 if status in ("completed", "failed"):
+#                     break
 
-                await asyncio.sleep(1)
+#                 await asyncio.sleep(1)
 
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control":    "no-cache",
-            "X-Accel-Buffering": "no",
-            "Connection":       "keep-alive",
-        }
-    )
+#     return StreamingResponse(
+#         event_generator(),
+#         media_type="text/event-stream",
+#         headers={
+#             "Cache-Control":    "no-cache",
+#             "X-Accel-Buffering": "no",
+#             "Connection":       "keep-alive",
+#         }
+#     )
 
 
-@router.post("/products/select")
-async def select_products(
-    job_id: str,
-    product_ids: List[str],
-    conn=Depends(get_db),
-    current_user=Depends(get_current_user)
-):
-    # user_id = current_user["sub"]
-    user_id = current_user["user_id"]
-    try:
-        company_id = await get_company_id(conn, user_id)
-        plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
+# @router.post("/products/select")
+# async def select_products(
+#     job_id: str,
+#     product_ids: List[str],
+#     conn=Depends(get_db),
+#     current_user=Depends(get_current_user)
+# ):
+#     # user_id = current_user["sub"]
+#     user_id = current_user["user_id"]
+#     try:
+#         company_id = await get_company_id(conn, user_id)
+#         plan_name = await get_company_plan(conn, str(company_id) if company_id else None)
 
-        # Check plan product limit before allowing selection
-        await check_product_limit(conn, str(company_id), plan_name)
+#         # Check plan product limit before allowing selection
+#         await check_product_limit(conn, str(company_id), plan_name)
 
-        # 🔄 reset selection
-        await conn.execute("""
-            UPDATE product_info.pipeline_temp_products
-            SET is_selected = FALSE
-            WHERE job_id = $1 AND user_id = $2
-        """, job_id, user_id)
+#         # 🔄 reset selection
+#         await conn.execute("""
+#             UPDATE product_info.pipeline_temp_products
+#             SET is_selected = FALSE
+#             WHERE job_id = $1 AND user_id = $2
+#         """, job_id, user_id)
 
-        # ✅ fetch selected rows
-        rows = await conn.fetch("""
-            SELECT id, product_data
-            FROM product_info.pipeline_temp_products
-            WHERE id = ANY($1::uuid[])
-            AND user_id = $2
-            AND job_id = $3
-        """, product_ids, user_id, job_id)
+#         # ✅ fetch selected rows
+#         rows = await conn.fetch("""
+#             SELECT id, product_data
+#             FROM product_info.pipeline_temp_products
+#             WHERE id = ANY($1::uuid[])
+#             AND user_id = $2
+#             AND job_id = $3
+#         """, product_ids, user_id, job_id)
 
-        updated_products = []
+#         updated_products = []
 
-        for r in rows:
-            raw = r["product_data"]
-            p = json.loads(raw) if isinstance(raw, str) else raw
+#         for r in rows:
+#             raw = r["product_data"]
+#             p = json.loads(raw) if isinstance(raw, str) else raw
 
-            missing_fields = []
+#             missing_fields = []
 
-            def check(field, label, required, suggestion):
-                value = p.get(field)
-                if value is None or value == "" or value == []:
-                    missing_fields.append({
-                        "field": field,
-                        "label": label,
-                        "required": required,
-                        "suggestion": suggestion
-                    })
+#             def check(field, label, required, suggestion):
+#                 value = p.get(field)
+#                 if value is None or value == "" or value == []:
+#                     missing_fields.append({
+#                         "field": field,
+#                         "label": label,
+#                         "required": required,
+#                         "suggestion": suggestion
+#                     })
 
-            check("product_name", "Product Name", True, "Enter product name")
-            check("description", "Description", True, "Add 2–3 sentence description")
-            check("category", "Category", True, "Select product category")
-            check("price", "Price", False, "Add FOB price")
-            check("packaging", "Packaging", False, "Add packaging details")
-            check("moq", "MOQ", False, "Add minimum order quantity")
-            check("hs_code", "HS Code", False, "Add HS code")
-            check("ingredients", "Ingredients", False, "Add ingredients")
-            check("images", "Images", False, "Add product images")
-            check("specifications", "Specifications", False, "Add specs")
+#             check("product_name", "Product Name", True, "Enter product name")
+#             check("description", "Description", True, "Add 2–3 sentence description")
+#             check("category", "Category", True, "Select product category")
+#             check("price", "Price", False, "Add FOB price")
+#             check("packaging", "Packaging", False, "Add packaging details")
+#             check("moq", "MOQ", False, "Add minimum order quantity")
+#             check("hs_code", "HS Code", False, "Add HS code")
+#             check("ingredients", "Ingredients", False, "Add ingredients")
+#             check("images", "Images", False, "Add product images")
+#             check("specifications", "Specifications", False, "Add specs")
 
-            p["missing_fields"] = missing_fields
+#             p["missing_fields"] = missing_fields
 
-            await conn.execute("""
-                UPDATE product_info.pipeline_temp_products
-                SET product_data = $1,
-                    is_selected = TRUE,
-                    updated_at = NOW()
-                WHERE id = $2
-            """, json.dumps(p), r["id"])
+#             await conn.execute("""
+#                 UPDATE product_info.pipeline_temp_products
+#                 SET product_data = $1,
+#                     is_selected = TRUE,
+#                     updated_at = NOW()
+#                 WHERE id = $2
+#             """, json.dumps(p), r["id"])
 
-            updated_products.append({
-                "id": str(r["id"]),
-                "product_data": p
-            })
+#             updated_products.append({
+#                 "id": str(r["id"]),
+#                 "product_data": p
+#             })
 
-        # Deduct usage in a single call instead of one per product
-        if updated_products:
-            await check_and_increment_usage(conn, str(company_id), "product_intelligence", count=len(updated_products))
+#         # Deduct usage in a single call instead of one per product
+#         if updated_products:
+#             await check_and_increment_usage(conn, str(company_id), "product_intelligence", count=len(updated_products))
 
-        return {
-            "success": True,
-            "selected_count": len(product_ids),
-            "products": updated_products
-        }
+#         return {
+#             "success": True,
+#             "selected_count": len(product_ids),
+#             "products": updated_products
+#         }
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        print("PRODUCTS SELECT ERROR:", str(e))
-        raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to select products", "detail": str(e)})
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         print("PRODUCTS SELECT ERROR:", str(e))
+#         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to select products", "detail": str(e)})
 
 @router.post("/products/update")
 async def update_product(
@@ -1574,28 +1574,31 @@ async def confirm_products(
         print("CONFIRM ERROR:", str(e))
         raise HTTPException(status_code=500, detail={"success": False, "error": "Failed to confirm products", "detail": str(e)})
 
-@router.get("/product-intelligence/{product_id}")
+@router.get("/product-intelligence/{product_slug}")
 async def get_product_intelligence(
-    product_id: str,
+    product_slug: str,
     conn=Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    # Validate UUID format before touching the DB
-    try:
-        uuid.UUID(product_id)
-    except ValueError:
-        raise HTTPException(status_code=422, detail={
-            "error": "Invalid product_id format",
-            "detail": f"'{product_id}' is not a valid UUID",
-            "code": "INVALID_UUID",
-            "success":False
-        })
-
-    # user_id = current_user["sub"]
     user_id    = current_user["user_id"]
     company_id = current_user.get("company_id")
 
-    data = await fetch_product_intelligence(conn, product_id, user_id)
+    # Resolve slug → product_id
+    product_id = await conn.fetchval("""
+        SELECT id FROM product_info.product_master
+        WHERE product_slug = $1 AND created_by = $2
+        LIMIT 1
+    """, product_slug, user_id)
+
+    if not product_id:
+        raise HTTPException(status_code=404, detail={
+            "error":   "Product not found",
+            "detail":  f"No product with slug '{product_slug}' found for this user",
+            "code":    "PRODUCT_NOT_FOUND",
+            "success": False,
+        })
+
+    data = await fetch_product_intelligence(conn, str(product_id), user_id)
 
     if not data.get("success", True):
         code = data.get("code", "UNKNOWN")
