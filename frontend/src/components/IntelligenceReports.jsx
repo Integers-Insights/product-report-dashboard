@@ -10,6 +10,7 @@ import InitialText from "./InitialText";
 import { useEffect, useState } from "react";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
 
 const IntelligenceReportsComponent = ({
   allReportData,
@@ -33,13 +34,17 @@ const IntelligenceReportsComponent = ({
               className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
             />
           </div>
-          <button className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white" onClick={()=>navigate("/discover")}>
+          <button
+            className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white"
+            onClick={() => navigate("/discover")}
+          >
             ⚡ New Run
           </button>
         </div>
       </div>
       <p className="mt-4 text-sm text-[#5F6368]">
-        {allReportData?.length ?? "--"} completed reports · Viewing reports is always free
+        {allReportData?.length ?? "--"} completed reports · Viewing reports is
+        always free
       </p>
 
       <div className="flex flex-col gap-6 mt-6">
@@ -117,9 +122,20 @@ const IntelligenceReportsComponent = ({
                     <div className="flex flex-col gap-2">
                       <button
                         className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white whitespace-nowrap"
+                        // onClick={() => {
+                        //   if (!item?.product_id) return;
+                        //   navigate(`/full-report/${item.product_id}`);
+                        // }}
+
                         onClick={() => {
-                          if (!item?.product_id) return;
-                          navigate(`/full-report/${item.product_id}`);
+                          if (!item?.product_slug) return;
+
+                          const slug = slugify(item.product_slug, {
+                            lower: true,
+                            strict: true,
+                          });
+
+                          navigate(`/full-report/${slug}`);
                         }}
                       >
                         Open Report

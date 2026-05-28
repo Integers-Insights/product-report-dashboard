@@ -322,7 +322,7 @@ export default function PopForm({ setPopupOpen }) {
         return false;
       }
 
-      console.log("payload: ",payload);
+      // console.log("payload: ",payload);
 
       const response = await fetch(`${base_url}/step3`, {
         method: "POST",

@@ -423,13 +423,13 @@ export default function Pricing() {
                                 </motion.span>
                               </AnimatePresence>
                             </span>
-                            {yearly && (
+                            {/* {yearly && (
                               <span
                                 className={`text-sm line-through ${badge ? "text-white/40" : "text-slate-300"}`}
                               >
-                                ${monthlyPrice}
+                                kjhjh{monthlyPrice}
                               </span>
-                            )}
+                            )} */}
                           </div>
                         )}
                       </div>

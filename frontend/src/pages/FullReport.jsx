@@ -31,8 +31,12 @@ const FullReport = () => {
   const [marketing_kit_data, setMarketing_kit_data] = useState({});
   const [competitor_data, setCompetitor_data] = useState([]);
 
-  const param = useParams();
-  let index = param?.id;
+  // const param = useParams();
+  // let index = param?.id;
+
+  const { slug } = useParams();
+
+    console.log("slug: ",slug);
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -40,7 +44,7 @@ const FullReport = () => {
     try {
       const token = localStorage.getItem("VZyHRIoNN3m)OXhGwCtC");
       const response = await fetch(
-        `${base_url}/product-intelligence/${index}`,
+        `${base_url}/product-intelligence/${slug}`,
         {
           method: "GET",
           headers: {
@@ -55,6 +59,8 @@ const FullReport = () => {
       }
 
       const allProductData = await response.json();
+
+      console.log("allProductData: ",allProductData);
 
       if (allProductData.success) {
         setBanner_product_name(allProductData?.product?.name || "");
@@ -129,9 +135,9 @@ const FullReport = () => {
   };
 
   useEffect(() => {
-    if (!index) return;
+    if (!slug) return;
     getFullReportData();
-  }, [index]);
+  }, [slug]);
 
   return (
     <>

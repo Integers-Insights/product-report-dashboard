@@ -56,8 +56,6 @@ const ProductEditModal = ({ product, onClose, onSaved }) => {
         if (form[key] !== "") updates[key] = form[key];
       });
 
-      console.log("updates: ", updates);
-
       const res = await fetch(
         `${base_url}/products/update?product_id=${product.id}`,
         {
@@ -71,7 +69,6 @@ const ProductEditModal = ({ product, onClose, onSaved }) => {
       );
       if (!res.ok) throw new Error("Save failed");
       const data = await res.json();
-      console.log("enter data: ", data);
       toast.success("Product updated");
       onSaved({ ...product, ...data.product_data });
     } catch {

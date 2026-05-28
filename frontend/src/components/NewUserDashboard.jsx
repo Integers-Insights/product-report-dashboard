@@ -361,7 +361,7 @@ export default function NewUserDashboard() {
             {/* Greeting */}
             <div className="mb-[22px]">
               <h2 className="text-[22px] font-extrabold text-[#0B1927] flex items-center gap-[9px] mb-1">
-                Good Morning, {name || ""} 👋
+                Hello, {name || ""} 👋
               </h2>
               <p className="text-[13px] text-[#506A80]">
                 Welcome to Report InShort. Let's set up your first intelligence

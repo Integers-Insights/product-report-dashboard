@@ -83,7 +83,8 @@ const Trade = ({ trade_data }) => {
             {trade_data?.country_export_share?.share_pct ?? "--"}
           </p>
           <p className="text-[#5F6368] font-light text-xs">
-            {trade_data?.country_export_share?.country ?? "--"}'s export share
+            {/* {trade_data?.country_export_share?.country ?? "--"}'s export share */}
+            {trade_data?.origin_country ?? "--"}'s export share
           </p>
           <p className="text-[#2E7D32] font-medium text-sm">
             {trade_data?.country_export_share?.trend ?? "--"}

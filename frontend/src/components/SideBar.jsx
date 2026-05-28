@@ -94,6 +94,8 @@ const SideBar = () => {
   const [usage_date, setUsage_date] = useState("");
   const [plan, setPlan] = useState("");
 
+  const [createdAt,setCreatedAt] = useState("");
+
   const navigate = useNavigate();
 
   const base_url = import.meta.env.VITE_BASE_URL;
@@ -148,7 +150,7 @@ const SideBar = () => {
 
       let data = await response.json();
 
-      console.log("data????: ", data);
+      console.log("profile data: ",data);
 
       if (data?.success) {
         setFullName(data?.data?.full_name);
@@ -159,7 +161,7 @@ const SideBar = () => {
         setIndustry(data?.data?.industry);
         setBusiness_Type(data?.data?.business_type);
         setBusiness_Type_Data(data?.data?.business_type);
-
+        setCreatedAt(data?.data?.created_at);
         setBillingCycle(data?.data?.billing_cycle);
         if (data?.data?.billing_cycle === "monthly") {
           setPlanPrice(data?.data?.plan_monthly_price);
@@ -341,9 +343,6 @@ const SideBar = () => {
   const total = usage_data2;
   const remaining = usage_data1;
   const used = total - remaining;
-
-  console.log("usage_data1: ", usage_data1);
-  console.log("usage_data2: ", usage_data2);
 
   const percentage = total
     ? Math.min(100, Math.max(0, (used / total) * 100))
@@ -552,6 +551,7 @@ const SideBar = () => {
               currentPlan={currentPlan}
               expireDate={expireDate}
               planQueryLimit={planQueryLimit}
+              createdAt={createdAt}
             />
           </div>
         </>

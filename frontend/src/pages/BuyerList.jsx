@@ -116,8 +116,6 @@ const BuyerList = () => {
 
       const filter_data = await response.json();
 
-      console.log("filterd: ", filter_data);
-
       if (filter_data.success) {
         setCountryData(
           Array.isArray(filter_data?.countries) ? filter_data?.countries : [],

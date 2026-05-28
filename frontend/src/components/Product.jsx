@@ -9,6 +9,7 @@ import { useState } from "react";
 import InitialText from "./InitialText";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
 
 const ProductComponent = ({
   productData,
@@ -212,9 +213,20 @@ const ProductComponent = ({
                           </button>
                           <button
                             className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 whitespace-nowrap cursor-pointer"
+                            // onClick={() => {
+                            //   if (!item?.product_id) return;
+                            //   navigate(`/full-report/${item.product_id}`);
+                            // }}
+
                             onClick={() => {
-                              if (!item?.product_id) return;
-                              navigate(`/full-report/${item.product_id}`);
+                              if (!item?.product_slug) return;
+
+                              const slug = slugify(item.product_slug, {
+                                lower: true,
+                                strict: true,
+                              });
+
+                              navigate(`/full-report/${slug}`);
                             }}
                           >
                             View Report →
@@ -326,9 +338,19 @@ const ProductComponent = ({
                         </button>
                         <button
                           className="border border-gray-500 py-1 px-3 rounded-lg font-medium text-sm hover:bg-gray-100 cursor-pointer"
+                          // onClick={() => {
+                          //   if (!item?.product_id) return;
+                          //   navigate(`/full-report/${item.product_id}`);
+                          // }}
                           onClick={() => {
-                            if (!item?.product_id) return;
-                            navigate(`/full-report/${item.product_id}`);
+                            if (!item?.product_slug) return;
+
+                            const slug = slugify(item.product_slug, {
+                              lower: true,
+                              strict: true,
+                            });
+
+                            navigate(`/full-report/${slug}`);
                           }}
                         >
                           Report →

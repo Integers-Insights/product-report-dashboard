@@ -10,6 +10,7 @@ import CircularProgress from "./CircularProgress";
 import banner from "../assets/banner.svg";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "../skeleton/Step4Loading";
+import slugify from "slugify";
 
 const Step3 = ({
   productsData,
@@ -208,10 +209,21 @@ const Step3 = ({
                     <div className="flex justify-between gap-1.5">
                       <button
                         className="w-[85%] bg-[#0284C7] hover:bg-[#0274AE] cursor-pointer py-2 rounded-lg text-[#FFFFFF] flex justify-center items-center gap-2.5"
+                        // onClick={() => {
+                        //   if (!item?.product_id) return;
+                        //   navigate(`/full-report/${item.product_id}`);
+                        // }}
+
                         onClick={() => {
-                          if (!item?.product_id) return;
-                          navigate(`/full-report/${item.product_id}`);
-                        }}
+                              if (!item?.product_slug) return;
+
+                              const slug = slugify(item.product_slug, {
+                                lower: true,
+                                strict: true,
+                              });
+
+                              navigate(`/full-report/${slug}`);
+                            }}
                       >
                         <span>
                           <DocumentChartBarIcon className="w-5 h-5" />

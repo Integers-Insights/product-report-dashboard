@@ -91,8 +91,6 @@ export default function Steps() {
         buyer_type: buyerType,
       };
 
-      // console.log("step1 data: ",payload);
-
       const response = await fetch(`${base_url}/pipeline/run`, {
         method: "POST",
         body: JSON.stringify(payload),
@@ -107,8 +105,6 @@ export default function Steps() {
       }
 
       const data = await response.json();
-
-      console.log("jobId data: ", data);
       if (data.success) {
         setJobId(data?.job_id);
         toast.success(data?.message);
@@ -160,9 +156,6 @@ export default function Steps() {
     }
   };
 
-  console.log("selectedProductId: ",selectedProductId);
-  console.log("selectedProductId length: ",selectedProductId?.length);
-
   const postProduct = async () => {
     try {
       setLoading2(true);
@@ -186,12 +179,9 @@ export default function Steps() {
 
       const data = await response.json();
 
-      console.log("Post data: ",data);
-
       if (data.success) {
         setJobId1(data?.job_id || "");
       }
-      console.log("products data:", data);
     } catch (error) {
       console.log("Something went wrong:", error.message);
       throw error;
@@ -250,8 +240,6 @@ export default function Steps() {
   //   }
   // };
 
-  console.log("jobId: ", joinId);
-
   const getCardData = async () => {
     try {
       setCardDataLoading(true);
@@ -274,7 +262,8 @@ export default function Steps() {
 
       const data = await response.json();
 
-      console.log("card data: ", data);
+      console.log("get card data: ",data);
+
       if (data?.success) {
         setProductsData(Array.isArray(data?.products) ? data.products : []);
         setBanner_summary(Array.isArray(data?.summary) ? data.summary : []);
@@ -327,8 +316,6 @@ export default function Steps() {
     if (joinId === "") return;
     getProduct();
   }, [joinId]);
-
-  console.log("jobId1: ",joinId1);
 
   useEffect(() => {
     if (joinId1 === "") return;
