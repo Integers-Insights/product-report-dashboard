@@ -1017,7 +1017,7 @@ SELECT
 
 _PRODUCTS_SQL = """
 SELECT
-    pm.id, pm.product_name, pm.created_at,pm.product_slug
+    pm.id, pm.product_name, pm.created_at, pm.product_slug,
     oi.overall_score, oi.urgent_note,
     COALESCE(bi.buyers_count, 0) AS buyers_count,
     ARRAY(

@@ -1304,6 +1304,7 @@ async def get_user_profile(conn, user_id):
                 u.email,
                 u.phone,
                 u.status,
+                u.created_at,
                 c.name as company_name,
                 c.headquarters_country as country,
                 c.company_type as business_type,
