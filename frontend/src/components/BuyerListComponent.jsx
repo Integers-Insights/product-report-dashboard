@@ -9,6 +9,7 @@ import { useState } from "react";
 import InitialText from "./InitialText";
 import Flag from "./Flag";
 import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
 
 const BuyerListComponent = ({
   buyer_list,
@@ -257,9 +258,19 @@ const BuyerListComponent = ({
                   <div className="flex flex-col gap-2">
                     <button
                       className="py-1 px-3 rounded-lg font-medium text-sm bg-[#0284C7] hover:bg-[#0369A1] cursor-pointer text-white"
+                      // onClick={() => {
+                      //   if (!item?.product_id) return;
+                      //   navigate(`/full-report/${item.product_id}`);
+                      // }}
                       onClick={() => {
-                        if (!item?.product_id) return;
-                        navigate(`/full-report/${item.product_id}`);
+                        if (!item?.product_slug) return;
+
+                        const slug = slugify(item.product_slug, {
+                          lower: true,
+                          strict: true,
+                        });
+
+                        navigate(`/full-report/${slug}`);
                       }}
                     >
                       View Profile

@@ -28,6 +28,7 @@ const IntelligenceReports = () => {
       }
 
       const reportData = await response.json();
+      console.log("reportData: ",reportData);
       if (reportData.success) {
         setAllReportData(
           Array.isArray(reportData?.reports) ? reportData?.reports : [],

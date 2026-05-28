@@ -37,6 +37,7 @@ const Profile = ({
   currentPlan,
   expireDate,
   planQueryLimit,
+  createdAt,
 }) => {
   const [active_tab, setActive_tab] = useState("Personal Info");
   const [editBussinessType, setEditBussinessType] = useState(false);
@@ -61,6 +62,8 @@ const Profile = ({
         }
 
         const parsedData = JSON.parse(user_data);
+
+        console.log("create At: ", createdAt);
 
         const userId = parsedData?.user_id;
 
@@ -144,10 +147,17 @@ const Profile = ({
         <div className="px-4 flex justify-between items-center text-sm font-regular text-[#5F6368] mt-2">
           <p className="flex gap-3 items-center">
             <span>{email}</span>
-            <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium">
+            <span className="text-[#0284C7] bg-[#E0F5FF] rounded-2xl px-2 py-0.5 font-medium capitalize">
               {currentPlan || ""} Plan
             </span>
-            <span>Member since March 2026</span>
+            <span>
+              Member since{" "}
+              {new Date(createdAt).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
           </p>
           <button
             className="border ml-10 px-3 py-1 rounded-lg cursor-pointer disabled:cursor-not-allowed text-white font-medium bg-red-500 hover:bg-red-600"
@@ -457,9 +467,12 @@ const Profile = ({
             <div>
               <div className="border p-3 bg-[#E0F5FF] border-[#0284C7] rounded-lg flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-[#000000] capitalize">{currentPlan || ""} Plan</p>
+                  <p className="font-medium text-[#000000] capitalize">
+                    {currentPlan || ""} Plan
+                  </p>
                   <p className="text-sm font-regular text-[#5F6368]">
-                    ${planPrice || 0}/{billingCycle || ""} · {planQueryLimit || 0} queries
+                    ${planPrice || 0}/{billingCycle || ""} ·{" "}
+                    {planQueryLimit || 0} queries
                   </p>
                 </div>
                 <button

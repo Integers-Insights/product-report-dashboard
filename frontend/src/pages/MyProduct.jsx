@@ -17,7 +17,6 @@ const MyProduct = () => {
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
-  // latest changes
   const [hasRunIntelligence, setHasRunIntelligence] = useState(null); // null = loading
 
   // const getProductData = async () => {
@@ -81,7 +80,6 @@ const MyProduct = () => {
 
       if (productData.success) {
         setProductData(productData?.products || []);
-        //latest
         setHasRunIntelligence(productData.has_run_intelligence ?? false);
       }
     } catch (err) {
@@ -108,8 +106,6 @@ const MyProduct = () => {
       }
 
       const filterData = await response.json();
-
-      console.log("filter: ", filterData);
 
       if (filterData.success) {
         setCategoryData(

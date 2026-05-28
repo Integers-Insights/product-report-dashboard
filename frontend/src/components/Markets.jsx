@@ -25,8 +25,6 @@ const Markets = ({ market_data }) => {
         </div>
       </div>
       <div className="grid grid-cols-3 gap-6 mt-4">
-        {console.log("market: ", market_data)}
-
         {market_data?.map((item, i) => {
           if (item?.masked) {
             return (

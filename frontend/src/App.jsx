@@ -68,7 +68,7 @@ const App = () => {
             <Route element={<PrivateComponent />}>
               <Route path="/app" element={<OverViewPage />} />
               <Route path="/discover" element={<DiscoverProducts />} />
-              <Route path="/full-report/:id" element={<FullReport />} />
+              <Route path="/full-report/:slug" element={<FullReport />} />
               <Route path="/product" element={<MyProduct />} />
               <Route path="/market" element={<MarketIntelligence />} />
               <Route path="/buyer" element={<BuyerList />} />
