@@ -21,6 +21,7 @@ import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -154,30 +155,15 @@ export default function About() {
     authToken ? navigate("/app") : navigate("/signup");
   };
 
-   let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
+  let userProfile = localStorage.getItem("CtKoIC)iR1SP)5mr&R4d");
 
   return (
     <>
-    <Helmet>
-        <title>About Report InShort – Global Import Export Data Provider for Exporters</title>
-
-        <meta
-          name="description"
-          content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
-        />
-
-        <meta
-          property="og:title"
-          content="About Report InShort – Global Import Export Data Provider for Exporters"
-        />
-        <meta property="og:url" content="https://www.reportinshort.com/about" />
-        <meta
-          property="og:description"
-          content="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data,pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
-        />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://www.reportinshort.com/about" />
-      </Helmet>
+      <Seo
+        title="About Report InShort – Global Import Export Data Provider for Exporters"
+        description="Report InShort is a worldwide import export data provider built for growing exporters. Access government sourced global import export data, pricing analysis, market demand, verified buyer contacts & AI opportunity analysis."
+        url="https://www.reportinshort.com/about"
+      />
 
       <Navbar />
       <PageWrapper>
@@ -405,7 +391,10 @@ export default function About() {
                 onClick={handleClick}
                 className="btn-shimmer flex items-center justify-center gap-2 bg-white text-brand-700 font-bold px-8 py-4 rounded-2xl shadow-lg cursor-pointer"
               >
-                {userProfile?"Explore Dashboard":"Run your first report free"}<ArrowRight size={16} />
+                {userProfile
+                  ? "Explore Dashboard"
+                  : "Run your first report free"}
+                <ArrowRight size={16} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}

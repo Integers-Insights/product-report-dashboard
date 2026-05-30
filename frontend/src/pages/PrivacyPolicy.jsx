@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Section({ title, children }) {
   return (
@@ -18,6 +19,11 @@ function Section({ title, children }) {
 export default function PrivacyPolicy() {
   return (
     <>
+    <Seo
+        title="Privacy Policy | Report InShort"
+        description="Read Report InShort's Privacy Policy to understand how we collect, use, and protect your personal data on our market analysis platform."
+        url="https://www.reportinshort.com/privacy-policy"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-10 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

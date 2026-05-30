@@ -3,6 +3,7 @@ import { FileText } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Section({ title, children }) {
   return (
@@ -18,6 +19,11 @@ function Section({ title, children }) {
 export default function Terms() {
   return (
     <>
+    <Seo
+        title="Terms of Service | Report InShort"
+        description="Review the Terms of Service for Report InShort. Understand the conditions governing your use of our trade data and market analysis platform."
+        url="https://www.reportinshort.com/terms"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-10 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

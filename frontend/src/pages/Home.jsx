@@ -24,6 +24,7 @@ import Navbar from "../components/Navbar";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -206,7 +207,33 @@ export default function Home() {
 
   return (
     <>
-      <Helmet>
+      <Seo
+        title="Market Analysis Platform - Trade Data, Reports & Insights"
+        description="Get in-depth market analysis, import export data, competitor insights, and buyer intelligence - all in one platform. Make smarter business decisions, faster."
+        url="https://www.reportinshort.com/"
+        keywords={[
+          "demand analysis",
+          "import export data",
+          "market analysis",
+          "research report",
+          "market demand analysis",
+          "demand forecasting software",
+          "market and demand analysis",
+          "industry report",
+          "market research industry report",
+          "market research",
+          "market research services",
+          "competitors analysis",
+          "marketing analysis",
+          "global trade data",
+          "exim trade data",
+          "importers data",
+          "business research",
+          "market research to start a business"
+        ]}
+      />
+
+      {/* <Helmet>
         <title>Market Analysis Platform - Trade Data, Reports & Insights</title>
         <meta
           name="description"
@@ -229,7 +256,7 @@ export default function Home() {
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://www.reportinshort.com/" />
-      </Helmet>
+      </Helmet> */}
       <Navbar />
       <PageWrapper>
         <section
@@ -326,7 +353,9 @@ export default function Home() {
                 onClick={handleClick}
                 className="btn-shimmer relative group flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-glow-green transition-all duration-300 cursor-pointer"
               >
-                <span>{userProfile?"Explore Dashboard":"Start for free"}</span>
+                <span>
+                  {userProfile ? "Explore Dashboard" : "Start for free"}
+                </span>
                 <ArrowRight
                   size={16}
                   className="group-hover:translate-x-0.5 transition-transform"
@@ -687,7 +716,8 @@ export default function Home() {
                     onClick={handleClick}
                     className="btn-shimmer shrink-0 flex items-center gap-1.5 bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-glow-green-sm cursor-pointer"
                   >
-                    {userProfile?"Explore Dashboard":"Run yours free"}<ArrowRight size={12} />
+                    {userProfile ? "Explore Dashboard" : "Run yours free"}
+                    <ArrowRight size={12} />
                     {/* Run yours free  */}
                   </motion.button>
                 </div>

@@ -3,6 +3,7 @@ import { Globe } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Section({ title, children }) {
   return (
@@ -18,6 +19,11 @@ function Section({ title, children }) {
 export default function GDPR() {
   return (
     <>
+    <Seo
+        title="GDPR Compliance Policy | Report InShort"
+        description="Report InShort is committed to GDPR compliance. Learn how we handle EU user data, your rights, and our data protection practices."
+        url="https://www.reportinshort.com/gdpr"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-10 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

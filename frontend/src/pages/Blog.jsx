@@ -4,6 +4,7 @@ import { BookOpen, Clock, ArrowRight, Tag } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -92,6 +93,11 @@ const categories = [
 export default function Blog() {
   return (
     <>
+      <Seo
+        title="Report InShort blog | Business & Trade Insights "
+        description="Read expert articles on business opportunities, trade data trends, and market analysis. Get concise insights to guide for smarte business"
+        url="https://www.reportinshort.com/blog"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-16 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">
