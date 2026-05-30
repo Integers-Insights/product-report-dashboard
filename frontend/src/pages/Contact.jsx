@@ -14,6 +14,7 @@ import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -101,7 +102,13 @@ export default function Contact() {
 
   return (
     <>
-      <Helmet>
+    <Seo
+        title="Contact Report InShort – Global Import Export Data Support"
+        description="Contact our team for help with global trade data, buyer discovery, or custom enterprise plans. Email, phone & live support available. Exporters worldwide, reply in 24 hours."
+        url="https://www.reportinshort.com/contact"
+      />
+
+      {/* <Helmet>
         <title>
           Contact Report InShort – Global Import Export Data Support
         </title>
@@ -124,7 +131,7 @@ export default function Contact() {
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://www.reportinshort.com/contact" />
-      </Helmet>
+      </Helmet> */}
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-20 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

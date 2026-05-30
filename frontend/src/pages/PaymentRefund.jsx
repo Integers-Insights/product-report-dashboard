@@ -3,6 +3,7 @@ import { CreditCard } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Section({ title, children }) {
   return (
@@ -18,6 +19,11 @@ function Section({ title, children }) {
 export default function PaymentRefund() {
   return (
     <>
+    <Seo
+        title="Payment & Refund Policy | Report InShort"
+        description="Understand Report InShort's payment options and refund policy for market reports and trade data subscriptions. Transparent, fair, and hassle-free."
+        url="https://www.reportinshort.com/payment-refund"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-10 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

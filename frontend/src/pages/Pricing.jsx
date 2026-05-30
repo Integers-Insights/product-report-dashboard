@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
 import CurrentPlanModal from "../components/CurrentPlanModel";
 import CheckoutModal from "../components/CheckoutModal";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -262,7 +263,12 @@ export default function Pricing() {
 
   return (
     <>
-      <Helmet>
+    <Seo
+        title="Find International Buyers Fast - Trade Intelligence Plans & Pricing"
+        description="Stop guessing. Report InShort gives you real customs data, buyers email id, and market demand scores for 180+ countries."
+        url="https://www.reportinshort.com/pricing"
+      />
+      {/* <Helmet>
         <title>
           Find International Buyers Fast - Trade Intelligence Plans & Pricing
         </title>
@@ -285,7 +291,7 @@ export default function Pricing() {
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://www.reportinshort.com/pricing" />
-      </Helmet>
+      </Helmet> */}
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-16 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

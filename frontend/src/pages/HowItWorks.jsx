@@ -24,6 +24,7 @@ import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -189,7 +190,13 @@ export default function HowItWorks() {
 
   return (
     <>
-      <Helmet>
+    <Seo
+        title="Find International Buyers with Global Trade Data | Report InShort"
+        description="See how Report InShort turns global import export data into a verified export buyer list in minutes. Find foreign buyers, overseas importers, and real demand signals across 180+ countries — free to try."
+        url="https://www.reportinshort.com/how-it-works"
+      />
+
+      {/* <Helmet>
         <title>
           Find International Buyers with Global Trade Data | Report InShort
         </title>
@@ -216,7 +223,7 @@ export default function HowItWorks() {
           rel="canonical"
           href="https://www.reportinshort.com/how-it-works"
         />
-      </Helmet>
+      </Helmet> */}
       <Navbar />
       <PageWrapper>
         <section className="relative py-24 px-4 overflow-hidden text-center bg-gradient-to-b from-slate-50 via-white to-white">

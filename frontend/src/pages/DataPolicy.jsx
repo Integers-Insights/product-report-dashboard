@@ -3,6 +3,7 @@ import { Database } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Section({ title, children }) {
   return (
@@ -18,6 +19,11 @@ function Section({ title, children }) {
 export default function DataPolicy() {
   return (
     <>
+    <Seo
+        title="Data Policy | Report InShort"
+        description="Learn how Report InShort manages, stores, and uses data across our market analysis and trade intelligence platform. Your data security is our priority."
+        url="https://www.reportinshort.com/data-policy"
+      />
       <Navbar />
       <PageWrapper>
         <section className="relative pt-20 pb-10 px-4 text-center overflow-hidden bg-gradient-to-b from-slate-50 to-white">

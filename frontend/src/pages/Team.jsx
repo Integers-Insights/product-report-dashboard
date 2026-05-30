@@ -5,6 +5,7 @@ import { Users2, ArrowRight } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
+import Seo from "../components/Seo";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -73,6 +74,11 @@ export default function Team() {
 
   return (
     <>
+    <Seo
+        title="Team | Researchers & AI engineers"
+        description="Meet the analysts and researchers behind Report InShort - dedicated to delivering accurate trade data, market reports, and business intelligence"
+        url="https://www.reportinshort.com/team"
+      />
       <Navbar />
       <PageWrapper>
         {/* Hero */}
