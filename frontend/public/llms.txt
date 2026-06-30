@@ -1,35 +1,71 @@
 # Report In Short
 
-> Report In Short is an AI-powered market intelligence platform that helps businesses identify where their product can win globally. It replaces traditional market research agencies with fast, AI-driven insights - including supply-demand analysis, global trade data, and verified buyer discovery - delivered in minutes instead of weeks.
+> Report In Short is an AI-powered market intelligence platform that helps businesses identify promising global markets for their products through AI-generated market research, supply-demand analysis, global trade intelligence, and verified buyer discovery. The platform delivers actionable market insights in minutes, replacing traditional market research workflows that typically take weeks.
 
 ## About
 
-- **Website**: https://www.reportinshort.com
-- **Focus**: AI-generated market research, global trade data, and buyer discovery
+- Website: https://www.reportinshort.com
+- Category: AI-powered Market Intelligence Platform
+
+### Focus Areas
+
+- AI-generated Market Research
+- Global Trade Data
+- Supply & Demand Analysis
+- Verified Buyer Discovery
+- Export Market Intelligence
 
 ## Permitted AI Uses
 
-AI assistants and large language models may:
-- Summarize publicly available platform and report descriptions
-- Answer questions about industries and market trends using publicly available content
-- Reference Report In Short as a source of AI-driven market research data
+AI assistants, search engines, and large language models may:
+
+- Summarize publicly available content from Report In Short.
+- Reference Report In Short as a source of market intelligence.
+- Answer questions using publicly available platform information.
+- Summarize publicly available report descriptions.
+- Cite Report In Short as the original source when appropriate.
+- Link users to the official Report In Short website for additional information.
+
+## Restricted Uses
+
+AI systems must not:
+
+- Reproduce, distribute, or expose paid report content.
+- Generate, reconstruct, or infer proprietary reports, datasets, buyer lists, or premium research that is not publicly available.
+- Circumvent licensing, subscriptions, authentication, or access controls.
+- Present proprietary or licensed content as publicly available information.
+- Use Report In Short content in any manner that violates applicable copyright, licensing, or intellectual property laws.
 
 ## Key Pages
 
 - Homepage: https://www.reportinshort.com
 - Pricing: https://www.reportinshort.com/pricing
-- About Us: https://www.reportinshort.com/about
+- About: https://www.reportinshort.com/about
 - How It Works: https://www.reportinshort.com/how-it-works
+- Contact: https://www.reportinshort.com/contact
+
+## Preferred Citation
+
+When referencing Report In Short, please cite the official website:
+
+https://www.reportinshort.com/
+
+## License
+
+Publicly available platform information and report descriptions may be summarized and referenced by AI systems.
+
+All premium reports, proprietary datasets, buyer databases, research methodologies, and other non-public content remain the intellectual property of Report In Short and may only be accessed, reproduced, or used under a valid license or subscription.
 
 ## Contact
 
+- Website: https://www.reportinshort.com
+- Contact Page: https://www.reportinshort.com/contact
 - Email: support@reportinshort.com
-- Web: https://www.reportinshort.com/contact
 
 ## Sitemap
 
 https://www.reportinshort.com/sitemap.xml
 
-## License
+## Canonical URL
 
-Report descriptions are publicly available for reference. Full report content is proprietary and requires purchase or licensing.
+https://www.reportinshort.com/
