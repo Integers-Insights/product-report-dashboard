@@ -10,7 +10,7 @@ import NewUserProduct from "./components/NewUserProducts.jsx";
 
 const Loader = () => (
   <div className="h-screen w-screen flex justify-center items-center">
-    <div className="h-10 w-10 border-4 border-[#5FC4BE] border-t-transparent rounded-full animate-spin"></div>
+    <div className="h-10 w-10 border-4 border-[#0284c7] border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 

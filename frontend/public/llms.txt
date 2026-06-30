@@ -1,0 +1,35 @@
+# Report In Short
+
+> Report In Short is an AI-powered market intelligence platform that helps businesses identify where their product can win globally. It replaces traditional market research agencies with fast, AI-driven insights - including supply-demand analysis, global trade data, and verified buyer discovery - delivered in minutes instead of weeks.
+
+## About
+
+- **Website**: https://www.reportinshort.com
+- **Focus**: AI-generated market research, global trade data, and buyer discovery
+
+## Permitted AI Uses
+
+AI assistants and large language models may:
+- Summarize publicly available platform and report descriptions
+- Answer questions about industries and market trends using publicly available content
+- Reference Report In Short as a source of AI-driven market research data
+
+## Key Pages
+
+- Homepage: https://www.reportinshort.com
+- Pricing: https://www.reportinshort.com/pricing
+- About Us: https://www.reportinshort.com/about
+- How It Works: https://www.reportinshort.com/how-it-works
+
+## Contact
+
+- Email: support@reportinshort.com
+- Web: https://www.reportinshort.com/contact
+
+## Sitemap
+
+https://www.reportinshort.com/sitemap.xml
+
+## License
+
+Report descriptions are publicly available for reference. Full report content is proprietary and requires purchase or licensing.
